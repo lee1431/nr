@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>플래닛충주 - 홈 화면에 추가</title>
+  <meta name="theme-color" content="#0f172a" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+      padding: 28px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #ecfeff;
+      color: #155e75;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      line-height: 1.25;
+    }
+
+    .desc {
+      margin: 0 0 20px;
+      font-size: 16px;
+      line-height: 1.7;
+      color: #334155;
+    }
+
+    .strong {
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .cta {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      background: #0f172a;
+      color: #ffffff;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+
+    .cta:active {
+      transform: scale(0.985);
+    }
+
+    .sub-btn {
+      width: 100%;
+      margin-top: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .note {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .status {
+      margin-top: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f766e;
+      min-height: 22px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.58);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 440px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
+    }
+
+    .modal h2 {
+      margin: 0 0 12px;
+      font-size: 22px;
+    }
+
+    .modal p {
+      margin: 0 0 14px;
+      color: #334155;
+      line-height: 1.7;
+    }
+
+    .steps {
+      margin: 0;
+      padding-left: 18px;
+      color: #0f172a;
+      line-height: 1.8;
+      font-weight: 600;
+    }
+
+    .modal .close-btn {
+      width: 100%;
+      margin-top: 18px;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .helper {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="badge">플래닛충주 향우회</div>
+
+    <h1>쿠폰 받으려면<br>홈 화면에 추가하세요</h1>
+
+    <p class="desc">
+      설치는 완전 자동으로 되지 않습니다.<br>
+      <span class="strong">어차피 한 번은 직접 눌러야 합니다.</span><br>
+      아래 버튼 누르고 안내대로 따라 하세요.
+    </p>
+
+    <button id="installBtn" class="cta">
+      홈 화면에 추가하기
+    </button>
+
+    <button id="manualGuideBtn" class="sub-btn">
+      직접 설치 안내 보기
+    </button>
+
+    <div id="status" class="status"></div>
+
+    <div class="note">
+      안드로이드는 버튼을 누르면 바로 설치 창이 뜰 수 있고,<br>
+      아이폰은 Safari의 <strong>공유 → 홈 화면에 추가</strong>를 직접 눌러야 합니다.
+    </div>
+
+    <div class="helper" id="deviceInfo"></div>
+  </main>
+
+  <div id="guideOverlay" class="overlay hidden">
+    <div class="modal">
+      <h2>홈 화면에 추가 안내</h2>
+      <p id="guideText">
+        아래 순서대로 진행하세요.
+      </p>
+      <ol id="guideSteps" class="steps"></ol>
+      <button id="closeGuideBtn" class="close-btn">확인</button>
+    </div>
+  </div>
+
+  <script>
+    let deferredPrompt = null;
+
+    const installBtn = document.getElementById("installBtn");
+    const manualGuideBtn = document.getElementById("manualGuideBtn");
+    const statusEl = document.getElementById("status");
+    const deviceInfo = document.getElementById("deviceInfo");
+
+    const guideOverlay = document.getElementById("guideOverlay");
+    const guideText = document.getElementById("guideText");
+    const guideSteps = document.getElementById("guideSteps");
+    const closeGuideBtn = document.getElementById("closeGuideBtn");
+
+    const ua = navigator.userAgent || "";
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
+    const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(ua);
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+
+    function setStatus(message) {
+      statusEl.textContent = message;
+    }
+
+    function showGuide(steps, text) {
+      guideText.textContent = text;
+      guideSteps.innerHTML = "";
+
+      steps.forEach((step) => {
+        const li = document.createElement("li");
+        li.textContent = step;
+        guideSteps.appendChild(li);
+      });
+
+      guideOverlay.classList.remove("hidden");
+    }
+
+    function closeGuide() {
+      guideOverlay.classList.add("hidden");
+    }
+
+    function showIOSGuide() {
+      showGuide(
+        [
+          "Safari 하단의 공유 버튼을 누르세요.",
+          "메뉴에서 '홈 화면에 추가'를 찾으세요.",
+          "우측 상단의 '추가'를 누르세요.",
+          "홈 화면에 생긴 아이콘으로 다시 접속하세요."
+        ],
+        "아이폰은 버튼 한 번으로 자동 설치되지 않습니다. 아래대로만 하면 됩니다."
+      );
+    }
+
+    function showAndroidGuide() {
+      showGuide(
+        [
+          "브라우저 메뉴를 여세요.",
+          "'홈 화면에 추가' 또는 '앱 설치'를 누르세요.",
+          "'설치' 또는 '추가'를 누르세요.",
+          "홈 화면에 생긴 아이콘으로 다시 접속하세요."
+        ],
+        "안드로이드에서 자동 설치 창이 안 뜨면 아래 순서로 직접 추가하세요."
+      );
+    }
+
+    function showDefaultGuide() {
+      showGuide(
+        [
+          "브라우저 메뉴를 여세요.",
+          "'홈 화면에 추가' 또는 비슷한 메뉴를 찾으세요.",
+          "추가 또는 설치를 눌러 완료하세요."
+        ],
+        "사용 중인 브라우저에 따라 버튼 이름이 조금 다를 수 있습니다."
+      );
+    }
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      setStatus("이 기기에서는 버튼으로 바로 설치할 수 있습니다.");
+    });
+
+    window.addEventListener("appinstalled", () => {
+      deferredPrompt = null;
+      setStatus("설치가 완료되었습니다. 홈 화면에서 실행해 주세요.");
+    });
+
+    installBtn.addEventListener("click", async () => {
+      if (isStandalone) {
+        setStatus("이미 홈 화면에 추가된 상태입니다.");
+        return;
+      }
+
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+
+        try {
+          const choice = await deferredPrompt.userChoice;
+
+          if (choice && choice.outcome === "accepted") {
+            setStatus("설치를 진행했습니다.");
+          } else {
+            setStatus("설치를 취소했습니다. 다시 누르면 됩니다.");
+          }
+        } catch (error) {
+          setStatus("설치 창을 띄우는 중 문제가 발생했습니다.");
+        }
+
+        deferredPrompt = null;
+        return;
+      }
+
+      if (isIOS && isSafari) {
+        showIOSGuide();
+        setStatus("아이폰은 안내에 따라 직접 추가해야 합니다.");
+        return;
+      }
+
+      if (isAndroid) {
+        showAndroidGuide();
+        setStatus("브라우저 메뉴에서 직접 추가해 주세요.");
+        return;
+      }
+
+      showDefaultGuide();
+      setStatus("브라우저 메뉴에서 홈 화면 추가를 진행해 주세요.");
+    });
+
+    manualGuideBtn.addEventListener("click", () => {
+      if (isIOS && isSafari) {
+        showIOSGuide();
+        return;
+      }
+
+      if (isAndroid) {
+        showAndroidGuide();
+        return;
+      }
+
+      showDefaultGuide();
+    });
+
+    closeGuideBtn.addEventListener("click", closeGuide);
+    guideOverlay.addEventListener("click", (e) => {
+      if (e.target === guideOverlay) closeGuide();
+    });
+
+    if (isStandalone) {
+      setStatus("이미 홈 화면에 추가되어 있습니다.");
+    } else if (isIOS && isSafari) {
+      setStatus("아이폰 Safari에서는 안내에 따라 직접 추가해야 합니다.");
+    } else if (isAndroid) {
+      setStatus("설치 가능 여부를 확인 중입니다.");
+    } else {
+      setStatus("이 브라우저에서는 수동 추가가 필요할 수 있습니다.");
+    }
+
+    deviceInfo.textContent =
+      "현재 환경: " +
+      (isIOS ? "iPhone/iPad" : isAndroid ? "Android" : "기타") +
+      " / " +
+      (isSafari ? "Safari 계열" : "기타 브라우저");
+  </script>
+</body>
+</html>
