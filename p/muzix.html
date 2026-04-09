@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ELEVEN TRACKS</title>
+  <style>
+    :root {
+      --bg: #f6f7f2;
+      --panel: rgba(255,255,255,0.82);
+      --text: #1f2a22;
+      --muted: #6b746d;
+      --line: rgba(31, 77, 59, 0.14);
+      --accent: #1f4d3b;
+      --accent-2: #2f7a5d;
+      --shadow: 0 20px 50px rgba(20, 35, 28, 0.08);
+      --radius: 28px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(31,42,34,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(31,42,34,0.045) 1px, transparent 1px),
+        radial-gradient(circle at top right, rgba(47,122,93,0.08), transparent 24%),
+        var(--bg);
+      background-size: 28px 28px, 28px 28px, auto, auto;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(14px);
+      background: rgba(246, 247, 242, 0.72);
+      border-bottom: 1px solid rgba(31, 77, 59, 0.08);
+    }
+
+    .nav {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand-mark {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      background: rgba(31, 77, 59, 0.08);
+      color: var(--accent);
+    }
+
+    .hero {
+      padding: 72px 0 34px;
+      display: grid;
+      grid-template-columns: 1.25fr 0.85fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .hero-side,
+    .track,
+    .cta-box,
+    .info-card,
+    .footer-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-card {
+      padding: 34px;
+      min-height: 450px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 14px;
+      font-size: clamp(44px, 7vw, 88px);
+      line-height: 0.95;
+      letter-spacing: -0.07em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.78;
+      max-width: 700px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      font-size: 14px;
+      font-weight: 800;
+      transition: 0.2s ease;
+      cursor: pointer;
+      background: white;
+      color: var(--text);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn.primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .hero-foot {
+      margin-top: 24px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 26px;
+      letter-spacing: -0.05em;
+    }
+
+    .metric span {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .hero-side {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .mini-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      background: rgba(255,255,255,0.7);
+    }
+
+    .mini-card strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .mini-card p {
+      font-size: 13px;
+      line-height: 1.68;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 22px 0 16px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: -0.05em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.7;
+    }
+
+    .tracks {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+
+    .track {
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .track-top {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .track-no {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .track h3 {
+      margin: 8px 0 8px;
+      font-size: 28px;
+      line-height: 1.05;
+      letter-spacing: -0.05em;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 11px;
+      border-radius: 999px;
+      background: rgba(31, 77, 59, 0.08);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .track p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 14px;
+    }
+
+    .track ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .track li {
+      position: relative;
+      padding-left: 18px;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .track li::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent-2);
+      position: absolute;
+      top: 8px;
+      left: 0;
+    }
+
+    audio {
+      width: 100%;
+      height: 46px;
+      filter: saturate(0.92) contrast(1.02);
+    }
+
+    .track-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin: 10px 0 42px;
+    }
+
+    .info-card {
+      padding: 22px;
+    }
+
+    .info-card strong {
+      display: block;
+      font-size: 17px;
+      margin-bottom: 10px;
+    }
+
+    .info-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 14px;
+    }
+
+    .cta {
+      margin: 20px 0 56px;
+    }
+
+    .cta-box {
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .cta-box h2 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.05;
+      letter-spacing: -0.05em;
+    }
+
+    .cta-box p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 15px;
+      max-width: 620px;
+    }
+
+    .cta-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer {
+      padding: 0 0 40px;
+    }
+
+    .footer-card {
+      padding: 18px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1024px) {
+      .hero,
+      .cta-box,
+      .tracks,
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card { min-height: auto; }
+      .cta-actions { justify-content: flex-start; }
+    }
+
+    @media (max-width: 680px) {
+      .wrap { width: min(100% - 20px, 1180px); }
+      .hero { padding-top: 34px; }
+      .hero-card,
+      .hero-side,
+      .track,
+      .cta-box,
+      .info-card,
+      .footer-card { border-radius: 22px; }
+      .hero-card,
+      .hero-side,
+      .track,
+      .cta-box,
+      .info-card { padding: 20px; }
+      .footer-card { padding: 16px 18px; flex-direction: column; align-items: flex-start; }
+      .nav { min-height: 66px; }
+      .nav-links { display: none; }
+      h1 { font-size: 54px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap nav">
+      <div class="brand">
+        <div class="brand-mark">ELEVENLABS SHOWCASE</div>
+        <div class="brand-name">ELEVEN TRACKS</div>
+      </div>
+      <nav class="nav-links">
+        <a class="active" href="#tracks">Tracks</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" id="about">
+      <article class="hero-card">
+        <div>
+          <div class="eyebrow">AI Music · Instrumental Showcase</div>
+          <h1>내 홈페이지에서<br />바로 듣는<br />ELEVENLABS TRACKS</h1>
+          <p>
+            직접 만든 AI 음원을 한 페이지에 정리하고, 바로 재생하고, 분위기를 설명하고,
+            필요하면 ElevenLabs 작업 흐름까지 자연스럽게 연결하는 구조다.
+            이 페이지는 단순한 플레이어가 아니라, 음원 아카이브이자 브랜드 쇼케이스다.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary" href="#tracks">트랙 듣기</a>
+            <a class="btn" href="https://elevenlabs.io" target="_blank" rel="noreferrer">ElevenLabs 보기</a>
+          </div>
+        </div>
+
+        <div class="hero-foot">
+          <div class="metric">
+            <strong>30s</strong>
+            <span>짧고 강하게 설계한 데모 길이</span>
+          </div>
+          <div class="metric">
+            <strong>EDM + Rock</strong>
+            <span>감정과 드롭을 섞은 핵심 톤</span>
+          </div>
+          <div class="metric">
+            <strong>Web Ready</strong>
+            <span>홈페이지에서 바로 재생 가능</span>
+          </div>
+        </div>
+      </article>
+
+      <aside class="hero-side">
+        <div class="mini-grid">
+          <div class="mini-card">
+            <strong>이 페이지의 역할</strong>
+            <p>내가 만든 음원을 모아두고, 방문자가 바로 플레이해보며 분위기를 이해할 수 있게 만든다.</p>
+          </div>
+          <div class="mini-card">
+            <strong>운영 방식</strong>
+            <p>MP3 또는 WAV 파일만 업로드하면 카드 하나씩 추가하는 정적 페이지 구조다.</p>
+          </div>
+          <div class="mini-card">
+            <strong>광고 효과</strong>
+            <p>음원 설명과 함께 ElevenLabs 링크를 배치해서 도구 자체의 인상도 자연스럽게 전달한다.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section id="tracks">
+      <div class="section-head">
+        <div>
+          <h2>Featured Tracks</h2>
+        </div>
+        <p>
+          아래 오디오 영역은 실제 음원 파일 경로만 연결하면 바로 재생된다.
+          우선은 샘플 경로로 채워두었고, 나중에 네 파일명으로 교체하면 된다.
+        </p>
+      </div>
+
+      <div class="tracks">
+        <article class="track">
+          <div class="track-top">
+            <div>
+              <div class="track-no">TRACK 01</div>
+              <h3>Insert Coin</h3>
+            </div>
+            <span class="tag">EDM Rock</span>
+          </div>
+          <p>빠르게 올라가서 바로 터지는 드롭 중심 트랙. 다시 한 번 기회를 달라는 감정선을 짧고 강하게 밀어붙이는 구조.</p>
+          <ul>
+            <li>30초 집중형 데모</li>
+            <li>긴장감 있는 빌드업</li>
+            <li>감정형 드롭 중심 설계</li>
+          </ul>
+          <audio controls preload="none">
+            <source src="./audio/insert-coin.mp3" type="audio/mpeg" />
+          </audio>
+          <div class="track-actions">
+            <a class="btn" href="./audio/insert-coin.mp3" download>음원 다운로드</a>
+            <a class="btn" href="https://elevenlabs.io" target="_blank" rel="noreferrer">Tool 보기</a>
+          </div>
+        </article>
+
+        <article class="track">
+          <div class="track-top">
+            <div>
+              <div class="track-no">TRACK 02</div>
+              <h3>Inner Storm</h3>
+            </div>
+            <span class="tag">Dark Pulse</span>
+          </div>
+          <p>조금 더 어두운 결을 가진 전자 사운드 중심 트랙. 묵직한 저역과 펄스성 리듬을 전면에 두는 용도에 맞다.</p>
+          <ul>
+            <li>저역 중심 리듬</li>
+            <li>어두운 배경용 무드</li>
+            <li>인트로/배너 영상용</li>
+          </ul>
+          <audio controls preload="none">
+            <source src="./audio/inner-storm.mp3" type="audio/mpeg" />
+          </audio>
+          <div class="track-actions">
+            <a class="btn" href="./audio/inner-storm.mp3" download>음원 다운로드</a>
+            <a class="btn" href="#contact">문의하기</a>
+          </div>
+        </article>
+
+        <article class="track">
+          <div class="track-top">
+            <div>
+              <div class="track-no">TRACK 03</div>
+              <h3>Star Without Light</h3>
+            </div>
+            <span class="tag">Emotional Synth</span>
+          </div>
+          <p>감정선을 조금 더 길게 잡은 서정형 신스 트랙. 페이지 메인 배경이나 느린 소개 섹션에 잘 맞는다.</p>
+          <ul>
+            <li>서정적인 전개</li>
+            <li>부드러운 패드 중심</li>
+            <li>브랜드 무드용</li>
+          </ul>
+          <audio controls preload="none">
+            <source src="./audio/star-without-light.mp3" type="audio/mpeg" />
+          </audio>
+          <div class="track-actions">
+            <a class="btn" href="./audio/star-without-light.mp3" download>음원 다운로드</a>
+            <a class="btn" href="https://elevenlabs.io" target="_blank" rel="noreferrer">ElevenLabs</a>
+          </div>
+        </article>
+
+        <article class="track">
+          <div class="track-top">
+            <div>
+              <div class="track-no">TRACK 04</div>
+              <h3>Custom Slot</h3>
+            </div>
+            <span class="tag">Replace Me</span>
+          </div>
+          <p>여기는 네가 다음으로 만든 음원을 넣기 위한 빈 슬롯이다. 제목, 설명, 파일 경로만 바꾸면 바로 카드 하나가 완성된다.</p>
+          <ul>
+            <li>파일명만 교체</li>
+            <li>설명문만 수정</li>
+            <li>아카이브 계속 확장 가능</li>
+          </ul>
+          <audio controls preload="none">
+            <source src="./audio/custom-track.mp3" type="audio/mpeg" />
+          </audio>
+          <div class="track-actions">
+            <a class="btn" href="./audio/custom-track.mp3" download>음원 다운로드</a>
+            <a class="btn" href="#about">상단으로</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="info-grid">
+      <article class="info-card">
+        <strong>어떻게 파일을 넣나</strong>
+        <p><code>audio</code> 폴더를 만들고 MP3 파일을 업로드한 뒤, 각 카드의 <code>src</code> 경로만 바꾸면 된다.</p>
+      </article>
+      <article class="info-card">
+        <strong>왜 이 구조가 좋은가</strong>
+        <p>가볍고 빠르며, 별도 서버 처리 없이도 즉시 배포 가능하다. 음원 몇 개만으로도 충분히 브랜드 인상을 만들 수 있다.</p>
+      </article>
+      <article class="info-card" id="contact">
+        <strong>어디로 연결할까</strong>
+        <p>나중에 문의 폼, Gumroad, 이메일, 또는 다른 프로젝트 페이지로 버튼 링크를 연결하면 바로 수익 동선이 생긴다.</p>
+      </article>
+    </section>
+
+    <section class="cta">
+      <div class="cta-box">
+        <div>
+          <h2>이 페이지는<br />음원 광고판이자<br />포트폴리오다.</h2>
+          <p>
+            직접 만든 트랙을 재생하게 하면서, 동시에 어떤 도구로 만들었는지까지 보여줄 수 있다.
+            즉, 방문자는 음악을 듣고, 분위기를 기억하고, 필요하면 바로 ElevenLabs나 네 다른 상품 페이지로 이동한다.
+          </p>
+        </div>
+        <div class="cta-actions">
+          <a class="btn primary" href="https://elevenlabs.io" target="_blank" rel="noreferrer">ElevenLabs 방문</a>
+          <a class="btn" href="#tracks">트랙 다시 보기</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer wrap">
+    <div class="footer-card">
+      <span>ELEVEN TRACKS · AI music showcase page</span>
+      <span>Built for homepage playback, archive, and simple promotion.</span>
+    </div>
+  </footer>
+</body>
+</html>
