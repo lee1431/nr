@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Get The Item - Chest Only (Inventory + Sell + Respawn)</title>
+  <style>
+    :root{
+      --bg:#070a10; --fg:#e8eefc;
+      --card:rgba(255,255,255,.04);
+      --line:rgba(255,255,255,.10);
+      --line2:rgba(255,255,255,.08);
+      --btn:rgba(49,210,255,.12);
+      --btnLine:rgba(49,210,255,.30);
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:ui-monospace,Menlo,Consolas,monospace;}
+    .wrap{max-width:980px;margin:0 auto;padding:18px;}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch;}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line2);
+      border-radius:16px;
+      padding:14px;
+      flex:1;
+      min-width:280px;
+      position:relative;
+      overflow:hidden;
+      box-shadow: 0 10px 50px rgba(0,0,0,.35);
+    }
+    .big{font-size:22px;font-weight:700;letter-spacing:.2px;}
+    .muted{opacity:.75;font-size:12px;}
+    .btn{
+      background:var(--btn);
+      color:var(--fg);
+      border:1px solid var(--btnLine);
+      border-radius:12px;
+      padding:9px 12px;
+      cursor:pointer;
+      user-select:none;
+      transition:.12s transform ease;
+    }
+    .btn:active{transform:scale(.98);}
+    .btn:disabled{opacity:.45;cursor:not-allowed;}
+    .btn2{
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .statline{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .pill{padding:2px 8px;border:1px solid rgba(255,255,255,.12);border-radius:999px;background:rgba(0,0,0,.18);font-size:12px;opacity:.9}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+
+    /* log */
+    .logbox{
+      margin-top:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+      border-radius:12px;
+      padding:10px;
+      height:260px;
+      overflow:auto;
+      white-space:pre-wrap;
+      line-height:1.35;
+      font-size:13px;
+    }
+    .logbox b{font-weight:800}
+    .log-green{color:#88ffb3}
+    .log-cyan{color:#7fe7ff}
+    .log-gray{color:rgba(232,238,252,.85)}
+    .log-warn{color:#ffd27f}
+
+    /* inventory */
+    .inv-card{margin-top:12px;}
+    .inv-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+    .inv-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+    .inv-controls input,.inv-controls select{
+      background:rgba(255,255,255,.04);
+      color:var(--fg);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:10px;
+      padding:8px 10px;
+      outline:none;
+      min-width:180px;
+    }
+    .inv-controls select{min-width:140px}
+    .inv-grid{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns:repeat(7,minmax(0,1fr));
+      gap:10px;
+    }
+    @media (max-width: 980px){ .inv-grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
+    @media (max-width: 560px){ .inv-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+
+    .inv-slot{
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px;
+      min-height:76px;
+      position:relative;
+      overflow:hidden;
+      cursor:pointer;
+    }
+    .inv-slot:hover{border-color:rgba(255,255,255,.20)}
+    .inv-tag{font-size:12px;opacity:.86;margin-bottom:6px;}
+    .inv-name{font-size:13px;line-height:1.25;word-break:keep-all;}
+    .inv-count{
+      position:absolute;right:10px;bottom:8px;
+      font-size:12px;opacity:.95;
+      padding:2px 7px;border-radius:999px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    /* rarity border tint */
+    .r-i0{border-color:rgba(255,220,120,.40);}
+    .r-i1{border-color:rgba(180,210,255,.40);}
+    .r-i2{border-color:rgba(190,255,210,.32);}
+    .r-i3{border-color:rgba(255,255,255,.18);}
+    .r-i4{border-color:rgba(255,160,220,.28);}
+    .r-i5{border-color:rgba(255,120,120,.28);}
+    .r-i6{border-color:rgba(140,140,140,.24);}
+	
+	
+	.inv-slot .inv-tag{ opacity:.9; }
+	.inv-slot .inv-name{ font-weight:600; }
+
+	.inv-slot.r-i0{
+	  border-color:#ffd86b;
+	  box-shadow:0 0 10px rgba(255,216,107,.35);
+	  background:linear-gradient(145deg, rgba(255,216,107,.12), rgba(255,255,255,.02));
+	}
+	.inv-slot.r-i0 .inv-tag{ color:#ffd86b; font-weight:800; }
+	.inv-slot.r-i0 .inv-name{ color:#ffe9b0; }
+
+	.inv-slot.r-i1{
+	  border-color:#ffb86b;
+	  box-shadow:0 0 8px rgba(255,184,107,.25);
+	  background:linear-gradient(145deg, rgba(255,184,107,.08), rgba(255,255,255,.02));
+	}
+	.inv-slot.r-i1 .inv-tag{ color:#ffb86b; font-weight:700; }
+	.inv-slot.r-i1 .inv-name{ color:#ffe1c2; }
+
+	.inv-slot.r-i2{
+	  border-color:#7fd4ff;
+	  box-shadow:0 0 7px rgba(127,212,255,.22);
+	}
+	.inv-slot.r-i2 .inv-tag{ color:#7fd4ff; }
+	.inv-slot.r-i2 .inv-name{ color:#d7f2ff; }
+
+	.inv-slot.r-i3{
+	  border-color:#6ad66a;
+	  box-shadow:0 0 6px rgba(106,214,106,.18);
+	}
+	.inv-slot.r-i3 .inv-tag{ color:#6ad66a; }
+	.inv-slot.r-i3 .inv-name{ color:#d7ffd7; }
+
+	.inv-slot.r-i4{
+	  border-color:#9fa8ff;
+	  box-shadow:0 0 6px rgba(159,168,255,.16);
+	}
+	.inv-slot.r-i4 .inv-tag{ color:#9fa8ff; }
+	.inv-slot.r-i4 .inv-name{ color:#e3e6ff; }
+
+	.inv-slot.r-i5{
+	  border-color:#c7c7c7;
+	  opacity:.92;
+	}
+	.inv-slot.r-i5 .inv-tag{ color:#c7c7c7; }
+	.inv-slot.r-i5 .inv-name{ color:#e0e0e0; }
+
+	.inv-slot.r-i6{
+	  border-color:#6f7785;
+	  opacity:.80;
+	  filter:saturate(.9);
+	}
+	.inv-slot.r-i6 .inv-tag{ color:#6f7785; }
+	.inv-slot.r-i6 .inv-name{ color:#b7becb; }
+
+	@keyframes legendPulse {
+	  0%   { box-shadow:0 0 6px rgba(255,216,107,.25); }
+	  50%  { box-shadow:0 0 14px rgba(255,216,107,.55); }
+	  100% { box-shadow:0 0 6px rgba(255,216,107,.25); }
+	}
+	.inv-slot.r-i0{ animation: legendPulse 2.2s infinite; }
+	
+	
+
+    /* modal */
+    .modal-bg{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      display:none;align-items:center;justify-content:center;padding:14px;
+    }
+    .modal{
+      width:min(560px, 96vw);
+      background:rgba(12,14,20,.92);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 18px 90px rgba(0,0,0,.6);
+    }
+    .modal-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+    .modal .big{font-size:18px}
+    .modal .meta{opacity:.8;font-size:12px;margin-top:6px;line-height:1.4}
+    .modal .modal-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .xbtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:7px 10px;cursor:pointer;color:var(--fg)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="row">
+      <div class="card">
+        <div class="big">GOLD: <span id="gold">0</span></div>
+        <div class="muted">골드는 자동으로 안 쌓임. <b>판매</b>로만 획득.</div>
+
+        <div class="actions">
+          <button class="btn" id="btnUpRespawn">
+            리스폰 단축 (비용 <span id="costRespawn">50</span>)
+          </button>
+          <button class="btn btn2" id="btnSellAllTrash">
+            i5~i6 전부 판매
+          </button>
+        </div>
+
+        <div class="statline">
+          <span class="pill">리스폰 Lv. <span id="respawnLv">1</span></span>
+          <span class="pill">현재 리스폰: <span id="respawnNow">60.0s</span></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="big">CHEST: <span id="chest">0</span></div>
+        <div class="muted">다음 상자까지: <span id="nextChest">--</span></div>
+
+        <div class="actions">
+          <button class="btn" id="btnOpen">상자 열기</button>
+          <button class="btn btn2" id="btnReset">세이브 초기화</button>
+        </div>
+
+        <div class="statline">
+          <span class="pill">기본: 1분에 1개</span>
+          <span class="pill">오픈은 <b>아이템만</b> 줌</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="big">획득 로그</div>
+      <div class="muted">상자/판매/업그레이드가 여기에 쌓임</div>
+      <div id="log" class="logbox"></div>
+    </div>
+
+    <!-- Inventory -->
+    <div class="card inv-card">
+      <div class="inv-head">
+        <div class="big">인벤토리</div>
+        <div class="inv-controls">
+          <input id="invSearch" placeholder="검색 (예: 육포, 룬문자…)" />
+          <select id="invSort">
+            <option value="recent">최근 획득순</option>
+            <option value="rarity">등급순</option>
+            <option value="count">개수순</option>
+            <option value="name">이름순</option>
+          </select>
+          <button class="btn btn2" id="invExport">백업</button>
+          <button class="btn btn2" id="invImport">복원</button>
+        </div>
+      </div>
+      <div id="invGrid" class="inv-grid"></div>
+    </div>
+  </div>
+
+  <!-- modal -->
+  <div class="modal-bg" id="modalBg">
+    <div class="modal">
+      <div class="modal-top">
+        <div>
+          <div class="big" id="mTitle">아이템</div>
+          <div class="meta" id="mMeta"></div>
+        </div>
+        <button class="xbtn" id="mClose">닫기</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="mSell1">판매 1개</button>
+        <button class="btn" id="mSellAll">판매 전부</button>
+        <button class="btn btn2" id="mDelete">삭제</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ===========================
+   서버 연동 옵션
+   - 갤8 Flask: POST /api/open_chest
+=========================== */
+const USE_SERVER = true;
+const SERVER_OPEN_URL = "https://mrdindoin.ddns.net/gti/api/open_chest";
+
+/* ===========================
+   상태
+=========================== */
+const state = {
+  gold: 0,
+  chest: 0,
+  chestTimer: 0,
+  respawnLv: 1,
+};
+
+/* ===========================
+   인벤
+=========================== */
+const inv = {
+  map: new Map(), // key -> { rarity, name, count, lastTs, firstTs }
+};
+
+/* ===========================
+   유틸
+=========================== */
+function $(id){ return document.getElementById(id); }
+function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
+function now(){ return Date.now(); }
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+function rarityRank(r){
+  const m = /^i(\d+)/.exec(r);
+  return m ? parseInt(m[1],10) : 999;
+}
+function invKey(rarity,name){ return `${rarity}|${name}`; }
+
+/* ===========================
+   로그
+=========================== */
+function appendLog(html){
+  const log = $("log");
+  const atBottom = (log.scrollTop + log.clientHeight + 30) >= log.scrollHeight;
+  log.insertAdjacentHTML("beforeend", `<div class="log-gray">${html}</div>`);
+  if(atBottom) log.scrollTop = log.scrollHeight;
+}
+function logOpen(rarity, name){
+  appendLog(
+    `<span class="log-green"><b>상자 OPEN</b></span> → ` +
+    `<span class="log-${escapeHtml(rarity)}"><b>[${escapeHtml(rarity)}]</b></span> ` +
+    `${escapeHtml(name)}`
+  );
+}
+function logSell(rarity, name, qty, gain){
+  appendLog(
+    `<span class="log-cyan"><b>판매</b></span> → ` +
+    `[${escapeHtml(rarity)}] ${escapeHtml(name)} x${qty} ` +
+    `<span class="log-green">(+${gain}G)</span>`
+  );
+}
+
+/* ===========================
+   리스폰(1분 기본, 업그레이드로 단축)
+=========================== */
+function chestEvery(){
+  const base = 60_000; // 1분
+  const speed = Math.pow(0.92, state.respawnLv - 1); // 레벨당 8% 단축
+  return clamp(base * speed, 10_000, base); // 최소 10초(추천)
+}
+function costRespawn(){
+  return Math.floor(50 + (state.respawnLv - 1) * 40 + Math.pow(state.respawnLv, 1.35) * 12);
+}
+function upRespawn(){
+  const c = costRespawn();
+  if(state.gold < c){
+    appendLog(`<span class="log-warn">골드 부족</span>`);
+    return;
+  }
+  state.gold -= c;
+  state.respawnLv += 1;
+  appendLog(`<span class="log-cyan"><b>리스폰 단축!</b></span> (Lv.${state.respawnLv})`);
+  saveAll(); updateUI();
+}
+
+/* ===========================
+   판매가(rarity 기반, 서버 BONUS_TABLE 느낌 재사용)
+=========================== */
+function sellPrice(rarity){
+  const table = { i0:100, i1:50, i2:30, i3:20, i4:12, i5:6, i6:3 };
+  return table[rarity] ?? 1;
+}
+
+function addToInventory({ rarity, name, count=1 }){
+  const key = invKey(rarity,name);
+  const t = now();
+  const cur = inv.map.get(key);
+  if(cur){
+    cur.count += count;
+    cur.lastTs = t;
+  }else{
+    inv.map.set(key, { rarity, name, count, firstTs:t, lastTs:t });
+  }
+  const it = inv.map.get(key);
+  if(it && it.count <= 0) inv.map.delete(key);
+
+  saveAll();
+  renderInventory();
+}
+
+function sellItem(key, n){
+  const it = inv.map.get(key);
+  if(!it) return;
+  const qty = Math.min(n, it.count);
+  if(qty <= 0) return;
+
+  const gain = sellPrice(it.rarity) * qty;
+
+  // 인벤 감소
+  addToInventory({ rarity: it.rarity, name: it.name, count: -qty });
+
+  // 골드 증가(판매로만)
+  state.gold += gain;
+
+  logSell(it.rarity, it.name, qty, gain);
+  saveAll();
+  updateUI();
+}
+
+/* ===========================
+   인벤 렌더
+=========================== */
+function renderInventory(){
+  const grid = $("invGrid");
+  const q = ($("invSearch").value || "").trim().toLowerCase();
+  const sort = $("invSort").value || "recent";
+
+  let items = Array.from(inv.map.entries()).map(([key,v]) => ({ key, ...v }));
+
+  if(q){
+    items = items.filter(it =>
+      it.name.toLowerCase().includes(q) ||
+      it.rarity.toLowerCase().includes(q)
+    );
+  }
+
+  if(sort === "recent"){
+    items.sort((a,b)=> b.lastTs - a.lastTs);
+  } else if(sort === "rarity"){
+    items.sort((a,b)=> (rarityRank(a.rarity)-rarityRank(b.rarity)) || (b.lastTs-a.lastTs));
+  } else if(sort === "count"){
+    items.sort((a,b)=> (b.count-a.count) || (b.lastTs-a.lastTs));
+  } else if(sort === "name"){
+    items.sort((a,b)=> a.name.localeCompare(b.name,"ko"));
+  }
+
+  if(items.length === 0){
+    grid.innerHTML = `<div style="opacity:.65;padding:10px;">비어있음</div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map(it => `
+    <div class="inv-slot r-${escapeHtml(it.rarity)}" data-key="${escapeHtml(it.key)}" title="클릭: 상세">
+      <div class="inv-tag">[${escapeHtml(it.rarity)}] (판매가 ${sellPrice(it.rarity)}G)</div>
+      <div class="inv-name">${escapeHtml(it.name)}</div>
+      <div class="inv-count">x${it.count}</div>
+    </div>
+  `).join("");
+
+  grid.querySelectorAll(".inv-slot").forEach(el=>{
+    el.addEventListener("click", ()=> openModal(el.dataset.key));
+  });
+}
+
+/* ===========================
+   모달
+=========================== */
+let modalKey = null;
+function openModal(key){
+  const it = inv.map.get(key);
+  if(!it) return;
+  modalKey = key;
+
+  $("mTitle").textContent = `[${it.rarity}] ${it.name}`;
+  const age1 = new Date(it.firstTs).toLocaleString();
+  const age2 = new Date(it.lastTs).toLocaleString();
+  $("mMeta").innerHTML =
+    `개수: <b>${it.count}</b><br/>`+
+    `판매가: <b>${sellPrice(it.rarity)}G</b> / 1개<br/>`+
+    `첫 획득: ${escapeHtml(age1)}<br/>`+
+    `최근: ${escapeHtml(age2)}`;
+
+  $("modalBg").style.display = "flex";
+}
+function closeModal(){
+  $("modalBg").style.display = "none";
+  modalKey = null;
+}
+
+/* ===========================
+   저장/로드
+=========================== */
+const KEY_SAVE = "gti_chest_only_v1";
+
+function saveAll(){
+  const payload = {
+    state,
+    inv: Array.from(inv.map.entries()),
+  };
+  localStorage.setItem(KEY_SAVE, JSON.stringify(payload));
+}
+function loadAll(){
+  try{
+    const raw = localStorage.getItem(KEY_SAVE);
+    if(!raw) return;
+    const p = JSON.parse(raw);
+    if(p.state) Object.assign(state, p.state);
+    if(p.inv && Array.isArray(p.inv)) inv.map = new Map(p.inv);
+  }catch(e){
+    console.warn("load fail", e);
+  }
+}
+
+/* ===========================
+   상자 오픈
+=========================== */
+let openCdUntil = 0;
+
+async function openChest(){
+  const t = now();
+  if(t < openCdUntil) return;
+  openCdUntil = t + 250; // 0.25초 쿨타임(폭주 방지)
+
+  if(state.chest <= 0){
+    appendLog(`<span class="log-warn">상자 없음…</span>`);
+    return;
+  }
+
+  state.chest -= 1;
+  updateUI();
+  saveAll();
+
+  if(USE_SERVER){
+    try{
+      const res = await fetch(SERVER_OPEN_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ action:"open" })
+      });
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const data = await res.json();
+      if(!data.ok) throw new Error("not ok");
+
+      const rarity = data.rarity ?? "i6";
+      const name = data.item_name ?? data.item ?? "unknown";
+
+      logOpen(rarity, name);
+      addToInventory({ rarity, name, count: 1 });
+      updateUI();
+      saveAll();
+      return;
+    }catch(e){
+      appendLog(`<span class="log-warn">서버 실패 → 로컬 드랍으로 대체</span>`);
+      // fallthrough to local
+    }
+  }
+
+  // 로컬 대체 드랍(서버 없을 때만)
+  const d = rollDropLocal();
+  logOpen(d.rarity, d.name);
+  addToInventory({ rarity: d.rarity, name: d.name, count: 1 });
+  updateUI();
+  saveAll();
+}
+
+/* 로컬 드랍 (서버 없을 때만) */
+const DROPS_LOCAL = [
+  { rarity:"i3", w:80, names:["번뜩이는 소고기육포","상한 나뭇가지","오만방자한 도토리부두","희미하고 반짝이는 마늘","쓸만한 돌멩이"]},
+  { rarity:"i1", w:18, names:["단단하고 고요한 노라버섯","과고한 구슬","고고한 지렁이 엑기스","고한 낚시바늘(연습용)"]},
+  { rarity:"i0", w:2,  names:["에망 룬문자: 守拙安分","정(情) 역이용 방패(시대저항)","미크론 운동법 매뉴얼 조각"]},
+];
+function rollDropLocal(){
+  const total = DROPS_LOCAL.reduce((a,b)=>a+b.w,0);
+  let r = Math.random()*total;
+  for(const t of DROPS_LOCAL){
+    r -= t.w;
+    if(r <= 0){
+      const name = t.names[Math.floor(Math.random()*t.names.length)];
+      return { rarity:t.rarity, name };
+    }
+  }
+  return { rarity:"i6", name:"broken_wood" };
+}
+
+/* ===========================
+   i5~i6 전부 판매 버튼
+=========================== */
+function sellAllTrash(){
+  let total = 0;
+  let sold = 0;
+  for(const [key, it] of Array.from(inv.map.entries())){
+    if(it.rarity === "i5" || it.rarity === "i6"){
+      const gain = sellPrice(it.rarity) * it.count;
+      sold += it.count;
+      total += gain;
+      inv.map.delete(key);
+      appendLog(`<span class="log-cyan"><b>판매</b></span> → [${it.rarity}] ${escapeHtml(it.name)} x${it.count} <span class="log-green">(+${gain}G)</span>`);
+    }
+  }
+  if(sold <= 0){
+    appendLog(`<span class="log-warn">판매할 i5~i6 아이템 없음</span>`);
+    return;
+  }
+  state.gold += total;
+  saveAll(); renderInventory(); updateUI();
+}
+
+/* ===========================
+   UI
+=========================== */
+function updateUI(){
+  $("gold").textContent = Math.floor(state.gold);
+  $("chest").textContent = state.chest;
+
+  const left = Math.max(0, state.chestTimer);
+  $("nextChest").textContent = (left/1000).toFixed(1) + "s";
+
+  $("respawnLv").textContent = state.respawnLv;
+  $("costRespawn").textContent = costRespawn();
+
+  $("respawnNow").textContent = (chestEvery()/1000).toFixed(1) + "s";
+
+  $("btnOpen").disabled = (state.chest <= 0);
+}
+
+/* ===========================
+   루프: 상자만 생성
+=========================== */
+let lastT = now();
+function tick(){
+  const t = now();
+  const dt = t - lastT;
+  lastT = t;
+
+  const every = chestEvery();
+  state.chestTimer -= dt;
+
+  while(state.chestTimer <= 0){
+    state.chest += 1;
+    state.chestTimer += every;
+    appendLog(`<span class="log-green"><b>상자 획득!</b></span> (+1)`);
+  }
+
+  updateUI();
+  requestAnimationFrame(tick);
+}
+
+/* ===========================
+   백업/복원
+=========================== */
+function exportBackup(){
+  const payload = localStorage.getItem(KEY_SAVE) || "{}";
+  navigator.clipboard?.writeText(payload).then(()=>{
+    appendLog(`<span class="log-cyan">백업 문자열을 클립보드에 복사함</span>`);
+  }).catch(()=>{
+    prompt("아래 문자열을 복사해서 저장해둬:", payload);
+  });
+}
+function importBackup(){
+  const s = prompt("백업 문자열 붙여넣기:");
+  if(!s) return;
+  try{
+    JSON.parse(s);
+    localStorage.setItem(KEY_SAVE, s);
+    location.reload();
+  }catch(e){
+    appendLog(`<span class="log-warn">복원 실패: JSON 아님</span>`);
+  }
+}
+
+/* ===========================
+   이벤트
+=========================== */
+$("btnOpen").addEventListener("click", openChest);
+$("btnUpRespawn").addEventListener("click", upRespawn);
+$("btnSellAllTrash").addEventListener("click", sellAllTrash);
+
+$("invSearch").addEventListener("input", renderInventory);
+$("invSort").addEventListener("change", renderInventory);
+$("invExport").addEventListener("click", exportBackup);
+$("invImport").addEventListener("click", importBackup);
+
+$("btnReset").addEventListener("click", ()=>{
+  if(!confirm("세이브 초기화?")) return;
+  localStorage.removeItem(KEY_SAVE);
+  location.reload();
+});
+
+// modal
+$("mClose").addEventListener("click", closeModal);
+$("modalBg").addEventListener("click", (e)=>{ if(e.target.id==="modalBg") closeModal(); });
+
+
+$("mSell1").addEventListener("click", ()=>{
+  if(!modalKey) return;
+  sellItem(modalKey, 1);
+  if(inv.map.get(modalKey)) openModal(modalKey); else closeModal();
+});
+$("mSellAll").addEventListener("click", ()=>{
+  if(!modalKey) return;
+  const it = inv.map.get(modalKey);
+  if(!it) return;
+  sellItem(modalKey, it.count);
+  closeModal();
+});
+$("mDelete").addEventListener("click", ()=>{
+  if(!modalKey) return;
+  const it = inv.map.get(modalKey);
+  if(!it) return;
+  if(!confirm("이 아이템을 인벤에서 삭제?")) return;
+  inv.map.delete(modalKey);
+  saveAll();
+  renderInventory();
+  closeModal();
+});
+
+/* ===========================
+   시작
+=========================== */
+loadAll();
+
+// 타이머 초기화
+if(!state.chestTimer || state.chestTimer > 1_000_000) state.chestTimer = chestEvery();
+
+appendLog(`<span class="log-gray">시작. (골드 자동증가 OFF / 상자=1분 기본 / 판매로 골드)</span>`);
+appendLog(`<span class="log-gray">서버 모드: ${USE_SERVER ? "ON" : "OFF"}</span>`);
+
+renderInventory();
+updateUI();
+requestAnimationFrame(tick);
+
+</script>
+</body>
+</html>
