@@ -1,0 +1,1733 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sunset Apex '90 Deluxe</title>
+  <style>
+:root {
+  --bg: #060810;
+  --panel: rgba(9, 12, 20, 0.82);
+  --line: rgba(255, 255, 255, 0.1);
+  --text: #eef2ff;
+  --muted: #b7c2dc;
+  --accent: #ffd348;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top, rgba(255, 175, 79, 0.16), transparent 34%),
+    linear-gradient(180deg, #090b13 0%, #080b12 50%, #05070d 100%);
+  color: var(--text);
+  font-family: "Trebuchet MS", "Malgun Gothic", sans-serif;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.shell {
+  width: min(1120px, 100%);
+  display: grid;
+  gap: 12px;
+}
+
+.hud,
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  background: rgba(8, 11, 19, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brand-main {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.brand-sub,
+.footer {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  font-variant-numeric: tabular-nums;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.stats > div {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 96px;
+  justify-content: flex-end;
+}
+
+.label {
+  color: #92a0c8;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+#game {
+  width: 100%;
+  height: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #000;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+}
+
+.panel {
+  width: min(560px, calc(100vw - 40px));
+  padding: 28px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.panel h1 {
+  margin: 0 0 10px;
+  letter-spacing: 0.12em;
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+}
+
+.tagline {
+  margin: 0 0 18px;
+  color: #d4d9eb;
+}
+
+.instructions,
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+  text-align: left;
+}
+
+.instructions p,
+.small,
+.summary-grid p {
+  margin: 0;
+  color: var(--muted);
+}
+
+button,
+select {
+  font: inherit;
+}
+
+button {
+  margin-top: 20px;
+  border: 0;
+  background: linear-gradient(180deg, #ffe08a 0%, #f6b93b 100%);
+  color: #2c2202;
+  font-weight: 700;
+  padding: 14px 22px;
+  cursor: pointer;
+  letter-spacing: 0.08em;
+}
+
+.ghost-button,
+button.secondary {
+  margin-top: 0;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 9px 14px;
+}
+
+.controls-row {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  text-align: left;
+}
+
+.select-wrap {
+  display: grid;
+  gap: 6px;
+}
+
+.select-wrap label,
+.toggle-row {
+  color: #cfd7ef;
+  font-size: 0.92rem;
+}
+
+.select-wrap select {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 11, 19, 0.88);
+  color: var(--text);
+  padding: 12px 14px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-actions,
+.footer-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.footer {
+  font-size: 0.82rem;
+}
+
+@media (max-width: 780px) {
+  .hud,
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stats > div {
+    min-width: auto;
+  }
+
+  .instructions,
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="hud">
+      <div class="brand">
+        <span class="brand-main">SUNSET APEX '90 DELUXE</span>
+        <span class="brand-sub" id="stageLabel">STAGE 01 · SUNSET COAST</span>
+      </div>
+      <div class="stats">
+        <div><span class="label">POS</span><span id="positionValue">1/6</span></div>
+        <div><span class="label">SPD</span><span id="speedValue">000</span></div>
+        <div><span class="label">TIME</span><span id="timeValue">75.0</span></div>
+        <div><span class="label">CP</span><span id="checkpointValue">01</span></div>
+      </div>
+    </div>
+
+    <canvas id="game" width="960" height="540" aria-label="retro racing game"></canvas>
+
+    <div class="overlay" id="overlay">
+      <div class="panel" id="panel"></div>
+    </div>
+
+    <div class="footer">
+      <span id="footerStage">체크포인트 러시와 COM 라이벌이 결합된 디럭스 개정판</span>
+      <div class="footer-actions">
+        <button id="musicButton" class="ghost-button" type="button">BGM ON</button>
+        <span>M : BGM 토글 / Enter : 스타트 또는 재시작 / AI 표시 수정</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+const overlay = document.getElementById('overlay');
+const panel = document.getElementById('panel');
+const speedValue = document.getElementById('speedValue');
+const timeValue = document.getElementById('timeValue');
+const checkpointValue = document.getElementById('checkpointValue');
+const positionValue = document.getElementById('positionValue');
+const stageLabel = document.getElementById('stageLabel');
+const footerStage = document.getElementById('footerStage');
+const musicButton = document.getElementById('musicButton');
+
+const WIDTH = canvas.width;
+const HEIGHT = canvas.height;
+const HALF_WIDTH = WIDTH / 2;
+const HALF_HEIGHT = HEIGHT / 2;
+
+const SEGMENT_LENGTH = 220;
+const RUMBLE_LENGTH = 3;
+const TRACK_LANES = 3;
+const FIELD_OF_VIEW = 100;
+const CAMERA_HEIGHT = 920;
+const CAMERA_DEPTH = 1 / Math.tan((FIELD_OF_VIEW / 2) * Math.PI / 180);
+const DRAW_DISTANCE = 220;
+const ROAD_WIDTH = 1900;
+const RIVAL_COUNT = 5;
+const TRAFFIC_COUNT = 18;
+
+let COLORS = {
+  skyTop: '#4f7ef6',
+  skyMid: '#f18853',
+  skyBottom: '#ffdc87',
+  mountainA: '#8c5872',
+  mountainB: '#5d3651',
+  groundLight: '#b3834b',
+  groundDark: '#a16f3c',
+  roadLight: '#636363',
+  roadDark: '#5a5a5a',
+  lane: '#f7f0d0',
+  rumbleLight: '#ffd995',
+  rumbleDark: '#a53924',
+  fog: 'rgba(248, 210, 148, 0.055)',
+  uiShadow: 'rgba(0, 0, 0, 0.35)'
+};
+
+const controls = {
+  left: false,
+  right: false,
+  accelerate: false,
+  brake: false,
+  boost: false
+};
+
+let menuMode = 'start';
+
+const state = {
+  running: false,
+  lastTimestamp: 0,
+  position: 0,
+  totalDistance: 0,
+  speed: 0,
+  playerX: 0,
+  boostHeat: 1,
+  timeLeft: 75,
+  checkpointIndex: 0,
+  distanceToCheckpoint: 14500,
+  raceTime: 0,
+  shake: 0,
+  flash: 0,
+  bestCheckpointByStage: {},
+  drift: 0,
+  steerVisual: 0,
+  rank: 1,
+  message: 'CHECKPOINT RUN',
+  currentStageIndex: 0
+};
+
+const STAGES = [
+  {
+    id: 'coast',
+    name: 'SUNSET COAST',
+    subtitle: '노을 해안의 롱 커브와 언덕',
+    description: '속도가 잘 붙는 입문 스테이지. 긴 우코너와 해안 업다운이 이어집니다.',
+    time: 78,
+    checkpointInterval: 14200,
+    checkpointBonus: 15,
+    grip: 0.93,
+    aiPace: 1.01,
+    palette: {
+      skyTop: '#4f7ef6',
+      skyMid: '#f18853',
+      skyBottom: '#ffdc87',
+      mountainA: '#8c5872',
+      mountainB: '#5d3651',
+      groundLight: '#b3834b',
+      groundDark: '#a16f3c',
+      roadLight: '#666666',
+      roadDark: '#5a5a5a',
+      rumbleLight: '#ffd995',
+      rumbleDark: '#a53924',
+      lane: '#f7f0d0',
+      fog: 'rgba(248, 210, 148, 0.05)'
+    },
+    decorations: ['palm', 'sign', 'tree', 'rock'],
+    music: {
+      tempo: 138,
+      lead: [76, 78, 81, 83, 81, 78, 76, 74, 76, 78, 81, 83, 81, 78, 76, 74],
+      bass: [40, null, 40, null, 43, null, 43, null, 45, null, 45, null, 43, null, 40, null]
+    }
+  },
+  {
+    id: 'alpine',
+    name: 'ALPINE RIDGE',
+    subtitle: '헤어핀과 급격한 고저차',
+    description: '접지력이 조금 낮고, 커브에서 밀림이 더 강합니다. COM 추월전이 치열합니다.',
+    time: 80,
+    checkpointInterval: 13600,
+    checkpointBonus: 15,
+    grip: 0.84,
+    aiPace: 1.04,
+    palette: {
+      skyTop: '#3f63b8',
+      skyMid: '#93a5db',
+      skyBottom: '#dfe6ff',
+      mountainA: '#5d6687',
+      mountainB: '#394058',
+      groundLight: '#5f794b',
+      groundDark: '#48623b',
+      roadLight: '#6e6f73',
+      roadDark: '#5b5c62',
+      rumbleLight: '#f6f6f6',
+      rumbleDark: '#bd2d43',
+      lane: '#fbfbfb',
+      fog: 'rgba(232, 238, 255, 0.06)'
+    },
+    decorations: ['tree', 'pine', 'sign', 'rock'],
+    music: {
+      tempo: 146,
+      lead: [79, 83, 86, 83, 79, 76, 74, 76, 79, 83, 86, 88, 86, 83, 79, 76],
+      bass: [38, null, 38, null, 41, null, 41, null, 43, null, 43, null, 41, null, 38, null]
+    }
+  },
+  {
+    id: 'desert',
+    name: 'DESERT MIRAGE',
+    subtitle: '사막 야간 고속 스프린트',
+    description: '속도는 빠르지만 노면이 가볍습니다. 긴 직선 후 급코너 구간에서 크게 밀려납니다.',
+    time: 76,
+    checkpointInterval: 14800,
+    checkpointBonus: 14,
+    grip: 0.8,
+    aiPace: 1.07,
+    palette: {
+      skyTop: '#161c48',
+      skyMid: '#5c3f87',
+      skyBottom: '#f1ad67',
+      mountainA: '#563460',
+      mountainB: '#2b1f48',
+      groundLight: '#9f6630',
+      groundDark: '#814d22',
+      roadLight: '#646069',
+      roadDark: '#514d57',
+      rumbleLight: '#f3ca73',
+      rumbleDark: '#8f1a1a',
+      lane: '#f4dca4',
+      fog: 'rgba(236, 183, 97, 0.055)'
+    },
+    decorations: ['cactus', 'sign', 'rock', 'palm'],
+    music: {
+      tempo: 150,
+      lead: [74, 74, 77, 81, 84, 81, 77, 74, 76, 76, 79, 83, 86, 83, 79, 76],
+      bass: [36, null, 36, null, 39, null, 39, null, 43, null, 43, null, 39, null, 36, null]
+    }
+  }
+];
+
+const audioState = {
+  enabled: true,
+  context: null,
+  masterGain: null,
+  musicGain: null,
+  beatTimer: null,
+  stepIndex: 0,
+  nextNoteTime: 0,
+  stageId: null,
+  noiseBuffer: null
+};
+
+const segments = [];
+const cars = [];
+
+const MAX_SPEED = SEGMENT_LENGTH * 58;
+const BOOST_SPEED = SEGMENT_LENGTH * 71;
+const ACCEL = MAX_SPEED * 0.8;
+const BRAKE = MAX_SPEED * 1.75;
+const DECEL = MAX_SPEED * 0.4;
+const OFFROAD_DECEL = MAX_SPEED * 1.05;
+const OFFROAD_LIMIT = MAX_SPEED * 0.44;
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function interpolate(a, b, percent) {
+  return a + (b - a) * percent;
+}
+
+function easeIn(a, b, percent) {
+  return a + (b - a) * Math.pow(percent, 2);
+}
+
+function easeInOut(a, b, percent) {
+  return a + (b - a) * ((-Math.cos(percent * Math.PI) / 2) + 0.5);
+}
+
+function percentRemaining(n, total) {
+  return (n % total) / total;
+}
+
+function increase(start, increment, max) {
+  let result = start + increment;
+  while (result >= max) result -= max;
+  while (result < 0) result += max;
+  return result;
+}
+
+function getCurrentStage() {
+  return STAGES[state.currentStageIndex];
+}
+
+function clampWrapDistance(delta, trackLength) {
+  let result = delta;
+  while (result < -trackLength / 2) result += trackLength;
+  while (result > trackLength / 2) result -= trackLength;
+  return result;
+}
+
+function lastY() {
+  return segments.length === 0 ? 0 : segments[segments.length - 1].p2.world.y;
+}
+
+function addSegment(curve, y) {
+  const n = segments.length;
+  segments.push({
+    index: n,
+    p1: {
+      world: { x: 0, y: lastY(), z: n * SEGMENT_LENGTH },
+      camera: {},
+      screen: {}
+    },
+    p2: {
+      world: { x: 0, y, z: (n + 1) * SEGMENT_LENGTH },
+      camera: {},
+      screen: {}
+    },
+    curve,
+    color: Math.floor(n / RUMBLE_LENGTH) % 2 ? 'light' : 'dark',
+    decorationLeft: null,
+    decorationRight: null,
+    zone: 0
+  });
+}
+
+function addRoad(enter, hold, leave, curve, hill) {
+  const startY = lastY();
+  const endY = startY + hill * SEGMENT_LENGTH;
+  const total = enter + hold + leave;
+
+  for (let n = 0; n < enter; n += 1) {
+    addSegment(easeIn(0, curve, n / Math.max(1, enter)), easeInOut(startY, endY, n / total));
+  }
+  for (let n = 0; n < hold; n += 1) {
+    addSegment(curve, easeInOut(startY, endY, (enter + n) / total));
+  }
+  for (let n = 0; n < leave; n += 1) {
+    addSegment(easeInOut(curve, 0, n / Math.max(1, leave)), easeInOut(startY, endY, (enter + hold + n) / total));
+  }
+}
+
+function addStraight(num) {
+  addRoad(num, num, num, 0, 0);
+}
+
+function addCurve(num, curve, hill = 0) {
+  addRoad(num, num, num, curve, hill);
+}
+
+function addSCurves(multiplier = 1) {
+  addRoad(18, 34, 18, 0.7 * multiplier, 0.18);
+  addRoad(18, 28, 18, -1.0 * multiplier, -0.08);
+  addRoad(18, 36, 18, 1.2 * multiplier, 0.22);
+  addRoad(18, 28, 18, -0.88 * multiplier, 0.04);
+}
+
+function decorateTrack(stage) {
+  for (let i = 0; i < segments.length; i += 1) {
+    const segment = segments[i];
+    const zone = Math.floor(i / 105) % stage.decorations.length;
+    segment.zone = zone;
+    const leftKind = stage.decorations[zone % stage.decorations.length];
+    const rightKind = stage.decorations[(zone + 1) % stage.decorations.length];
+
+    if (i % 15 === 0) {
+      segment.decorationLeft = leftKind;
+    } else if (i % 19 === 0) {
+      segment.decorationLeft = 'sign';
+    }
+
+    if (i % 21 === 0) {
+      segment.decorationRight = rightKind;
+    } else if (i % 27 === 0) {
+      segment.decorationRight = zone % 2 === 0 ? 'rock' : 'sign';
+    }
+  }
+}
+
+function buildCoastTrack() {
+  segments.length = 0;
+  addStraight(18);
+  addCurve(24, 0.55, 0.2);
+  addCurve(24, -0.9, -0.05);
+  addStraight(12);
+  addRoad(20, 50, 20, 0.25, 1.1);
+  addRoad(18, 45, 18, -0.55, -0.92);
+  addSCurves(1);
+  addRoad(20, 60, 20, 1.18, 0.32);
+  addRoad(20, 45, 20, 0, 0.86);
+  addRoad(16, 34, 16, -1.2, -0.66);
+  addRoad(18, 32, 18, 0.42, 0.02);
+  addStraight(12);
+  addRoad(16, 28, 16, 0.7, 0.15);
+  addRoad(14, 20, 14, -1.38, -0.12);
+  addRoad(18, 28, 18, 1.0, 0.2);
+  addRoad(20, 46, 20, -0.42, 0.5);
+  addStraight(10);
+  addSCurves(1.08);
+  addRoad(18, 52, 18, 0.92, -0.45);
+  addRoad(16, 48, 16, -1.1, 0.38);
+  addRoad(20, 54, 20, 0.28, 0.78);
+  addStraight(20);
+}
+
+function buildAlpineTrack() {
+  segments.length = 0;
+  addRoad(16, 20, 16, 0.4, 0.8);
+  addRoad(14, 18, 14, -1.3, -0.75);
+  addRoad(12, 18, 12, 1.42, 0.62);
+  addRoad(16, 22, 16, -0.68, 0.2);
+  addStraight(8);
+  addRoad(16, 20, 16, 1.1, 1.25);
+  addRoad(14, 18, 14, -1.5, -1.12);
+  addRoad(10, 18, 10, 1.6, 0.9);
+  addSCurves(1.2);
+  addRoad(18, 24, 18, -1.18, 0.35);
+  addRoad(18, 22, 18, 0.95, -0.4);
+  addRoad(14, 16, 14, -1.55, 0.12);
+  addStraight(10);
+  addRoad(14, 20, 14, 1.3, 1.18);
+  addRoad(16, 18, 16, -1.35, -1.25);
+  addRoad(12, 16, 12, 1.22, 0.52);
+  addSCurves(1.1);
+  addRoad(18, 20, 18, -1.62, -0.2);
+  addRoad(16, 18, 16, 1.18, 0.22);
+  addStraight(16);
+}
+
+function buildDesertTrack() {
+  segments.length = 0;
+  addStraight(22);
+  addRoad(20, 58, 20, 0.18, 0.35);
+  addRoad(20, 34, 20, -1.12, -0.12);
+  addStraight(16);
+  addRoad(20, 64, 20, 0.1, 1.15);
+  addRoad(16, 18, 16, 1.45, -0.86);
+  addRoad(12, 18, 12, -1.52, 0.2);
+  addStraight(18);
+  addSCurves(0.92);
+  addRoad(20, 70, 20, 0.25, -0.35);
+  addRoad(16, 22, 16, -1.35, 0.14);
+  addStraight(24);
+  addRoad(18, 22, 18, 1.55, -0.12);
+  addRoad(18, 20, 18, -1.4, 0.16);
+  addStraight(16);
+  addSCurves(1.05);
+  addRoad(18, 54, 18, 0.38, 0.7);
+  addRoad(18, 28, 18, -1.15, -0.66);
+  addStraight(20);
+}
+
+function buildTrackForStage(stage) {
+  if (stage.id === 'alpine') {
+    buildAlpineTrack();
+  } else if (stage.id === 'desert') {
+    buildDesertTrack();
+  } else {
+    buildCoastTrack();
+  }
+  decorateTrack(stage);
+}
+
+function project(point, cameraX, cameraY, cameraZ, cameraDepth) {
+  const transX = point.world.x - cameraX;
+  const transY = point.world.y - cameraY;
+  const transZ = point.world.z - cameraZ;
+
+  point.camera.x = transX;
+  point.camera.y = transY;
+  point.camera.z = transZ;
+
+  point.screen.scale = cameraDepth / transZ;
+  point.screen.x = Math.round(HALF_WIDTH + point.screen.scale * transX * HALF_WIDTH);
+  point.screen.y = Math.round(HALF_HEIGHT - point.screen.scale * transY * HALF_HEIGHT);
+  point.screen.w = Math.round(point.screen.scale * ROAD_WIDTH * HALF_WIDTH);
+}
+
+function findSegment(z) {
+  return segments[Math.floor(z / SEGMENT_LENGTH) % segments.length];
+}
+
+function updateStageBranding() {
+  const stage = getCurrentStage();
+  stageLabel.textContent = `STAGE ${String(state.currentStageIndex + 1).padStart(2, '0')} · ${stage.name}`;
+  footerStage.textContent = `${stage.subtitle} · ${stage.description}`;
+}
+
+function renderMenu(mode = 'start') {
+  menuMode = mode;
+  const stage = getCurrentStage();
+  const best = state.bestCheckpointByStage[stage.id] || 0;
+  const options = STAGES.map((item, index) => `<option value="${index}" ${index === state.currentStageIndex ? 'selected' : ''}>${String(index + 1).padStart(2, '0')} · ${item.name}</option>`).join('');
+  const summary = mode === 'result'
+    ? `
+      <div class="summary-grid">
+        <p>돌파 체크포인트 : ${String(state.checkpointIndex).padStart(2, '0')}</p>
+        <p>최종 순위 : ${state.rank}/${RIVAL_COUNT + 1}</p>
+        <p>주행 시간 : ${state.raceTime.toFixed(1)} sec</p>
+        <p>스테이지 최고 CP : ${String(best).padStart(2, '0')}</p>
+      </div>
+    `
+    : `
+      <div class="instructions">
+        <p>↑ / W : 가속</p>
+        <p>↓ / S : 브레이크</p>
+        <p>← → / A D : 조향</p>
+        <p>Space : 부스트</p>
+        <p>COM 라이벌 5대 추월</p>
+        <p>커브에서 노면 밀림 강화</p>
+      </div>
+    `;
+
+  panel.innerHTML = `
+    <h1>${mode === 'result' ? 'RACE OVER' : 'SUNSET APEX \u201990 DELUXE'}</h1>
+    <p class="tagline">${mode === 'result' ? `${stage.name} · ${stage.subtitle}` : 'LOTUS 감성의 체크포인트 레이싱에 COM 배틀과 BGM을 추가한 개정판'}</p>
+    ${summary}
+    <div class="controls-row">
+      <div class="select-wrap">
+        <label for="stageSelect">STAGE SELECT</label>
+        <select id="stageSelect">${options}</select>
+        <p class="small" id="stageDescription">${stage.description}</p>
+      </div>
+      <label class="toggle-row"><input type="checkbox" id="bgmCheckbox" ${audioState.enabled ? 'checked' : ''}> BGM 활성화</label>
+      <p class="small">COM은 실제 순위 계산에 참여합니다. 커브에서 속도가 높을수록 언더스티어와 후미 슬립이 커집니다.</p>
+    </div>
+    <div class="panel-actions">
+      <button id="startButton" type="button">${mode === 'result' ? 'RETRY STAGE' : 'START ENGINE'}</button>
+      <button id="menuMusicButton" class="secondary" type="button">${audioState.enabled ? 'BGM ON' : 'BGM OFF'}</button>
+    </div>
+  `;
+
+  const stageSelect = document.getElementById('stageSelect');
+  const stageDescription = document.getElementById('stageDescription');
+  const bgmCheckbox = document.getElementById('bgmCheckbox');
+  const menuMusicButton = document.getElementById('menuMusicButton');
+  const startButton = document.getElementById('startButton');
+
+  stageSelect.addEventListener('change', (event) => {
+    const nextIndex = Number(event.target.value);
+    setStage(nextIndex, true);
+    stageDescription.textContent = getCurrentStage().description;
+    renderMenu(mode);
+  });
+
+  bgmCheckbox.addEventListener('change', (event) => {
+    setMusicEnabled(event.target.checked);
+    renderMenu(mode);
+  });
+
+  menuMusicButton.addEventListener('click', () => {
+    setMusicEnabled(!audioState.enabled);
+    renderMenu(mode);
+  });
+
+  startButton.addEventListener('click', resetRace);
+}
+
+function setStage(index, resetCarsOnly = true) {
+  state.currentStageIndex = clamp(index, 0, STAGES.length - 1);
+  const stage = getCurrentStage();
+  COLORS = { ...COLORS, ...stage.palette };
+  buildTrackForStage(stage);
+  if (resetCarsOnly) {
+    resetCars();
+  }
+  updateStageBranding();
+  restartMusicLoop();
+  render();
+}
+
+function resetCars() {
+  cars.length = 0;
+  const trackLength = segments.length * SEGMENT_LENGTH;
+  const palette = ['#f1f3f8', '#4ce1d2', '#ff6464', '#ffd54b', '#85ff89', '#87a7ff', '#ff8dd7'];
+
+  for (let i = 0; i < RIVAL_COUNT; i += 1) {
+    const progress = 2800 + i * 1700;
+    cars.push({
+      kind: 'rival',
+      name: `COM-${i + 1}`,
+      offset: -0.62 + i * 0.3,
+      laneTarget: -0.62 + i * 0.3,
+      z: progress % trackLength,
+      progress,
+      speed: MAX_SPEED * (0.56 + i * 0.035),
+      targetSpeed: MAX_SPEED * (0.6 + i * 0.04),
+      width: 180,
+      height: 90,
+      color: palette[i % palette.length],
+      phase: Math.random() * Math.PI * 2,
+      skill: 0.94 + i * 0.03,
+      thinking: Math.random() * 2
+    });
+  }
+
+  for (let i = 0; i < TRAFFIC_COUNT; i += 1) {
+    const progress = Math.random() * trackLength;
+    cars.push({
+      kind: 'traffic',
+      name: `TR-${i + 1}`,
+      offset: (Math.random() * 1.8) - 0.9,
+      laneTarget: (Math.random() * 1.8) - 0.9,
+      z: progress % trackLength,
+      progress,
+      speed: MAX_SPEED * (0.34 + Math.random() * 0.42),
+      targetSpeed: MAX_SPEED * (0.34 + Math.random() * 0.42),
+      width: 180,
+      height: 90,
+      color: palette[(i + 2) % palette.length],
+      phase: Math.random() * Math.PI * 2,
+      skill: 0.6,
+      thinking: Math.random() * 2
+    });
+  }
+}
+
+function resetRace() {
+  const stage = getCurrentStage();
+  state.running = true;
+  state.position = 0;
+  state.totalDistance = 0;
+  state.speed = 0;
+  state.playerX = 0;
+  state.boostHeat = 1;
+  state.timeLeft = stage.time;
+  state.checkpointIndex = 0;
+  state.distanceToCheckpoint = stage.checkpointInterval;
+  state.raceTime = 0;
+  state.shake = 0;
+  state.flash = 0;
+  state.message = stage.name;
+  state.drift = 0;
+  state.steerVisual = 0;
+  state.rank = 1;
+  resetCars();
+  overlay.style.display = 'none';
+  ensureAudio();
+  if (audioState.enabled) {
+    startMusicLoop();
+  }
+}
+
+function endRace() {
+  state.running = false;
+  overlay.style.display = 'grid';
+  const stage = getCurrentStage();
+  const currentBest = state.bestCheckpointByStage[stage.id] || 0;
+  state.bestCheckpointByStage[stage.id] = Math.max(currentBest, state.checkpointIndex);
+  renderMenu('result');
+}
+
+function drawPolygon(color, x1, y1, w1, x2, y2, w2) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x1 - w1, y1);
+  ctx.lineTo(x2 - w2, y2);
+  ctx.lineTo(x2 + w2, y2);
+  ctx.lineTo(x1 + w1, y1);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawBackground() {
+  const sky = ctx.createLinearGradient(0, 0, 0, HALF_HEIGHT + 20);
+  sky.addColorStop(0, COLORS.skyTop);
+  sky.addColorStop(0.52, COLORS.skyMid);
+  sky.addColorStop(1, COLORS.skyBottom);
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, WIDTH, HALF_HEIGHT + 30);
+
+  ctx.fillStyle = COLORS.mountainB;
+  ctx.beginPath();
+  ctx.moveTo(0, 220);
+  ctx.lineTo(70, 180);
+  ctx.lineTo(140, 208);
+  ctx.lineTo(230, 160);
+  ctx.lineTo(330, 210);
+  ctx.lineTo(430, 150);
+  ctx.lineTo(530, 215);
+  ctx.lineTo(610, 168);
+  ctx.lineTo(690, 200);
+  ctx.lineTo(760, 152);
+  ctx.lineTo(840, 212);
+  ctx.lineTo(960, 165);
+  ctx.lineTo(960, 280);
+  ctx.lineTo(0, 280);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = COLORS.mountainA;
+  ctx.beginPath();
+  ctx.moveTo(0, 245);
+  ctx.lineTo(90, 208);
+  ctx.lineTo(220, 250);
+  ctx.lineTo(330, 190);
+  ctx.lineTo(420, 252);
+  ctx.lineTo(560, 206);
+  ctx.lineTo(690, 258);
+  ctx.lineTo(780, 218);
+  ctx.lineTo(960, 254);
+  ctx.lineTo(960, 312);
+  ctx.lineTo(0, 312);
+  ctx.closePath();
+  ctx.fill();
+
+  const ground = ctx.createLinearGradient(0, HALF_HEIGHT - 15, 0, HEIGHT);
+  ground.addColorStop(0, COLORS.groundLight);
+  ground.addColorStop(0.7, COLORS.groundDark);
+  ground.addColorStop(1, '#432717');
+  ctx.fillStyle = ground;
+  ctx.fillRect(0, HALF_HEIGHT - 10, WIDTH, HEIGHT - HALF_HEIGHT + 10);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.16)';
+  for (let i = 0; i < 4; i += 1) {
+    const cx = 110 + i * 220;
+    const cy = 78 + (i % 2) * 12;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18, Math.PI * 0.95, Math.PI * 2.05);
+    ctx.arc(cx + 26, cy, 22, Math.PI, Math.PI * 2);
+    ctx.arc(cx + 50, cy + 6, 16, Math.PI, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawDecoration(kind, screenX, screenY, scale, side) {
+  const x = screenX + side * (32 + scale * 240);
+  const y = screenY;
+  const height = scale * 160;
+  const width = scale * 70;
+
+  if (height < 8 || y > HEIGHT + 30 || y < 0) {
+    return;
+  }
+
+  ctx.save();
+  ctx.translate(x, y);
+
+  if (kind === 'sign') {
+    ctx.fillStyle = '#efe7c0';
+    ctx.fillRect(-width * 0.18, -height, width * 0.36, height);
+    ctx.fillStyle = '#7c1320';
+    ctx.fillRect(-width * 0.9, -height * 1.12, width * 1.8, height * 0.42);
+    ctx.fillStyle = '#fff2ba';
+    ctx.fillRect(-width * 0.6, -height * 1.02, width * 1.2, height * 0.1);
+  } else if (kind === 'cactus') {
+    ctx.fillStyle = '#387a44';
+    ctx.fillRect(-width * 0.14, -height, width * 0.28, height);
+    ctx.fillRect(-width * 0.48, -height * 0.72, width * 0.22, height * 0.32);
+    ctx.fillRect(width * 0.26, -height * 0.66, width * 0.22, height * 0.34);
+  } else if (kind === 'rock') {
+    ctx.fillStyle = '#7e756b';
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.6, 0);
+    ctx.lineTo(-width * 0.36, -height * 0.32);
+    ctx.lineTo(0, -height * 0.45);
+    ctx.lineTo(width * 0.44, -height * 0.24);
+    ctx.lineTo(width * 0.56, 0);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.fillStyle = kind === 'palm' ? '#8e704c' : '#59462e';
+    ctx.fillRect(-width * 0.08, -height, width * 0.16, height);
+    ctx.strokeStyle = kind === 'pine' ? '#5ca74e' : kind === 'palm' ? '#b7d460' : '#3f8d3d';
+    ctx.lineWidth = Math.max(1, width * 0.12);
+    if (kind === 'pine') {
+      ctx.beginPath();
+      ctx.moveTo(0, -height * 1.1);
+      ctx.lineTo(-width * 0.8, -height * 0.74);
+      ctx.lineTo(width * 0.8, -height * 0.74);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, -height * 0.86);
+      ctx.lineTo(-width * 0.68, -height * 0.48);
+      ctx.lineTo(width * 0.68, -height * 0.48);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, -height * 0.62);
+      ctx.lineTo(-width * 0.54, -height * 0.26);
+      ctx.lineTo(width * 0.54, -height * 0.26);
+      ctx.closePath();
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      for (let i = 0; i < 5; i += 1) {
+        const angle = (-Math.PI / 2) + (i - 2) * 0.35;
+        ctx.moveTo(0, -height);
+        ctx.lineTo(Math.cos(angle) * width * 1.25, -height + Math.sin(angle) * width * 1.25);
+      }
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawSegment(segment) {
+  const p1 = segment.p1.screen;
+  const p2 = segment.p2.screen;
+
+  const grassColor = segment.color === 'light' ? COLORS.groundLight : COLORS.groundDark;
+  const roadColor = segment.color === 'light' ? COLORS.roadLight : COLORS.roadDark;
+  const rumbleColor = segment.color === 'light' ? COLORS.rumbleLight : COLORS.rumbleDark;
+
+  ctx.fillStyle = grassColor;
+  ctx.fillRect(0, p2.y, WIDTH, p1.y - p2.y);
+
+  drawPolygon(rumbleColor, p1.x, p1.y, p1.w * 1.14, p2.x, p2.y, p2.w * 1.14);
+  drawPolygon(roadColor, p1.x, p1.y, p1.w, p2.x, p2.y, p2.w);
+
+  const laneW1 = p1.w * 2 / TRACK_LANES;
+  const laneW2 = p2.w * 2 / TRACK_LANES;
+  const marker1 = Math.max(2, p1.w * 0.03);
+  const marker2 = Math.max(2, p2.w * 0.03);
+
+  if (segment.color === 'light') {
+    for (let lane = 1; lane < TRACK_LANES; lane += 1) {
+      const lanex1 = p1.x - p1.w + lane * laneW1;
+      const lanex2 = p2.x - p2.w + lane * laneW2;
+      drawPolygon(COLORS.lane, lanex1, p1.y, marker1, lanex2, p2.y, marker2);
+    }
+  }
+
+  if (segment.decorationLeft) {
+    drawDecoration(segment.decorationLeft, p2.x - p2.w, p2.y, p2.scale, -1);
+  }
+  if (segment.decorationRight) {
+    drawDecoration(segment.decorationRight, p2.x + p2.w, p2.y, p2.scale, 1);
+  }
+
+  ctx.fillStyle = COLORS.fog;
+  ctx.fillRect(0, p2.y, WIDTH, Math.max(1, p1.y - p2.y));
+}
+
+function drawCar(screenX, screenY, scale, color, wobble = 0, player = false, angle = 0) {
+  const width = scale * (player ? 220 : 180);
+  const height = scale * (player ? 112 : 92);
+
+  if (height < 10) {
+    return;
+  }
+
+  ctx.save();
+  ctx.translate(screenX, screenY + wobble);
+  ctx.rotate((angle * Math.PI) / 180);
+
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.beginPath();
+  ctx.ellipse(0, height * 0.18, width * 0.54, height * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (player && Math.abs(angle) > 8) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = Math.max(1, width * 0.025);
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.28, height * 0.16);
+    ctx.lineTo(-width * 0.38, height * 0.72);
+    ctx.moveTo(width * 0.18, height * 0.16);
+    ctx.lineTo(width * 0.08, height * 0.72);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(-width * 0.5, 0);
+  ctx.lineTo(-width * 0.36, -height * 0.54);
+  ctx.lineTo(-width * 0.06, -height * 0.72);
+  ctx.lineTo(width * 0.2, -height * 0.72);
+  ctx.lineTo(width * 0.42, -height * 0.5);
+  ctx.lineTo(width * 0.52, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#21324f';
+  ctx.beginPath();
+  ctx.moveTo(-width * 0.22, -height * 0.58);
+  ctx.lineTo(-width * 0.02, -height * 0.68);
+  ctx.lineTo(width * 0.14, -height * 0.68);
+  ctx.lineTo(width * 0.27, -height * 0.52);
+  ctx.lineTo(-width * 0.08, -height * 0.48);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#f8efcb';
+  ctx.fillRect(-width * 0.4, -height * 0.05, width * 0.14, height * 0.12);
+  ctx.fillRect(width * 0.26, -height * 0.05, width * 0.14, height * 0.12);
+
+  ctx.fillStyle = '#791d26';
+  ctx.fillRect(-width * 0.32, -height * 0.18, width * 0.1, height * 0.07);
+  ctx.fillRect(width * 0.18, -height * 0.18, width * 0.1, height * 0.07);
+
+  ctx.fillStyle = '#0f1216';
+  ctx.fillRect(-width * 0.43, height * 0.01, width * 0.16, height * 0.09);
+  ctx.fillRect(width * 0.26, height * 0.01, width * 0.16, height * 0.09);
+
+  if (player) {
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.42)';
+    ctx.lineWidth = Math.max(1, width * 0.03);
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.22, -height * 0.5);
+    ctx.lineTo(width * 0.18, -height * 0.58);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function projectCarToScreen(car, playerY, trackLength) {
+  const relative = clampWrapDistance(car.z - state.position, trackLength);
+  if (relative <= 0 || relative > DRAW_DISTANCE * SEGMENT_LENGTH) {
+    return null;
+  }
+
+  const carSegment = findSegment(car.z);
+  const percent = percentRemaining(car.z, SEGMENT_LENGTH);
+  const carY = interpolate(carSegment.p1.world.y, carSegment.p2.world.y, percent);
+  const scale = CAMERA_DEPTH / relative;
+  const screenX = HALF_WIDTH + scale * ((car.offset * ROAD_WIDTH) - (state.playerX * ROAD_WIDTH)) * HALF_WIDTH;
+  const screenY = HALF_HEIGHT - scale * (carY - playerY) * HALF_HEIGHT;
+  const spriteScale = scale * HALF_WIDTH * 1.18;
+  const spriteWidth = spriteScale * 180;
+  const spriteHeight = spriteScale * 92;
+  const visible = (
+    spriteHeight >= 6 &&
+    screenY > -spriteHeight &&
+    screenY < HEIGHT + spriteHeight * 0.5 &&
+    screenX > -spriteWidth &&
+    screenX < WIDTH + spriteWidth
+  );
+
+  return {
+    relative,
+    screenX,
+    screenY,
+    scale,
+    spriteScale,
+    spriteWidth,
+    spriteHeight,
+    visible
+  };
+}
+
+function render() {
+  drawBackground();
+
+  const trackLength = segments.length * SEGMENT_LENGTH;
+  const baseSegment = findSegment(state.position);
+  const basePercent = percentRemaining(state.position, SEGMENT_LENGTH);
+  const playerSegment = findSegment(state.position + CAMERA_HEIGHT);
+  const playerPercent = percentRemaining(state.position + CAMERA_HEIGHT, SEGMENT_LENGTH);
+  const playerY = interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent) + CAMERA_HEIGHT;
+  let maxY = HEIGHT;
+  let x = 0;
+  let dx = -(baseSegment.curve * basePercent);
+
+  const renderCars = [];
+
+  ctx.save();
+  if (state.shake > 0) {
+    const shakeAmount = Math.sin(state.raceTime * 60) * 3;
+    ctx.translate(shakeAmount, -Math.abs(shakeAmount) * 0.3);
+  }
+
+  for (let n = 0; n < DRAW_DISTANCE; n += 1) {
+    const segment = segments[(baseSegment.index + n) % segments.length];
+    segment.looped = segment.index < baseSegment.index;
+
+    project(
+      segment.p1,
+      state.playerX * ROAD_WIDTH - x,
+      playerY,
+      state.position - (segment.looped ? trackLength : 0),
+      CAMERA_DEPTH
+    );
+
+    project(
+      segment.p2,
+      state.playerX * ROAD_WIDTH - x - dx,
+      playerY,
+      state.position - (segment.looped ? trackLength : 0),
+      CAMERA_DEPTH
+    );
+
+    x += dx;
+    dx += segment.curve;
+
+    segment.p1.scale = segment.p1.screen.scale;
+    segment.p2.scale = segment.p2.screen.scale;
+
+    if (
+      segment.p1.camera.z <= CAMERA_DEPTH ||
+      segment.p2.screen.y >= segment.p1.screen.y ||
+      segment.p2.screen.y >= maxY
+    ) {
+      continue;
+    }
+
+    drawSegment(segment);
+    maxY = segment.p2.screen.y;
+  }
+
+  for (const car of cars) {
+    const projection = projectCarToScreen(car, playerY, trackLength);
+    if (!projection || !projection.visible) {
+      continue;
+    }
+
+    renderCars.push({
+      z: projection.relative,
+      x: projection.screenX,
+      y: projection.screenY,
+      scale: projection.spriteScale,
+      color: car.color,
+      wobble: Math.sin(state.raceTime * 8 + car.phase) * 1.5,
+      angle: car.kind === 'rival' ? clamp((car.laneTarget - car.offset) * 36, -8, 8) : clamp((car.laneTarget - car.offset) * 18, -5, 5)
+    });
+  }
+
+  renderCars.sort((a, b) => b.z - a.z);
+  for (const car of renderCars) {
+    drawCar(car.x, car.y, car.scale, car.color, car.wobble, false, car.angle);
+  }
+
+  const steerInput = (controls.right ? 1 : 0) - (controls.left ? 1 : 0);
+  const playerOffset = state.playerX * 210 + steerInput * 10;
+  const bounce = Math.sin(state.raceTime * 28) * (1 + state.speed / MAX_SPEED * 3.2) + state.shake * 7;
+  const playerAngle = clamp((-state.drift * 220) + state.steerVisual * 6, -18, 18);
+  drawCar(HALF_WIDTH + playerOffset, HEIGHT - 54, 1.05, '#ffffff', bounce, true, playerAngle);
+
+  ctx.restore();
+
+  drawHud();
+}
+
+function drawHud() {
+  ctx.save();
+
+  ctx.fillStyle = COLORS.uiShadow;
+  ctx.fillRect(18, HEIGHT - 106, 268, 74);
+  ctx.fillRect(WIDTH - 268, HEIGHT - 106, 250, 74);
+
+  ctx.fillStyle = '#f0f4ff';
+  ctx.font = '16px Trebuchet MS';
+  ctx.fillText('BOOST', 32, HEIGHT - 78);
+  ctx.fillText('TIME BUFFER', WIDTH - 252, HEIGHT - 78);
+
+  ctx.fillStyle = '#1f2b43';
+  ctx.fillRect(32, HEIGHT - 64, 228, 16);
+  ctx.fillRect(WIDTH - 252, HEIGHT - 64, 206, 16);
+
+  ctx.fillStyle = '#4ac7ff';
+  ctx.fillRect(32, HEIGHT - 64, 228 * state.boostHeat, 16);
+
+  const stage = getCurrentStage();
+  const timeBuffer = clamp(state.timeLeft / stage.time, 0, 1);
+  ctx.fillStyle = state.timeLeft > 12 ? '#ffdb62' : '#ff6262';
+  ctx.fillRect(WIDTH - 252, HEIGHT - 64, 206 * timeBuffer, 16);
+
+  ctx.fillStyle = '#d9e0f8';
+  ctx.font = '15px Trebuchet MS';
+  ctx.fillText(state.message, 34, 32);
+
+  if (state.flash > 0) {
+    ctx.fillStyle = `rgba(255,255,255,${0.12 * state.flash})`;
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  }
+
+  ctx.restore();
+
+  speedValue.textContent = String(Math.round((state.speed / BOOST_SPEED) * 320)).padStart(3, '0');
+  timeValue.textContent = state.timeLeft.toFixed(1).padStart(4, '0');
+  checkpointValue.textContent = String(state.checkpointIndex + 1).padStart(2, '0');
+  positionValue.textContent = `${state.rank}/${RIVAL_COUNT + 1}`;
+}
+
+function updateRanks() {
+  const rivalsAhead = cars.filter((car) => car.kind === 'rival' && car.progress > state.totalDistance).length;
+  state.rank = 1 + rivalsAhead;
+}
+
+function moveTrafficCar(car, dt, trackLength) {
+  const carSegment = findSegment(car.z);
+  const curvePenalty = Math.abs(carSegment.curve) * MAX_SPEED * 0.08;
+  car.targetSpeed = clamp(car.targetSpeed - curvePenalty * dt + Math.sin(state.raceTime + car.phase) * 8, MAX_SPEED * 0.28, MAX_SPEED * 0.7);
+  car.speed += (car.targetSpeed - car.speed) * dt * 0.8;
+  car.thinking -= dt;
+  if (car.thinking <= 0) {
+    car.thinking = 0.8 + Math.random() * 1.6;
+    const segmentBias = clamp(-carSegment.curve * 0.36, -0.45, 0.45);
+    car.laneTarget = clamp(segmentBias + (Math.random() * 1.4 - 0.7), -0.9, 0.9);
+  }
+  car.offset += (car.laneTarget - car.offset) * dt * 0.65;
+  car.progress += car.speed * dt;
+  if (car.progress < state.totalDistance - 2000) {
+    car.progress = state.totalDistance + 3000 + Math.random() * (trackLength * 0.7);
+    car.speed = MAX_SPEED * (0.34 + Math.random() * 0.42);
+    car.targetSpeed = car.speed;
+    car.offset = (Math.random() * 1.8) - 0.9;
+    car.laneTarget = car.offset;
+  }
+  car.z = car.progress % trackLength;
+}
+
+function moveRivalCar(car, dt, trackLength) {
+  const stage = getCurrentStage();
+  const carSegment = findSegment(car.z);
+  const slope = Math.abs(carSegment.p2.world.y - carSegment.p1.world.y) / SEGMENT_LENGTH;
+  const curvePenalty = Math.abs(carSegment.curve) * MAX_SPEED * (0.12 + (1.06 - car.skill) * 0.32);
+  const hillPenalty = slope * MAX_SPEED * 0.18;
+  const target = clamp((MAX_SPEED * stage.aiPace * car.skill) - curvePenalty - hillPenalty, MAX_SPEED * 0.46, BOOST_SPEED * 0.9);
+  car.targetSpeed += (target - car.targetSpeed) * dt * 1.3;
+  car.speed += (car.targetSpeed - car.speed) * dt * 1.1;
+
+  car.thinking -= dt;
+  if (car.thinking <= 0) {
+    car.thinking = 0.4 + Math.random() * 0.8;
+    let desiredLane = clamp(-carSegment.curve * 0.28, -0.72, 0.72);
+
+    for (const other of cars) {
+      if (other === car) continue;
+      const relative = clampWrapDistance(other.z - car.z, trackLength);
+      if (relative > 0 && relative < 920 && Math.abs(other.offset - car.offset) < 0.24) {
+        desiredLane += other.offset > 0 ? -0.46 : 0.46;
+      }
+    }
+
+    desiredLane += (Math.random() - 0.5) * 0.18;
+    car.laneTarget = clamp(desiredLane, -0.86, 0.86);
+  }
+
+  car.offset += (car.laneTarget - car.offset) * dt * (1.3 + car.skill * 0.35);
+  car.progress += car.speed * dt;
+  car.z = car.progress % trackLength;
+}
+
+function updateCars(dt) {
+  const trackLength = segments.length * SEGMENT_LENGTH;
+  const playerSegment = findSegment(state.position + CAMERA_HEIGHT);
+  const playerPercent = percentRemaining(state.position + CAMERA_HEIGHT, SEGMENT_LENGTH);
+  const playerY = interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent) + CAMERA_HEIGHT;
+
+  for (const car of cars) {
+    if (car.kind === 'rival') {
+      moveRivalCar(car, dt, trackLength);
+    } else {
+      moveTrafficCar(car, dt, trackLength);
+    }
+
+    const projection = projectCarToScreen(car, playerY, trackLength);
+    if (!projection || !projection.visible) {
+      continue;
+    }
+
+    if (projection.relative > 1100) {
+      continue;
+    }
+
+    const overlap = Math.abs(car.offset - state.playerX);
+    if (overlap < 0.2 && state.speed > car.speed * 0.45) {
+      state.speed = Math.max(car.speed * 0.48, state.speed * 0.38);
+      state.drift *= 0.35;
+      state.shake = 1;
+      state.flash = 1;
+      state.message = car.kind === 'rival' ? `CONTACT ${car.name}` : 'TRAFFIC HIT';
+    }
+  }
+
+  updateRanks();
+}
+
+function update(dt) {
+  if (!state.running) {
+    return;
+  }
+
+  const stage = getCurrentStage();
+  const currentSegment = findSegment(state.position + CAMERA_HEIGHT);
+  const playerSpeedRatio = state.speed / BOOST_SPEED;
+  const steerInput = (controls.right ? 1 : 0) - (controls.left ? 1 : 0);
+  const rawSteerStrength = 1.72 * (0.24 + playerSpeedRatio * 0.82);
+  const curveStress = Math.abs(currentSegment.curve) * (0.42 + playerSpeedRatio * 1.42);
+  const steerGrip = clamp(stage.grip - curveStress * 0.12, 0.52, 1.04);
+  const slipForce = currentSegment.curve * (0.46 + playerSpeedRatio * 2.4) * (1.18 - stage.grip);
+
+  if (controls.accelerate) {
+    state.speed += ACCEL * dt;
+  } else if (controls.brake) {
+    state.speed -= BRAKE * dt;
+  } else {
+    state.speed -= DECEL * dt;
+  }
+
+  if (controls.boost && state.boostHeat > 0.02) {
+    state.speed += ACCEL * 0.66 * dt;
+    state.boostHeat -= 0.26 * dt;
+  } else {
+    state.boostHeat += 0.13 * dt;
+  }
+
+  state.boostHeat = clamp(state.boostHeat, 0, 1);
+  state.speed = clamp(state.speed, 0, controls.boost && state.boostHeat > 0 ? BOOST_SPEED : MAX_SPEED);
+
+  if (steerInput !== 0) {
+    state.playerX += steerInput * rawSteerStrength * steerGrip * dt;
+  }
+
+  state.drift += (steerInput * 0.62 - slipForce - (state.drift * (3.2 + stage.grip))) * dt;
+  state.playerX += state.drift * dt * 2.5;
+  state.playerX -= currentSegment.curve * (0.16 + playerSpeedRatio * 0.78) * dt;
+  state.steerVisual += ((steerInput * (0.8 + playerSpeedRatio)) - state.steerVisual) * dt * 7;
+
+  if (Math.abs(state.playerX) > 1.04) {
+    if (state.speed > OFFROAD_LIMIT) {
+      state.speed -= OFFROAD_DECEL * dt;
+    }
+    state.drift *= 0.94;
+    state.message = 'OFFROAD';
+  } else if (Math.abs(state.drift) > 0.5 && state.speed > MAX_SPEED * 0.55) {
+    state.message = 'SLIDING';
+  }
+
+  state.playerX = clamp(state.playerX, -1.45, 1.45);
+  const trackLength = segments.length * SEGMENT_LENGTH;
+  state.totalDistance += state.speed * dt;
+  state.position = increase(state.position, state.speed * dt, trackLength);
+
+  state.timeLeft -= dt;
+  state.raceTime += dt;
+  state.distanceToCheckpoint -= state.speed * dt;
+
+  if (state.distanceToCheckpoint <= 0) {
+    state.checkpointIndex += 1;
+    state.timeLeft += stage.checkpointBonus;
+    state.distanceToCheckpoint += stage.checkpointInterval;
+    state.flash = 1;
+    state.message = `CHECKPOINT ${String(state.checkpointIndex).padStart(2, '0')}`;
+  }
+
+  updateCars(dt);
+
+  if (state.shake > 0) {
+    state.shake = Math.max(0, state.shake - dt * 2.8);
+  }
+  if (state.flash > 0) {
+    state.flash = Math.max(0, state.flash - dt * 4);
+  }
+
+  if (state.timeLeft <= 0) {
+    state.timeLeft = 0;
+    endRace();
+    return;
+  }
+
+  if (state.message === 'SLIDING' && Math.abs(state.drift) < 0.2) {
+    state.message = stage.name;
+  }
+  if (state.message === 'OFFROAD' && Math.abs(state.playerX) <= 1.04) {
+    state.message = stage.name;
+  }
+  if (state.speed < MAX_SPEED * 0.08 && (state.message === 'TRAFFIC HIT' || state.message.startsWith('CONTACT'))) {
+    state.message = 'BUILD SPEED';
+  }
+}
+
+function frame(timestamp) {
+  const rawDelta = (timestamp - state.lastTimestamp) / 1000 || 0;
+  const dt = Math.min(rawDelta, 0.035);
+  state.lastTimestamp = timestamp;
+
+  update(dt);
+  render();
+  requestAnimationFrame(frame);
+}
+
+function midiToFreq(note) {
+  return 440 * Math.pow(2, (note - 69) / 12);
+}
+
+function ensureAudio() {
+  if (audioState.context) {
+    if (audioState.context.state === 'suspended') {
+      audioState.context.resume();
+    }
+    return;
+  }
+
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextCtor) {
+    audioState.enabled = false;
+    syncMusicUi();
+    return;
+  }
+
+  audioState.context = new AudioContextCtor();
+  audioState.masterGain = audioState.context.createGain();
+  audioState.masterGain.gain.value = 0.18;
+  audioState.masterGain.connect(audioState.context.destination);
+
+  audioState.musicGain = audioState.context.createGain();
+  audioState.musicGain.gain.value = 0.9;
+  audioState.musicGain.connect(audioState.masterGain);
+
+  const buffer = audioState.context.createBuffer(1, audioState.context.sampleRate * 0.15, audioState.context.sampleRate);
+  const channel = buffer.getChannelData(0);
+  for (let i = 0; i < channel.length; i += 1) {
+    channel[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / channel.length, 1.6);
+  }
+  audioState.noiseBuffer = buffer;
+}
+
+function playSynthNote(note, startTime, duration, type, volume, filterFrequency) {
+  if (!audioState.context || note == null) {
+    return;
+  }
+
+  const osc = audioState.context.createOscillator();
+  const gain = audioState.context.createGain();
+  const filter = audioState.context.createBiquadFilter();
+
+  osc.type = type;
+  osc.frequency.value = midiToFreq(note);
+  filter.type = 'lowpass';
+  filter.frequency.value = filterFrequency;
+
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(volume, startTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioState.musicGain);
+
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.02);
+}
+
+function playNoiseBurst(startTime, volume) {
+  if (!audioState.context || !audioState.noiseBuffer) {
+    return;
+  }
+
+  const source = audioState.context.createBufferSource();
+  const filter = audioState.context.createBiquadFilter();
+  const gain = audioState.context.createGain();
+
+  source.buffer = audioState.noiseBuffer;
+  filter.type = 'highpass';
+  filter.frequency.value = 1800;
+  gain.gain.setValueAtTime(volume, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.08);
+
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioState.musicGain);
+
+  source.start(startTime);
+  source.stop(startTime + 0.09);
+}
+
+function scheduleMusic() {
+  if (!audioState.enabled || !audioState.context) {
+    return;
+  }
+
+  const stage = getCurrentStage();
+  const pattern = stage.music;
+  const stepDuration = (60 / pattern.tempo) / 2;
+  const horizon = audioState.context.currentTime + 0.35;
+
+  while (audioState.nextNoteTime < horizon) {
+    const index = audioState.stepIndex % pattern.lead.length;
+    const lead = pattern.lead[index];
+    const bass = pattern.bass[index % pattern.bass.length];
+    const accent = index % 4 === 0;
+
+    playSynthNote(lead, audioState.nextNoteTime, stepDuration * 0.92, accent ? 'sawtooth' : 'square', accent ? 0.055 : 0.04, accent ? 1800 : 1200);
+    if (bass != null && index % 2 === 0) {
+      playSynthNote(bass, audioState.nextNoteTime, stepDuration * 1.7, 'square', 0.05, 700);
+    }
+    playNoiseBurst(audioState.nextNoteTime, index % 2 === 0 ? 0.02 : 0.012);
+
+    audioState.nextNoteTime += stepDuration;
+    audioState.stepIndex += 1;
+  }
+}
+
+function startMusicLoop() {
+  ensureAudio();
+  if (!audioState.context || !audioState.enabled) {
+    syncMusicUi();
+    return;
+  }
+  if (audioState.context.state === 'suspended') {
+    audioState.context.resume();
+  }
+  if (audioState.beatTimer) {
+    return;
+  }
+  audioState.stepIndex = 0;
+  audioState.nextNoteTime = audioState.context.currentTime + 0.05;
+  audioState.stageId = getCurrentStage().id;
+  audioState.beatTimer = window.setInterval(scheduleMusic, 120);
+  syncMusicUi();
+}
+
+function stopMusicLoop() {
+  if (audioState.beatTimer) {
+    window.clearInterval(audioState.beatTimer);
+    audioState.beatTimer = null;
+  }
+  if (audioState.musicGain && audioState.context) {
+    const now = audioState.context.currentTime;
+    audioState.musicGain.gain.cancelScheduledValues(now);
+    audioState.musicGain.gain.setValueAtTime(audioState.musicGain.gain.value, now);
+    audioState.musicGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    window.setTimeout(() => {
+      if (audioState.musicGain) {
+        audioState.musicGain.gain.value = 0.9;
+      }
+    }, 90);
+  }
+  syncMusicUi();
+}
+
+function restartMusicLoop() {
+  if (!audioState.enabled || !audioState.context) {
+    syncMusicUi();
+    return;
+  }
+  if (audioState.stageId !== getCurrentStage().id || audioState.beatTimer) {
+    stopMusicLoop();
+  }
+  startMusicLoop();
+}
+
+function setMusicEnabled(enabled) {
+  audioState.enabled = enabled;
+  if (!enabled) {
+    stopMusicLoop();
+  } else {
+    ensureAudio();
+    startMusicLoop();
+  }
+  syncMusicUi();
+}
+
+function syncMusicUi() {
+  musicButton.textContent = audioState.enabled ? 'BGM ON' : 'BGM OFF';
+}
+
+function setControl(code, pressed) {
+  switch (code) {
+    case 'ArrowLeft':
+    case 'KeyA':
+      controls.left = pressed;
+      break;
+    case 'ArrowRight':
+    case 'KeyD':
+      controls.right = pressed;
+      break;
+    case 'ArrowUp':
+    case 'KeyW':
+      controls.accelerate = pressed;
+      break;
+    case 'ArrowDown':
+    case 'KeyS':
+      controls.brake = pressed;
+      break;
+    case 'Space':
+      controls.boost = pressed;
+      break;
+    default:
+      break;
+  }
+}
+
+window.addEventListener('keydown', (event) => {
+  if (event.code === 'Enter' && !state.running) {
+    resetRace();
+    return;
+  }
+  if (event.code === 'KeyM') {
+    setMusicEnabled(!audioState.enabled);
+    if (!state.running) {
+      renderMenu(menuMode);
+    }
+    return;
+  }
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(event.code)) {
+    event.preventDefault();
+  }
+  setControl(event.code, true);
+});
+
+window.addEventListener('keyup', (event) => {
+  setControl(event.code, false);
+});
+
+window.addEventListener('blur', () => {
+  controls.left = false;
+  controls.right = false;
+  controls.accelerate = false;
+  controls.brake = false;
+  controls.boost = false;
+});
+
+musicButton.addEventListener('click', () => {
+  setMusicEnabled(!audioState.enabled);
+  if (!state.running) {
+    renderMenu(menuMode);
+  }
+});
+
+setStage(0, true);
+renderMenu('start');
+render();
+requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>
