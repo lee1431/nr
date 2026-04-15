@@ -60,14 +60,20 @@
       background: #d1eef0;
       border-radius: 8px;
       user-select: none;
-      transition: transform 0.1s;
+      transition: transform 0.05s;
     }
     .cell.selected {
       outline: 3px solid #ffbf00;
       transform: scale(1.1);
     }
     .cell.removing {
-      animation: pop 0.3s forwards;
+      animation: pop 0.2s forwards;
+    }
+    /* Raised effect when dragging a block */
+    .cell.dragging {
+      transform: translateY(calc(var(--cell-size) * -0.1)) scale(1.1);
+      z-index: 2;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
     @keyframes pop {
       0% { transform: scale(1); opacity: 1; }
@@ -83,6 +89,8 @@
   </style>
 </head>
 <body>
+  <!-- Representative pixel art image -->
+  <img src="pixel_fish.png" alt="Pixelated fish" id="cover-image" style="width:120px;height:120px;margin-bottom:10px;image-rendering:pixelated;" />
   <h1>어류 퍼즐 게임</h1>
   <div id="score-board">점수: <span id="score">0</span></div>
   <div id="board"></div>
@@ -144,6 +152,7 @@
         const c = parseInt(targetCell.dataset.col);
         startCell = {r, c, el: targetCell};
         targetCell.classList.add('selected');
+        targetCell.classList.add('dragging');
         // Prevent default behaviour (like scrolling) when starting drag on touch devices
         e.preventDefault();
       });
@@ -165,8 +174,9 @@
         if (clientX != null && clientY != null) {
           targetElement = document.elementFromPoint(clientX, clientY);
         }
-        // Remove highlight from start
+        // Remove highlight and dragging from start
         start.el.classList.remove('selected');
+        start.el.classList.remove('dragging');
         if (processing) return;
         if (!targetElement) return;
         const endCellEl = targetElement.closest('.cell');
@@ -326,7 +336,7 @@
         } else {
           processing = false;
         }
-      }, 300);
+      }, 200);
     }
 
     function startGame() {
