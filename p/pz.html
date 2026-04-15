@@ -150,7 +150,16 @@
         if (!targetCell) return;
         const r = parseInt(targetCell.dataset.row);
         const c = parseInt(targetCell.dataset.col);
-        startCell = {r, c, el: targetCell};
+        // Determine initial pointer coordinates
+        let startX = e.clientX;
+        let startY = e.clientY;
+        if (startX === undefined || startY === undefined) {
+          if (e.touches && e.touches.length > 0) {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+          }
+        }
+        startCell = {r, c, el: targetCell, startX, startY};
         targetCell.classList.add('selected');
         targetCell.classList.add('dragging');
         // Prevent default behaviour (like scrolling) when starting drag on touch devices
@@ -161,32 +170,64 @@
         if (!startCell) return;
         const start = startCell;
         startCell = null;
-        // Determine element under pointer (clientX, clientY may not be defined on touchend for some browsers; fallback to changedTouches)
-        let clientX = e.clientX;
-        let clientY = e.clientY;
-        if (clientX === undefined || clientY === undefined) {
-          if (e.changedTouches && e.changedTouches.length > 0) {
-            clientX = e.changedTouches[0].clientX;
-            clientY = e.changedTouches[0].clientY;
-          }
-        }
-        let targetElement = null;
-        if (clientX != null && clientY != null) {
-          targetElement = document.elementFromPoint(clientX, clientY);
-        }
         // Remove highlight and dragging from start
         start.el.classList.remove('selected');
         start.el.classList.remove('dragging');
         if (processing) return;
+        // Get end pointer coordinates
+        let endX = e.clientX;
+        let endY = e.clientY;
+        if (endX === undefined || endY === undefined) {
+          if (e.changedTouches && e.changedTouches.length > 0) {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+          }
+        }
+        // If we have both start and end coordinates, compute drag direction
+        if (start.startX != null && start.startY != null && endX != null && endY != null) {
+          const dx = endX - start.startX;
+          const dy = endY - start.startY;
+          const threshold = 10; // minimum pixels to consider movement
+          let r1 = start.r;
+          let c1 = start.c;
+          let r2 = r1;
+          let c2 = c1;
+          // Determine direction: prioritise horizontal movement if movement exceeds threshold
+          if (dx <= -threshold) {
+            // drag to left
+            c2 = c1 - 1;
+          } else if (dx >= threshold) {
+            // drag to right
+            c2 = c1 + 1;
+          } else if (dy <= -threshold) {
+            // drag upward
+            r2 = r1 - 1;
+          } else if (dy >= threshold) {
+            // drag downward
+            r2 = r1 + 1;
+          }
+          // Check boundaries and swap if valid and different
+          if ((r2 !== r1 || c2 !== c1) && r2 >= 0 && r2 < rows && c2 >= 0 && c2 < cols) {
+            swapAndCheck(r1, c1, r2, c2);
+            return;
+          }
+        }
+        // Fallback: if no significant movement, try to swap with cell under pointer if adjacent
+        let clientX = endX;
+        let clientY = endY;
+        let targetElement = null;
+        if (clientX != null && clientY != null) {
+          targetElement = document.elementFromPoint(clientX, clientY);
+        }
         if (!targetElement) return;
         const endCellEl = targetElement.closest('.cell');
         if (!endCellEl) return;
-        const r2 = parseInt(endCellEl.dataset.row);
-        const c2 = parseInt(endCellEl.dataset.col);
-        const r1 = start.r;
-        const c1 = start.c;
-        if ((Math.abs(r1 - r2) + Math.abs(c1 - c2)) === 1) {
-          swapAndCheck(r1, c1, r2, c2);
+        const r2F = parseInt(endCellEl.dataset.row);
+        const c2F = parseInt(endCellEl.dataset.col);
+        const r1F = start.r;
+        const c1F = start.c;
+        if ((Math.abs(r1F - r2F) + Math.abs(c1F - c2F)) === 1) {
+          swapAndCheck(r1F, c1F, r2F, c2F);
         }
       });
     }
