@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Fishing Game - Realistic Water</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        #ui {
+            position: absolute; top: 20px; left: 20px;
+            color: white; font-family: 'Malgun Gothic', sans-serif;
+            pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 100; /* UI가 물 위에 오도록 설정 */
+        }
+        .status { font-weight: bold; color: #ffeb3b; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h1>🎣 아가 개발자의 낚시터</h1>
+        <p>상태: <span id="state-text" class="status">대기 중</span></p>
+        <p>클릭하여 찌를 던지거나 감으세요!</p>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/examples/jsm/objects/Water": "https://unpkg.com/three@0.160.0/examples/jsm/objects/Water.js",
+                "three/examples/jsm/geometries/Sky": "https://unpkg.com/three@0.160.0/examples/jsm/geometries/Sky.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { Water } from 'three/examples/jsm/objects/Water';
+        import { Sky } from 'three/examples/jsm/geometries/Sky';
+
+        // --- 1. 기본 세팅 (리얼한 빛을 위해 빛 설정을 강화합니다) ---
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 20000);
+        camera.position.set(10, 10, 20); // 시점을 조금 더 뒤로 이동
+        camera.lookAt(0, 5, -10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; // 더 리얼한 색감을 위한 톤 매핑
+        document.body.appendChild(renderer.domElement);
+
+        // --- 2. 리얼한 환경 (하늘과 태양) ---
+        const sun = new THREE.Vector3();
+
+        const sky = new Sky();
+        sky.scale.setScalar(10000);
+        scene.add(sky);
+
+        const skyUniforms = sky.material.uniforms;
+        skyUniforms['turbidity'].value = 10;
+        skyUniforms['rayleigh'].value = 2;
+        skyUniforms['mieCoefficient'].value = 0.005;
+        skyUniforms['mieDirectionalG'].value = 0.8;
+
+        const parameters = {
+            elevation: 2,
+            azimuth: 180
+        };
+
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+
+        function updateSun() {
+            const phi = THREE.MathUtils.degToRad(90 - parameters.elevation);
+            const theta = THREE.MathUtils.degToRad(parameters.azimuth);
+
+            sun.setFromSphericalCoords(1, phi, theta);
+
+            sky.material.uniforms['sunPosition'].value.copy(sun);
+            water.material.uniforms['sunDirection'].value.copy(sun).normalize();
+
+            scene.environment = pmremGenerator.fromScene(sky).texture;
+        }
+
+        // --- 3. 리얼한 수면 (가장 중요한 부분!) ---
+        const waterGeometry = new THREE.PlaneGeometry(10000, 10000);
+        const water = new Water(
+            waterGeometry,
+            {
+                textureWidth: 512,
+                textureHeight: 512,
+                waterNormals: new THREE.TextureLoader().load('https://unpkg.com/three@0.160.0/examples/textures/waternormals.jpg', function (texture) {
+                    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+                }),
+                sunDirection: new THREE.Vector3(),
+                sunColor: 0xffffff,
+                waterColor: 0x001e0f, // 깊은 바다 색
+                distortionScale: 3.7,
+                fog: scene.fog !== undefined
+            }
+        );
+        water.rotation.x = -Math.PI / 2;
+        scene.add(water);
+
+        updateSun(); // 하늘과 태양 위치 업데이트
+
+        // --- 4. 기존 낚시 장비 유지 ---
+        const rodGroup = new THREE.Group();
+        const rod = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.03, 0.08, 4),
+            new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.8, metalness: 0.2 })
+        );
+        rod.rotation.x = Math.PI / 3;
+        rod.position.set(0, 1.5, 0);
+        rodGroup.add(rod);
+        scene.add(rodGroup);
+
+        const rodTip = new THREE.Object3D();
+        rodTip.position.set(0, 3.2, -1.8); 
+        rodGroup.add(rodTip);
+
+        const floatObj = new THREE.Mesh(
+            new THREE.SphereGeometry(0.15),
+            new THREE.MeshStandardMaterial({ color: 0xff1111, roughness: 0.3, metalness: 0.5 })
+        );
+        scene.add(floatObj);
+
+        const lineMat = new THREE.LineBasicMaterial({ color: 0xeeeeee });
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+        const fishingLine = new THREE.Line(lineGeo, lineMat);
+        scene.add(fishingLine);
+
+        // --- 5. 상태 관리 변수 유지 ---
+        let currentState = 'IDLE'; // IDLE, CASTING, WAITING, REELING
+        let castProgress = 0;
+        const startPos = new THREE.Vector3();
+        const targetPos = new THREE.Vector3(0, 0, -30); // 더 멀리 던지게 수정
+        const clock = new THREE.Clock();
+        const stateDisplay = document.getElementById('state-text');
+
+        // --- 6. 입력 처리 유지 ---
+        window.addEventListener('mousedown', () => {
+            if (currentState === 'IDLE') {
+                currentState = 'CASTING';
+                castProgress = 0;
+                stateDisplay.innerText = "던지는 중...";
+            } 
+            else if (currentState === 'WAITING') {
+                currentState = 'REELING';
+                stateDisplay.innerText = "감는 중...";
+            }
+        });
+
+        // --- 7. 메인 루프 (물 애니메이션 추가) ---
+        function update() {
+            const delta = clock.getDelta();
+            rodTip.getWorldPosition(startPos);
+
+            // 물결 애니메이션
+            water.material.uniforms['time'].value += delta;
+
+            if (currentState === 'IDLE') {
+                floatObj.position.copy(startPos);
+            } 
+            else if (currentState === 'CASTING') {
+                castProgress += delta * 1.5;
+                if (castProgress >= 1) {
+                    castProgress = 1;
+                    currentState = 'WAITING';
+                    stateDisplay.innerText = "입질 기다리는 중";
+                }
+                floatObj.position.lerpVectors(startPos, targetPos, castProgress);
+                floatObj.position.y += Math.sin(castProgress * Math.PI) * 7; // 포물선 더 높게
+            } 
+            else if (currentState === 'WAITING') {
+                // 물 위에 둥둥 - 물결 높이에 맞게 조절
+                floatObj.position.y = Math.sin(Date.now() * 0.005) * 0.15;
+            } 
+            else if (currentState === 'REELING') {
+                floatObj.position.lerp(startPos, 0.1);
+                if (floatObj.position.distanceTo(startPos) < 0.5) {
+                    currentState = 'IDLE';
+                    stateDisplay.innerText = "대기 중";
+                }
+            }
+
+            // 줄 업데이트
+            const posAttr = fishingLine.geometry.attributes.position;
+            posAttr.setXYZ(0, startPos.x, startPos.y, startPos.z);
+            posAttr.setXYZ(1, floatObj.position.x, floatObj.position.y, floatObj.position.z);
+            posAttr.needsUpdate = true;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
