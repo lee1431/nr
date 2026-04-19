@@ -1,602 +1,267 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#f4f4f1" />
-  <title>STANCE GALLERY</title>
-  <style>
-    :root {
-      --bg: #f4f4f1;
-      --line: rgba(0, 0, 0, 0.08);
-      --text: #111;
-      --muted: #666;
-      --point: #1d3b34;
-      --white: #fff;
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-      --radius: 16px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>STANCE ARCHIVE | Project Collection</title>
+    
+    <meta name="description" content="소프트웨어 개발자 STANCE의 프로젝트 아카이브 및 이미지 갤러리입니다.">
+    <meta name="keywords" content="개발자, 포트폴리오, 프로젝트, 갤러리, STANCE, 아카이브">
+    <meta name="author" content="STANCE">
+    <link rel="canonical" href="https://llsshh.com/">
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://llsshh.com/">
+    <meta property="og:title" content="STANCE ARCHIVE">
+    <meta property="og:description" content="바닐라 JS와 픽셀 아트로 구현된 독창적인 프로젝트 컬렉션">
+    <meta property="og:image" content="https://llsshh.com/assets/img/og-image.jpg"> <meta property="og:site_name" content="STANCE ARCHIVE">
 
-    body {
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-      font-family: Pretendard, "Apple SD Gothic Neo", sans-serif;
-      color: var(--text);
-      background:
-        linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px),
-        radial-gradient(circle at top left, rgba(29, 59, 52, 0.07), transparent 26%),
-        var(--bg);
-      background-size: 30px 30px, 30px 30px, auto, auto;
-    }
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="STANCE ARCHIVE">
+    <meta name="twitter:description" content="개발자 STANCE의 프로젝트 결과물을 한눈에 확인하세요.">
+    <meta name="twitter:image" content="https://llsshh.com/assets/img/og-image.jpg">
 
-    .wrap {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 32px 20px 56px;
-    }
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="STANCE">
+    <link rel="apple-touch-icon" href="/assets/img/icon-192.png"> <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
 
-    .hero {
-      margin-bottom: 28px;
-      padding: 24px;
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      backdrop-filter: blur(8px);
-      box-shadow: var(--shadow);
-    }
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--point);
-      margin-bottom: 12px;
-    }
+        :root {
+            --grid-line: rgba(0, 0, 0, 0.06);
+            --accent: #2ecc71;
+            --bg-main: #ffffff;
+            --text-dark: #1a1a1a;
+            --text-light: #888;
+        }
 
-    .eyebrow::before {
-      content: "";
-      width: 26px;
-      height: 1px;
-      background: var(--point);
-      display: block;
-    }
+        /* iOS safe area 대응 (PWA) */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: var(--bg-main);
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 25px 25px;
+            padding: env(safe-area-inset-top) 20px 40px;
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
 
-    h1 {
-      font-size: clamp(34px, 6vw, 72px);
-      line-height: 0.95;
-      letter-spacing: -0.05em;
-      font-weight: 500;
-      margin-bottom: 12px;
-    }
+        header {
+            max-width: 1100px;
+            margin: 40px auto 60px;
+            padding: 0 5px 15px;
+            border-bottom: 3px solid var(--text-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
 
-    .hero-bottom {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: end;
-      flex-wrap: wrap;
-    }
+        header h1 {
+            font-size: 1.5rem;
+            letter-spacing: 0.2em;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
 
-    .hero p {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
-      max-width: 720px;
-    }
+        .stats { font-size: 0.85rem; color: var(--text-light); font-weight: 600; }
 
-    .meta-info {
-      font-size: 12px;
-      color: var(--muted);
-      white-space: nowrap;
-    }
+        /* 프로젝트 그리드 */
+        .archive-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
 
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 18px;
-      flex-wrap: wrap;
-    }
+        .card {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            background: #fff;
+            border: 1px solid #ddd;
+            position: relative;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-    .count {
-      font-size: 13px;
-      color: var(--muted);
-    }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-color: var(--text-dark);
+        }
 
-    .view-switch {
-      display: inline-flex;
-      gap: 8px;
-    }
+        .badge {
+            position: absolute;
+            top: 12px; left: 12px;
+            width: 24px; height: 24px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            z-index: 10;
+        }
 
-    .view-btn {
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.85);
-      color: var(--text);
-      padding: 9px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
+        .img-box {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+            background: #f0f0f0;
+            border-bottom: 1px solid #eee;
+        }
 
-    .view-btn.active {
-      background: var(--point);
-      color: var(--white);
-      border-color: var(--point);
-    }
+        .img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: pixelated;
+        }
 
-    .gallery.grid-view {
-      column-count: 3;
-      column-gap: 16px;
-    }
+        .info {
+            padding: 15px;
+            background: #fff;
+        }
 
-    .gallery.list-view {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
+        .info .title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    .item {
-      position: relative;
-      overflow: hidden;
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
-      background: #ddd;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-      cursor: pointer;
-      break-inside: avoid;
-      margin-bottom: 16px;
-      transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
-    }
-
-    .item:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 18px 38px rgba(0, 0, 0, 0.08);
-      border-color: rgba(29, 59, 52, 0.18);
-    }
-
-    .item img {
-      width: 100%;
-      display: block;
-      object-fit: cover;
-      background: #e9e9e9;
-    }
-
-    .item::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent 46%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-
-    .item:hover::before {
-      opacity: 1;
-    }
-
-    .overlay {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 14px;
-      color: var(--white);
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: end;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: 0.3s ease;
-      pointer-events: none;
-    }
-
-    .item:hover .overlay {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .overlay-title {
-      font-size: 13px;
-      font-weight: 500;
-      word-break: break-all;
-    }
-
-    .overlay-tag {
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      opacity: 0.82;
-      white-space: nowrap;
-    }
-
-    .list-view .item {
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      margin-bottom: 0;
-      min-height: 180px;
-    }
-
-    .list-view .item img {
-      height: 100%;
-    }
-
-    .list-view .item::before,
-    .list-view .overlay {
-      display: none;
-    }
-
-    .list-meta {
-      display: none;
-      padding: 18px;
-      background: rgba(255, 255, 255, 0.84);
-    }
-
-    .list-view .list-meta {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 14px;
-    }
-
-    .list-folder {
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--point);
-    }
-
-    .list-title {
-      font-size: 18px;
-      line-height: 1.35;
-      word-break: break-all;
-    }
-
-    .list-desc {
-      font-size: 13px;
-      line-height: 1.7;
-      color: var(--muted);
-    }
-
-    .empty,
-    .loading,
-    .error-box {
-      padding: 60px 20px;
-      text-align: center;
-      color: var(--muted);
-      border: 1px dashed var(--line);
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.55);
-    }
-
-    .error-box {
-      color: #8a1f1f;
-    }
-
-    #modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.86);
-      backdrop-filter: blur(10px);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal-inner {
-      position: relative;
-      width: min(1100px, 100%);
-      padding: 14px;
-      border-radius: 24px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-
-    #modal-img {
-      width: 100%;
-      max-height: 82vh;
-      object-fit: contain;
-      display: block;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    .close-btn {
-      position: absolute;
-      top: -12px;
-      right: -2px;
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.16);
-      color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      backdrop-filter: blur(8px);
-    }
-
-    @media (max-width: 1024px) {
-      .gallery.grid-view {
-        column-count: 2;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .wrap {
-        padding: 20px 16px 44px;
-      }
-
-      .hero {
-        padding: 20px 18px;
-      }
-
-      .list-view .item {
-        grid-template-columns: 1fr;
-        min-height: auto;
-      }
-
-      .list-view .item img {
-        max-height: 340px;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .gallery.grid-view {
-        column-count: 1;
-      }
-
-      h1 {
-        font-size: 42px;
-      }
-    }
-  </style>
+        /* 다크모드 대응 (미디어 쿼리) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --grid-line: rgba(255, 255, 255, 0.05);
+                --bg-main: #111;
+                --text-dark: #eee;
+            }
+            .card { background: #1a1a1a; border-color: #333; }
+            .info { background: #1a1a1a; }
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <div class="eyebrow">Visual Archive</div>
-      <h1><span id="folderTitle">GALLERY</span><br />ARCHIVE</h1>
-      <div class="hero-bottom">
-        <p>
-          STANCE 파트너 갤러리 아카이브. 최신 업로드 기준으로 이미지를 탐색하고,
-          그리드 뷰와 리스트 뷰를 전환해 빠르게 살펴볼 수 있습니다.
-        </p>
-        <div class="meta-info" id="routeInfo">/gallery</div>
-      </div>
-    </section>
 
-    <div class="toolbar">
-      <div class="count" id="countText">Loading...</div>
-      <div class="view-switch">
-        <button type="button" class="view-btn active" data-view="grid">Grid</button>
-        <button type="button" class="view-btn" data-view="list">List</button>
-      </div>
-    </div>
+    <header>
+        <h1>STANCE ARCHIVE</h1>
+        <div class="project-count" id="total-count">0 Projects</div>
+    </header>
 
-    <section class="gallery grid-view" id="gallery"></section>
-    <div class="loading" id="loadingBox">이미지를 불러오는 중입니다.</div>
-  </div>
+    <main class="project-grid" id="project-container">
+        
+		<a href="https://llsshh.com/p/qrc.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="qrc">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/utq.png" loading="lazy">
+				<div class="title">Url To QR</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/sperimg.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="sperimg">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/setimg.png" loading="lazy">
+				<div class="title">Get Img</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/msg.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="msg">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/oi.png" loading="lazy">
+				<div class="title">MSG</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/event.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="event">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/mg.png" loading="lazy">
+				<div class="title">Event</div>
+			</div>
+		</a>
+		<a href="https://mrdindoin.ddns.net/uploadimg/newgallery/page/1" class="project-link" target="_blank" rel="noopener noreferrer" data-name="spg">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/new_mang.png" loading="lazy">
+				<div class="title">스몰픽쳐갤러리</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/ri.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="ri">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/junk.png" loading="lazy">
+				<div class="title">랜덤아이템뽑기</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/roadmap.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="roadmap">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/pcj.png" loading="lazy">
+				<div class="title">목표</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/muzix.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="muzix">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/muzix.png" loading="lazy">
+				<div class="title">MuziX</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/dotg.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="dotg">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/dotg.png" loading="lazy">
+				<div class="title">Dot G</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/ssa.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="ssa">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/ssa.png" loading="lazy">
+				<div class="title">Sunset Apex '90</div>
+			</div>
+		</a>
+		<a href="https://mrdindoin.ddns.net/planetcj/admin" class="project-link" target="_blank" rel="noopener noreferrer" data-name="wap">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/wap.png" loading="lazy">
+				<div class="title">웹앱푸쉬</div>
+			</div>
+		</a>
+		<a href="https://llsshh.com/p/pz.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="pz">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/pixel_fish.png" loading="lazy">
+				<div class="title">어류퍼즐</div>
+		</a>
+		<a href="https://llsshh.com/p/img.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="img">
+			<div class="item">
+				<div class="count">0</div>
+				<img src="./assets/img/img.png" loading="lazy">
+				<div class="title">IMG</div>
+			</div>
+		</a>
+		
+    </main>
 
-  <div id="modal">
-    <div class="modal-inner">
-      <span class="close-btn">&times;</span>
-      <img id="modal-img" src="" alt="확대 이미지" />
-    </div>
-  </div>
-
-  <script>
-    const API_BASE = 'https://localflow.ddns.net/images';
-    const DEFAULT_FOLDER = 'coupon';
-    const PAGE_SIZE = 24;
-
-    const gallery = document.getElementById('gallery');
-    const loadingBox = document.getElementById('loadingBox');
-    const countText = document.getElementById('countText');
-    const folderTitle = document.getElementById('folderTitle');
-    const routeInfo = document.getElementById('routeInfo');
-    const modal = document.getElementById('modal');
-    const modalImg = document.getElementById('modal-img');
-    const closeBtn = document.querySelector('.close-btn');
-    const viewButtons = document.querySelectorAll('.view-btn');
-
-    let currentPage = 1;
-    let hasNext = true;
-    let isLoading = false;
-    let currentFolder = DEFAULT_FOLDER;
-
-    function escapeHtml(value) {
-      return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function getFolderFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('folder') || DEFAULT_FOLDER;
-    }
-
-    function setPageHeader(folder) {
-      folderTitle.textContent = String(folder).toUpperCase();
-      routeInfo.textContent = `/gallery?folder=${folder}`;
-      document.title = `STANCE GALLERY - ${String(folder).toUpperCase()}`;
-    }
-
-    function renderItems(items) {
-      const html = items.map((item) => `
-        <article class="item" data-src="${escapeHtml(item.url)}" data-file="${escapeHtml(item.filename || item.title || '')}">
-          <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.title || item.filename || 'image')}" loading="lazy" />
-          <div class="overlay">
-            <div class="overlay-title">${escapeHtml(item.filename || item.title || 'Untitled')}</div>
-            <div class="overlay-tag">${escapeHtml(item.category || currentFolder)}</div>
-          </div>
-          <div class="list-meta">
-            <div>
-              <div class="list-folder">${escapeHtml(item.category || currentFolder)}</div>
-              <div class="list-title">${escapeHtml(item.filename || item.title || 'Untitled')}</div>
-            </div>
-            <div class="list-desc">
-              공개 갤러리 이미지입니다. 백엔드 API에서 전달받은 메타데이터를 기준으로 렌더링합니다.
-            </div>
-          </div>
-        </article>
-      `).join('');
-
-      gallery.insertAdjacentHTML('beforeend', html);
-    }
-
-    function renderEmpty() {
-      gallery.innerHTML = '<div class="empty">표시할 이미지가 없습니다.</div>';
-      loadingBox.style.display = 'none';
-      countText.textContent = 'Total 0 images';
-    }
-
-    function renderError(message) {
-      gallery.innerHTML = `<div class="error-box">${escapeHtml(message)}</div>`;
-      loadingBox.style.display = 'none';
-      countText.textContent = 'Load failed';
-    }
-
-    async function loadImages(page = 1) {
-      if (isLoading || (!hasNext && page !== 1)) {
-        return;
-      }
-
-      isLoading = true;
-      loadingBox.style.display = 'block';
-      loadingBox.textContent = '이미지를 불러오는 중입니다.';
-
-      try {
-        const response = await fetch(
-          `${API_BASE}/api/gallery/${encodeURIComponent(currentFolder)}?page=${page}&page_size=${PAGE_SIZE}`,
-          {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json'
-            }
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        currentPage = data.page || page;
-        hasNext = Boolean(data.has_next);
-
-        if (page === 1) {
-          gallery.innerHTML = '';
-        }
-
-        if (!data.items || data.items.length === 0) {
-          if (page === 1) {
-            renderEmpty();
-          } else {
-            loadingBox.textContent = '마지막 이미지까지 표시했습니다.';
-          }
-          return;
-        }
-
-        renderItems(data.items);
-        countText.innerHTML = `Total <strong>${data.total || 0}</strong> images`;
-
-        if (!hasNext) {
-          loadingBox.textContent = '마지막 이미지까지 표시했습니다.';
-        } else {
-          loadingBox.style.display = 'none';
-        }
-      } catch (error) {
-        console.error(error);
-        renderError('이미지를 불러오지 못했습니다. API 주소와 CORS 설정을 확인하세요.');
-      } finally {
-        isLoading = false;
-      }
-    }
-
-    function closeModal() {
-      modal.style.display = 'none';
-      modalImg.src = '';
-      document.body.style.overflow = '';
-    }
-
-    gallery.addEventListener('click', (event) => {
-      const item = event.target.closest('.item');
-      if (!item) return;
-
-      modalImg.src = item.dataset.src;
-      modal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    });
-
-    closeBtn.addEventListener('click', closeModal);
-
-    modal.addEventListener('click', (event) => {
-      if (event.target === modal) {
-        closeModal();
-      }
-    });
-
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        closeModal();
-      }
-    });
-
-    viewButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        viewButtons.forEach((btn) => btn.classList.remove('active'));
-        button.classList.add('active');
-
-        const mode = button.dataset.view;
-        gallery.classList.toggle('grid-view', mode === 'grid');
-        gallery.classList.toggle('list-view', mode === 'list');
-      });
-    });
-
-    window.addEventListener('scroll', async () => {
-      if (isLoading || !hasNext) return;
-
-      const threshold = 300;
-      const reachedBottom =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - threshold;
-
-      if (reachedBottom) {
-        await loadImages(currentPage + 1);
-      }
-    });
-
-    function init() {
-      currentFolder = getFolderFromUrl();
-      setPageHeader(currentFolder);
-      loadImages(1);
-    }
-
-    init();
-  </script>
+    <script>
+        // 프로젝트 개수 자동 카운트 (바닐라 JS)
+        document.addEventListener('DOMContentLoaded', () => {
+            const projects = document.querySelectorAll('.project-link');
+            document.getElementById('total-count').innerText = `${projects.length} Projects`;
+        });
+    </script>
 </body>
 </html>
