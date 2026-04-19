@@ -6,26 +6,24 @@
     
     <title>STANCE ARCHIVE | Project Collection</title>
     
-    <meta name="description" content="STANCE의 프로젝트 아카이브 및 이미지 갤러리입니다.">
-    <meta name="keywords" content="포트폴리오, 프로젝트, 갤러리, STANCE, 아카이브">
+    <meta name="description" content="STANCE의 프로젝트 아카이브. URL QR 변환, 게임, 갤러리 등 다양한 웹 애플리케이션 컬렉션입니다.">
+    <meta name="keywords" content="STANCE, 프로젝트, 포트폴리오, 개발자, 아카이브, 웹앱, 픽셀아트">
     <meta name="author" content="STANCE">
     <link rel="canonical" href="https://llsshh.com/">
 
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://llsshh.com/">
     <meta property="og:title" content="STANCE ARCHIVE">
-    <meta property="og:description" content="바닐라 JS와 픽셀 아트로 구현된 프로젝트 컬렉션">
-    <meta property="og:image" content="https://llsshh.com/assets/img/img.png"> <meta property="og:site_name" content="STANCE ARCHIVE">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="STANCE ARCHIVE">
-    <meta name="twitter:description" content="STANCE의 프로젝트 결과물을 한눈에 확인하세요.">
-    <meta name="twitter:image" content="https://llsshh.com/assets/img/img.png">
+    <meta property="og:description" content="STANCE의 프로젝트 리스트">
+    <meta property="og:image" content="https://llsshh.com/assets/img/img.png">
+    <meta property="og:site_name" content="STANCE ARCHIVE">
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="STANCE">
-    <link rel="apple-touch-icon" href="/assets/img/icon-192.png"> <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <link rel="apple-touch-icon" href="./assets/img/icon-192.png">
+
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
 
     <style>
@@ -39,7 +37,6 @@
             --text-light: #888;
         }
 
-        /* iOS safe area 대응 (PWA) */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
@@ -49,14 +46,14 @@
                 linear-gradient(var(--grid-line) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
             background-size: 25px 25px;
-            padding: env(safe-area-inset-top) 20px 40px;
+            padding: env(safe-area-inset-top) 20px 60px; /* 상단 안전영역 및 여백 */
             color: var(--text-dark);
             min-height: 100vh;
         }
 
         header {
-            max-width: 1100px;
-            margin: 40px auto 60px;
+            max-width: 1200px;
+            margin: 40px auto 50px;
             padding: 0 5px 15px;
             border-bottom: 3px solid var(--text-dark);
             display: flex;
@@ -65,23 +62,24 @@
         }
 
         header h1 {
-            font-size: 1.5rem;
-            letter-spacing: 0.2em;
+            font-size: 1.4rem;
+            letter-spacing: 0.3em;
             font-weight: 800;
             text-transform: uppercase;
         }
 
-        .stats { font-size: 0.85rem; color: var(--text-light); font-weight: 600; }
+        .stats { font-size: 0.9rem; color: var(--text-light); font-weight: 600; }
 
         /* 프로젝트 그리드 */
         .archive-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 20px;
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
+        /* 카드 스타일 */
         .card {
             text-decoration: none;
             color: inherit;
@@ -94,21 +92,22 @@
 
         .card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
             border-color: var(--text-dark);
+            z-index: 5;
         }
 
         .badge {
             position: absolute;
-            top: 12px; left: 12px;
-            width: 24px; height: 24px;
+            top: 10px; left: 10px;
+            width: 22px; height: 22px;
             background: var(--accent);
             color: #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             z-index: 10;
         }
@@ -117,7 +116,7 @@
             width: 100%;
             aspect-ratio: 1 / 1;
             overflow: hidden;
-            background: #f0f0f0;
+            background: #f8f8f8;
             border-bottom: 1px solid #eee;
         }
 
@@ -125,24 +124,28 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            image-rendering: pixelated;
+            image-rendering: pixelated; /* 픽셀 아트 최적화 */
+            transition: transform 0.3s ease;
         }
 
+        .card:hover .img-box img { transform: scale(1.05); }
+
         .info {
-            padding: 15px;
+            padding: 12px;
             background: #fff;
+            text-align: center;
         }
 
         .info .title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* 다크모드 대응 (미디어 쿼리) */
+        /* 다크모드 */
         @media (prefers-color-scheme: dark) {
             :root {
                 --grid-line: rgba(255, 255, 255, 0.05);
@@ -151,6 +154,16 @@
             }
             .card { background: #1a1a1a; border-color: #333; }
             .info { background: #1a1a1a; }
+            .img-box { background: #222; border-bottom-color: #333; }
+        }
+
+        /* 모바일 대응 */
+        @media (max-width: 480px) {
+            .archive-container {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 12px;
+            }
+            header h1 { font-size: 1.1rem; letter-spacing: 0.1em; }
         }
     </style>
 </head>
@@ -158,109 +171,94 @@
 
     <header>
         <h1>STANCE ARCHIVE</h1>
-        <div class="project-count" id="total-count">0 Projects</div>
+        <div class="stats" id="counter">0 PROJECTS</div>
     </header>
 
-    <main class="project-grid" id="project-container">
-        
-		<a href="https://llsshh.com/p/qrc.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="qrc">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/utq.png" loading="lazy">
-				<div class="title">Url To QR</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/sperimg.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="sperimg">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/setimg.png" loading="lazy">
-				<div class="title">Get Img</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/msg.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="msg">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/oi.png" loading="lazy">
-				<div class="title">MSG</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/event.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="event">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/mg.png" loading="lazy">
-				<div class="title">Event</div>
-			</div>
-		</a>
-		<a href="https://mrdindoin.ddns.net/uploadimg/newgallery/page/1" class="project-link" target="_blank" rel="noopener noreferrer" data-name="spg">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/new_mang.png" loading="lazy">
-				<div class="title">스몰픽쳐갤러리</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/ri.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="ri">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/junk.png" loading="lazy">
-				<div class="title">랜덤아이템뽑기</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/roadmap.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="roadmap">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/pcj.png" loading="lazy">
-				<div class="title">목표</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/muzix.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="muzix">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/muzix.png" loading="lazy">
-				<div class="title">MuziX</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/dotg.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="dotg">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/dotg.png" loading="lazy">
-				<div class="title">Dot G</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/ssa.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="ssa">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/ssa.png" loading="lazy">
-				<div class="title">Sunset Apex '90</div>
-			</div>
-		</a>
-		<a href="https://mrdindoin.ddns.net/planetcj/admin" class="project-link" target="_blank" rel="noopener noreferrer" data-name="wap">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/wap.png" loading="lazy">
-				<div class="title">웹앱푸쉬</div>
-			</div>
-		</a>
-		<a href="https://llsshh.com/p/pz.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="pz">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/pixel_fish.png" loading="lazy">
-				<div class="title">어류퍼즐</div>
-		</a>
-		<a href="https://llsshh.com/p/img.html" class="project-link" target="_blank" rel="noopener noreferrer" data-name="img">
-			<div class="item">
-				<div class="count">0</div>
-				<img src="./assets/img/img.png" loading="lazy">
-				<div class="title">IMG</div>
-			</div>
-		</a>
-		
+    <main class="archive-container">
+        <a href="https://llsshh.com/p/qrc.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/utq.png" alt="Url To QR" loading="lazy"></div>
+            <div class="info"><div class="title">Url To QR</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/sperimg.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/setimg.png" alt="Get Img" loading="lazy"></div>
+            <div class="info"><div class="title">Get Img</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/msg.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/oi.png" alt="MSG" loading="lazy"></div>
+            <div class="info"><div class="title">MSG</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/event.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/mg.png" alt="Event" loading="lazy"></div>
+            <div class="info"><div class="title">Event</div></div>
+        </a>
+
+        <a href="https://mrdindoin.ddns.net/uploadimg/newgallery/page/1" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/new_mang.png" alt="스몰픽쳐갤러리" loading="lazy"></div>
+            <div class="info"><div class="title">스몰픽쳐갤러리</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/ri.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/junk.png" alt="랜덤아이템뽑기" loading="lazy"></div>
+            <div class="info"><div class="title">랜덤아이템뽑기</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/roadmap.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/pcj.png" alt="목표" loading="lazy"></div>
+            <div class="info"><div class="title">목표 (ROADMAP)</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/muzix.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/muzix.png" alt="MuziX" loading="lazy"></div>
+            <div class="info"><div class="title">MuziX</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/dotg.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/dotg.png" alt="Dot G" loading="lazy"></div>
+            <div class="info"><div class="title">Dot G</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/ssa.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/ssa.png" alt="Sunset Apex '90" loading="lazy"></div>
+            <div class="info"><div class="title">Sunset Apex '90</div></div>
+        </a>
+
+        <a href="https://mrdindoin.ddns.net/planetcj/admin" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/wap.png" alt="웹앱푸쉬" loading="lazy"></div>
+            <div class="info"><div class="title">웹앱푸쉬</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/pz.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/pixel_fish.png" alt="어류퍼즐" loading="lazy"></div>
+            <div class="info"><div class="title">어류퍼즐 (Puzzle)</div></div>
+        </a>
+
+        <a href="https://llsshh.com/p/img.html" class="card" target="_blank" rel="noopener noreferrer">
+            <div class="badge">0</div>
+            <div class="img-box"><img src="./assets/img/img.png" alt="IMG" loading="lazy"></div>
+            <div class="info"><div class="title">IMG Gallery</div></div>
+        </a>
     </main>
 
     <script>
-        // 프로젝트 개수 자동 카운트 (바닐라 JS)
+        // 프로젝트 개수 자동 업데이트
         document.addEventListener('DOMContentLoaded', () => {
-            const projects = document.querySelectorAll('.project-link');
-            document.getElementById('total-count').innerText = `${projects.length} Projects`;
+            const count = document.querySelectorAll('.card').length;
+            document.getElementById('counter').innerText = `${count} PROJECTS`;
         });
     </script>
 </body>
