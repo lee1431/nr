@@ -441,25 +441,31 @@
     }
 
     function renderItems(items) {
-      const html = items.map((item) => `
-        <article class="item" data-src="${escapeHtml(item.url)}" data-file="${escapeHtml(item.filename || item.title || '')}">
+      const html = items.map((item, index) => `
+        <article class="item" data-index="${index}" data-src="${escapeHtml(item.url)}">
+          <div class="item-number">${index + 1}</div>
+          
           <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.title || item.filename || 'image')}" loading="lazy" />
+          
           <div class="overlay">
-            <div class="overlay-title">${escapeHtml(item.filename || item.title || 'Untitled')}</div>
+            <div class="overlay-title">
+              #${index} - ${escapeHtml(item.filename || item.title || 'Untitled')}
+            </div>
             <div class="overlay-tag">${escapeHtml(item.category || currentFolder)}</div>
           </div>
+          
           <div class="list-meta">
             <div>
               <div class="list-folder">${escapeHtml(item.category || currentFolder)}</div>
               <div class="list-title">${escapeHtml(item.filename || item.title || 'Untitled')}</div>
             </div>
             <div class="list-desc">
-              공개 갤러리 이미지입니다. 백엔드 API에서 전달받은 메타데이터를 기준으로 렌더링합니다.
+              ${index + 1}번째 이미지입니다. API에서 전달받은 메타데이터를 기준으로 렌더링합니다.
             </div>
           </div>
         </article>
       `).join('');
-
+    
       gallery.insertAdjacentHTML('beforeend', html);
     }
 
