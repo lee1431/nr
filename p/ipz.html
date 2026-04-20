@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STANCE GALLERY - Photo Puzzle</title>
+  <style>
+    :root {
+      --grid-size: 3;
+      --slot-size: 150px;
+      --primary-color: #333;
+    }
+    body { font-family: 'Pretendard', sans-serif; margin: 0; background: #f8f9fa; color: #333; }
+    
+    /* 헤더 및 컨트롤러 */
+    header { padding: 20px; text-align: center; background: white; border-bottom: 1px solid #eee; }
+    .controls { margin-top: 10px; }
+    .view-btn { padding: 8px 16px; cursor: pointer; border: 1px solid #ccc; background: white; }
+    .view-btn.active { background: var(--primary-color); color: white; }
+
+    /* 갤러리 섹션 */
+    #main-container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+    #gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .item {
+      background: white; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .item:hover { transform: translateY(-5px); }
+    .item img { width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; }
+    .list-meta { padding: 15px; }
+    .list-title { font-weight: bold; margin-top: 5px; }
+    
+    /* 퍼즐 게임 섹션 */
+    #game-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+    }
+    #puzzle-board {
+      display: grid;
+      grid-template-columns: repeat(var(--grid-size), var(--slot-size));
+      grid-template-rows: repeat(var(--grid-size), var(--slot-size));
+      gap: 2px;
+      border: 5px solid var(--primary-color);
+      background: #ddd;
+    }
+    .tile {
+      width: var(--slot-size);
+      height: var(--slot-size);
+      background-size: calc(var(--slot-size) * var(--grid-size)) calc(var(--slot-size) * var(--grid-size));
+      cursor: pointer;
+    }
+    .empty { background: #eee !important; cursor: default; }
+    .game-ui { margin-top: 30px; display: flex; gap: 10px; }
+    .btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+    .btn-back { background: #6c757d; color: white; }
+    .btn-shuffle { background: #007bff; color: white; }
+
+    #loadingBox { text-align: center; padding: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <header id="page-header">
+    <h1 id="folderTitle">STANCE GALLERY</h1>
+    <div id="routeInfo">/gallery?folder=object</div>
+    <div class="controls">
+      <button class="view-btn active" data-view="grid">Grid View</button>
+      <div id="countText" style="margin-top: 10px;">Total 0 images</div>
+    </div>
+  </header>
+
+  <div id="main-container">
+    <div id="gallery" class="grid-view"></div>
+    <div id="loadingBox">이미지를 불러오는 중입니다...</div>
+  </div>
+
+  <div id="game-container">
+    <h2 id="puzzle-title">그림 맞추기</h2>
+    <div id="puzzle-board"></div>
+    <div class="game-ui">
+      <button class="btn btn-back" onclick="backToGallery()">← 갤러리로 돌아가기</button>
+      <button class="btn btn-shuffle" onclick="shuffleBoard()">다시 섞기</button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://localflow.ddns.net/images';
+    const DEFAULT_FOLDER = 'object';
+    const PAGE_SIZE = 24;
+
+    const gallery = document.getElementById('gallery');
+    const loadingBox = document.getElementById('loadingBox');
+    const countText = document.getElementById('countText');
+    const folderTitle = document.getElementById('folderTitle');
+    const gameContainer = document.getElementById('game-container');
+    const mainContainer = document.getElementById('main-container');
+    const pageHeader = document.getElementById('page-header');
+    const puzzleBoard = document.getElementById('puzzle-board');
+
+    let currentPage = 1;
+    let hasNext = true;
+    let isLoading = false;
+    let currentFolder = DEFAULT_FOLDER;
+
+    // --- 갤러리 로직 ---
+
+    function getFolderFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('folder') || DEFAULT_FOLDER;
+    }
+
+    async function loadImages(page = 1) {
+      if (isLoading || (!hasNext && page !== 1)) return;
+      isLoading = true;
+      loadingBox.style.display = 'block';
+
+      try {
+        const response = await fetch(`${API_BASE}/api/gallery/${encodeURIComponent(currentFolder)}?page=${page}&page_size=${PAGE_SIZE}`);
+        const data = await response.json();
+        
+        hasNext = data.has_next;
+        currentPage = data.page;
+
+        const itemsHtml = data.items.map(item => `
+          <article class="item" onclick="startGame('${item.url}')">
+            <img src="${item.url}" alt="${item.filename}" loading="lazy">
+            <div class="list-meta">
+              <div class="list-title">${item.filename || 'Untitled'}</div>
+            </div>
+          </article>
+        `).join('');
+
+        if (page === 1) gallery.innerHTML = '';
+        gallery.insertAdjacentHTML('beforeend', itemsHtml);
+        countText.innerHTML = `Total <strong>${data.total || 0}</strong> images`;
+        
+        if (!hasNext) loadingBox.textContent = '마지막 이미지입니다.';
+        else loadingBox.style.display = 'none';
+      } catch (err) {
+        loadingBox.textContent = '이미지를 불러오는데 실패했습니다.';
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    // --- 퍼즐 게임 로직 ---
+
+    let tiles = [];
+    let currentImg = "";
+    const gridSize = 3; 
+
+    function startGame(imgSrc) {
+      currentImg = imgSrc;
+      // UI 전환
+      mainContainer.style.display = 'none';
+      pageHeader.style.display = 'none';
+      gameContainer.style.display = 'flex';
+      
+      initBoard();
+    }
+
+    function initBoard() {
+      tiles = Array.from({length: gridSize * gridSize}, (_, i) => i);
+      renderBoard();
+      shuffleBoard();
+    }
+
+    function renderBoard() {
+      puzzleBoard.innerHTML = '';
+      tiles.forEach((tileIndex, i) => {
+        const div = document.createElement('div');
+        const isEmpty = tileIndex === gridSize * gridSize - 1;
+        div.className = 'tile' + (isEmpty ? ' empty' : '');
+        
+        if (!isEmpty) {
+          const row = Math.floor(tileIndex / gridSize);
+          const col = tileIndex % gridSize;
+          div.style.backgroundImage = `url(${currentImg})`;
+          div.style.backgroundPosition = `-${col * 150}px -${row * 150}px`;
+        }
+        
+        div.onclick = () => moveTile(i);
+        puzzleBoard.appendChild(div);
+      });
+    }
+
+    function moveTile(index) {
+      const emptyIndex = tiles.indexOf(gridSize * gridSize - 1);
+      const row = Math.floor(index / gridSize);
+      const col = index % gridSize;
+      const emptyRow = Math.floor(emptyIndex / gridSize);
+      const emptyCol = emptyIndex % gridSize;
+
+      const isAdjacent = Math.abs(row - emptyRow) + Math.abs(col - emptyCol) === 1;
+
+      if (isAdjacent) {
+        [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+        renderBoard();
+        checkWin();
+      }
+    }
+
+    function shuffleBoard() {
+      for (let i = 0; i < 200; i++) {
+        const emptyIndex = tiles.indexOf(gridSize * gridSize - 1);
+        const row = Math.floor(emptyIndex / gridSize);
+        const col = emptyIndex % gridSize;
+        const neighbors = [];
+        
+        if (row > 0) neighbors.push(emptyIndex - gridSize);
+        if (row < gridSize - 1) neighbors.push(emptyIndex + gridSize);
+        if (col > 0) neighbors.push(emptyIndex - 1);
+        if (col < gridSize - 1) neighbors.push(emptyIndex + 1);
+
+        const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+        [tiles[emptyIndex], tiles[randomNeighbor]] = [tiles[randomNeighbor], tiles[emptyIndex]];
+      }
+      renderBoard();
+    }
+
+    function checkWin() {
+      if (tiles.every((t, i) => t === i)) {
+        setTimeout(() => alert("🎉 대단해요! 퍼즐을 완성했습니다!"), 100);
+      }
+    }
+
+    function backToGallery() {
+      gameContainer.style.display = 'none';
+      mainContainer.style.display = 'block';
+      pageHeader.style.display = 'block';
+    }
+
+    // 무한 스크롤
+    window.addEventListener('scroll', () => {
+      if (gameContainer.style.display === 'flex') return;
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+        loadImages(currentPage + 1);
+      }
+    });
+
+    // 초기화
+    function init() {
+      currentFolder = getFolderFromUrl();
+      folderTitle.textContent = currentFolder.toUpperCase();
+      loadImages(1);
+    }
+
+    init();
+  </script>
+</body>
+</html>
