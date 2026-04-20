@@ -187,11 +187,12 @@
       hasNext = true;
       gallery.innerHTML = '';
       
-      // UI 업데이트
+      // 폴더 바꿀 때 카운터 일단 초기화!
+      countText.innerHTML = 'Counting...'; 
+      
       setPageHeader(folder);
       createFolderNav();
       
-      // URL 파라미터 업데이트 (새로고침 없이)
       const newUrl = `${window.location.pathname}?folder=${folder}`;
       window.history.pushState({ path: newUrl }, '', newUrl);
       
@@ -206,10 +207,10 @@
 
     async function loadImages(page = 1) {
       if (isLoading || (!hasNext && page !== 1)) return;
-
+    
       isLoading = true;
       loadingBox.style.display = 'block';
-
+    
       try {
         const response = await fetch(
           `${API_BASE}/api/gallery/${encodeURIComponent(currentFolder)}?page=${page}&page_size=${PAGE_SIZE}`
@@ -219,18 +220,27 @@
         const data = await response.json();
         currentPage = data.page || page;
         hasNext = Boolean(data.has_next);
-
+    
+        // [중요] 데이터 유무와 상관없이 해당 폴더의 total 개수를 즉시 반영합니다.
+        countText.innerHTML = `Total <strong>${data.total || 0}</strong> images`;
+    
         if (data.items && data.items.length > 0) {
           renderItems(data.items);
-          countText.innerHTML = `Total <strong>${data.total || 0}</strong> images`;
         } else if (page === 1) {
           gallery.innerHTML = '<div class="empty">표시할 이미지가 없습니다.</div>';
         }
-
+    
         loadingBox.style.display = hasNext ? 'none' : 'block';
-        if(!hasNext) loadingBox.textContent = '모든 이미지를 로드했습니다.';
+        if(!hasNext && data.total > 0) {
+            loadingBox.textContent = '모든 이미지를 로드했습니다.';
+        } else if (data.total === 0) {
+            loadingBox.style.display = 'none'; // 데이터 없으면 로딩 바 숨김
+        }
+    
       } catch (error) {
         console.error(error);
+        countText.textContent = 'Error';
+        renderError('이미지를 불러오지 못했습니다.');
       } finally {
         isLoading = false;
       }
