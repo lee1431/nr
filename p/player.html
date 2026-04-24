@@ -315,9 +315,9 @@
       </section>
 
       <section class="modes">
-        <button id="modeAll" class="active" type="button">🔁</button>
-        <button id="modeOne" type="button">🔂</button>
-        <button id="modeShuffle" type="button">🔀</button>
+        <button id="modeAll" class="active" type="button">ALL</button>
+        <button id="modeOne" type="button">ONE</button>
+        <button id="modeShuffle" type="button">SHUFFLE</button>
       </section>
 
       <div class="queue-title">
@@ -464,11 +464,32 @@
     function nextTrack() {
       if (!queueTracks.length) return;
 
+      // ONE 모드 → 현재 곡 반복
       if (playMode === 'one') {
         audio.currentTime = 0;
         playTrack();
         return;
       }
+
+      let nextIndex;
+
+      // SHUFFLE → 큐 전체에서 랜덤 (현재 곡 제외)
+      if (playMode === 'shuffle') {
+        if (queueTracks.length === 1) {
+          nextIndex = queueIndex;
+        } else {
+          do {
+            nextIndex = Math.floor(Math.random() * queueTracks.length);
+          } while (nextIndex === queueIndex);
+        }
+      } else {
+        // ALL → 순차 반복
+        nextIndex = (queueIndex + 1) % queueTracks.length;
+      }
+
+      loadQueueTrack(nextIndex);
+      playTrack();
+    }
 
       const nextIndex = playMode === 'shuffle'
         ? getRandomQueueIndex()
