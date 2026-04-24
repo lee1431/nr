@@ -463,8 +463,8 @@
         const branch = 'main';
 
         const pagePath = window.location.pathname.split('/').slice(0, -1).join('/');
-        const repoName = repo.split('/')[1];
-        const folderPath = pagePath.replace(`/${repoName}`, '').replace(/^\//, '');
+        const repoName = repo.split('/')[1];        
+        const folderPath = 'assets/muz';
 
         const apiUrl = `https://api.github.com/repos/${repo}/contents/${folderPath}?ref=${branch}`;
         const response = await fetch(apiUrl, { cache: 'no-store' });
