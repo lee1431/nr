@@ -147,6 +147,22 @@
 
     .progress-wrap { display: grid; gap: 8px; margin-bottom: 14px; }
 
+    .volume-wrap {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .volume-wrap input {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
     .time {
       display: flex;
       justify-content: space-between;
@@ -308,6 +324,11 @@
         </div>
       </section>
 
+      <section class="volume-wrap">
+        <label>VOL</label>
+        <input id="volume" type="range" min="0" max="1" step="0.01" value="1" />
+      </section>
+
       <section class="controls">
         <button id="prev" type="button">PREV</button>
         <button id="play" class="play" type="button" aria-label="play">▶</button>
@@ -348,6 +369,7 @@
     const prevBtn = document.getElementById('prev');
     const nextBtn = document.getElementById('next');
     const progress = document.getElementById('progress');
+    const volume = document.getElementById('volume');
     const current = document.getElementById('current');
     const duration = document.getElementById('duration');
     const status = document.getElementById('status');
@@ -463,15 +485,17 @@
 
     function nextTrack() {
       if (!queueTracks.length) return;
-    
+
+      // ONE 모드 → 현재 곡 반복
       if (playMode === 'one') {
         audio.currentTime = 0;
         playTrack();
         return;
       }
-    
+
       let nextIndex;
-    
+
+      // SHUFFLE → 큐 전체에서 랜덤 (현재 곡 제외)
       if (playMode === 'shuffle') {
         if (queueTracks.length === 1) {
           nextIndex = queueIndex;
@@ -481,9 +505,18 @@
           } while (nextIndex === queueIndex);
         }
       } else {
+        // ALL → 순차 반복
         nextIndex = (queueIndex + 1) % queueTracks.length;
       }
-    
+
+      loadQueueTrack(nextIndex);
+      playTrack();
+    }
+
+      const nextIndex = playMode === 'shuffle'
+        ? getRandomQueueIndex()
+        : (queueIndex + 1) % queueTracks.length;
+
       loadQueueTrack(nextIndex);
       playTrack();
     }
@@ -609,6 +642,10 @@
     progress.addEventListener('input', () => {
       if (!audio.duration) return;
       audio.currentTime = (progress.value / 100) * audio.duration;
+    });
+
+    volume.addEventListener('input', () => {
+      audio.volume = volume.value;
     });
 
     audio.addEventListener('ended', nextTrack);
