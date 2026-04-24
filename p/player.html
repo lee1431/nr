@@ -331,7 +331,7 @@
   </main>
 
   <script>
-    const repo = 'lee1431/nr';
+    const repo = 'YOUR_GITHUB_ID/YOUR_REPOSITORY_NAME';
     const branch = 'main';
     const folderPath = 'assets/muz';
 
@@ -496,6 +496,8 @@
 
     function removeFromQueue(index) {
       const wasPlaying = !audio.paused;
+      const isCurrentTrack = index === queueIndex;
+
       queueTracks.splice(index, 1);
 
       if (!queueTracks.length) {
@@ -503,8 +505,21 @@
         return;
       }
 
-      if (index < queueIndex) queueIndex -= 1;
-      if (queueIndex >= queueTracks.length) queueIndex = queueTracks.length - 1;
+      // 현재 재생 중인 곡보다 앞의 곡을 지우면 인덱스만 보정하고 재생은 유지
+      if (index < queueIndex) {
+        queueIndex -= 1;
+        renderQueue();
+        return;
+      }
+
+      // 현재 재생곡이 아닌 뒤쪽 곡을 지우면 목록만 다시 그림
+      if (!isCurrentTrack) {
+        renderQueue();
+        return;
+      }
+
+      // 현재 재생곡을 지운 경우에만 다음 곡으로 교체
+      if (queueIndex >= queueTracks.length) queueIndex = 0;
       loadQueueTrack(queueIndex);
       if (wasPlaying) playTrack();
     }
