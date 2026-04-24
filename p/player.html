@@ -477,8 +477,8 @@
 
         tracks = mp3Files.map(file => ({
           title: decodeURIComponent(file.name.replace(/\.mp3$/i, '')),
-          artist: 'GitHub Folder',
-          src: `./${encodeURIComponent(file.name)}`
+          artist: 'Master BS',
+          src: `../assets/muz/${encodeURIComponent(file.name)}`
         }));
 
         if (!tracks.length) throw new Error('No mp3 files');
