@@ -6,20 +6,13 @@
   <title>Planet Chungju - Jigsaw Gallery</title>
   <style>
     :root { --bg: #121416; --accent: #00d2ff; --panel: rgba(0, 0, 0, 0.8); }
-    * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; outline: none; }
     
-    /* 기본적으로 스크롤 허용 */
     body { 
-      margin: 0; 
-      background: var(--bg); 
-      color: white; 
-      font-family: sans-serif; 
-      overflow-x: hidden;
-      overflow-y: auto; 
+      margin: 0; background: var(--bg); color: white; font-family: sans-serif; 
+      overflow-x: hidden; overflow-y: auto; 
     }
-    
-    /* 게임 중일 때만 스크롤 방지 */
-    body.playing { overflow: hidden; }
+    body.playing { overflow: hidden; position: fixed; width: 100%; }
 
     header { 
       position: fixed; top: 0; left: 0; width: 100%; padding: 15px; 
@@ -102,7 +95,7 @@
   let view = { x: 0, y: 0, scale: 0.7, isPanning: false, startX: 0, startY: 0, lastDist: 0 };
   let dragOffset = { x: 0, y: 0 };
 
-  // --- 갤러리 로직 (스크롤 가능) ---
+  // --- 이미지 목록 로드 ---
   async function loadImages(page = 1) {
     if (isLoading || (!hasNext && page !== 1)) return;
     isLoading = true;
@@ -123,19 +116,13 @@
       else gallery.insertAdjacentHTML('beforeend', html);
 
       document.getElementById('countText').innerHTML = `Total <strong>${data.total || 0}</strong> Images`;
-    } catch (err) {
-      console.error(err);
-      document.getElementById('countText').innerText = '이미지를 불러오지 못했습니다.';
-    } finally {
-      isLoading = false;
-    }
+    } catch (err) { console.error(err); } finally { isLoading = false; }
   }
 
   function startGame(url) {
     document.body.classList.add('playing');
     document.getElementById('game-container').style.display = 'block';
-    msgBox.innerText = '이미지 로딩 중...';
-    img.onload = () => { resize(); resetGame(); msgBox.innerText = '조각을 바닥 음각에 맞춰보셔유!'; };
+    img.onload = () => { resize(); resetGame(); };
     img.src = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
   }
 
@@ -150,9 +137,10 @@
     canvas.height = window.innerHeight * devicePixelRatio;
     view.x = window.innerWidth / 2;
     view.y = window.innerHeight / 2;
+    draw();
   }
 
-  // --- 퍼즐 엔진 ---
+  // --- 퍼즐 엣지 그리기 ---
   function getPath(ctx, p, x, y) {
     ctx.beginPath(); ctx.moveTo(x, y);
     const drawEdge = (x1, y1, x2, y2, type) => {
@@ -180,11 +168,11 @@
     }
     for(let r=0; r<gridSize; r++) for(let c=0; c<gridSize; c++) {
       const isLeft = (r * gridSize + c) % 2 === 0;
-      const marginX = (pw * gridSize) / 2 + 150;
+      const trayOffset = (pw * gridSize) / 2 + 120;
       pieces.push({
         row: r, col: c, w: pw, h: ph, tab: pw*0.2, isLocked: false,
         edges: { t: map[r][c].v*-1, r: map[r][c+1].h, b: map[r+1][c].v, l: map[r][c].h*-1 },
-        x: (isLeft ? -1 : 1) * (marginX + Math.random()*100),
+        x: (isLeft ? -1 : 1) * (trayOffset + Math.random()*150),
         y: (Math.random() - 0.5) * (window.innerHeight / view.scale),
         tx: (c - gridSize/2) * pw, ty: (r - gridSize/2) * ph
       });
@@ -199,14 +187,13 @@
     ctx.translate(view.x, view.y);
     ctx.scale(view.scale, view.scale);
 
-    // 가이드(음각)
+    // 가이드 음각
     pieces.forEach(p => {
       ctx.save(); getPath(ctx, p, p.tx, p.ty);
-      ctx.strokeStyle = "rgba(255,255,255,0.08)"; ctx.lineWidth = 1.5/view.scale; ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,0.08)"; ctx.lineWidth = 1/view.scale; ctx.stroke();
       ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fill(); ctx.restore();
     });
 
-    // 조각 (정렬: 잠김 -> 일반 -> 선택됨)
     const sorted = [...pieces].sort((a,b) => (a===selectedPiece?2:(a.isLocked?-1:0)) - (b===selectedPiece?2:(b.isLocked?-1:0)));
     sorted.forEach(p => {
       ctx.save();
@@ -216,16 +203,23 @@
       ctx.drawImage(img, (p.col/gridSize)*img.width-b, (p.row/gridSize)*img.height-b, sw+b*2, sh+b*2, p.x-p.tab*2, p.y-p.tab*2, p.w+p.tab*4, p.h+p.tab*4);
       ctx.restore();
       ctx.save(); getPath(ctx, p, p.x, p.y);
-      ctx.strokeStyle = p.isLocked ? "rgba(255,255,255,0.05)" : (p===selectedPiece? "#00d2ff" : "rgba(255,255,255,0.4)");
+      ctx.strokeStyle = p.isLocked ? "rgba(255,255,255,0.05)" : (p===selectedPiece? "#00d2ff" : "rgba(255,255,255,0.3)");
       ctx.lineWidth = (p===selectedPiece?3:1)/view.scale; ctx.stroke(); ctx.restore();
     });
   }
 
-  // --- 터치/마우스 통합 핸들러 ---
+  // --- 핵심 터치 로직 ---
   function getPoint(e) {
-    const touch = e.touches ? e.touches[0] : e;
-    const rx = touch.clientX, ry = touch.clientY;
-    return { rx, ry, x: (rx - view.x) / view.scale, y: (ry - view.y) / view.scale };
+    const t = e.touches ? e.touches[0] : e;
+    // 뷰포트 절대 좌표를 가져옴
+    const rx = t.clientX;
+    const ry = t.clientY;
+    // 현재 뷰(팬/줌) 상태를 역계산하여 월드 좌표로 변환
+    return {
+      rx, ry,
+      x: (rx - view.x) / view.scale,
+      y: (ry - view.y) / view.scale
+    };
   }
 
   function handleStart(e) {
@@ -233,29 +227,39 @@
       view.lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       return;
     }
-    if(document.body.classList.contains('playing') && e.cancelable) e.preventDefault();
+    
+    // 게임 중일 때는 기본 동작(스크롤) 방지
+    if(document.body.classList.contains('playing')) {
+      if(e.cancelable) e.preventDefault();
+    }
 
     const p = getPoint(e);
-    const dpr = devicePixelRatio;
     selectedPiece = null;
+
+    // 히트 판정 (Z-index 역순: 가장 위의 조각부터)
+    // context transform 없이 순수하게 월드 좌표 내에서 판정하여 오차 제거
+    const hitCtx = document.createElement('canvas').getContext('2d');
 
     for (let i = pieces.length - 1; i >= 0; i--) {
       const pc = pieces[i];
       if (pc.isLocked) continue;
-      ctx.save();
-      ctx.setTransform(view.scale * dpr, 0, 0, view.scale * dpr, view.x * dpr, view.y * dpr);
-      getPath(ctx, pc, pc.x, pc.y);
-      if (ctx.isPointInPath(p.rx * dpr, p.ry * dpr)) {
+
+      getPath(hitCtx, pc, pc.x, pc.y);
+      // 터치 시에는 약간의 여유(Tolerance)를 주기 위해 히트 영역을 가상으로 확장하여 체크 가능
+      if (hitCtx.isPointInPath(p.x, p.y)) {
         selectedPiece = pc;
-        dragOffset.x = p.x - pc.x; dragOffset.y = p.y - pc.y;
-        pieces.splice(i, 1); pieces.push(pc);
-        ctx.restore(); break;
+        dragOffset.x = p.x - pc.x;
+        dragOffset.y = p.y - pc.y;
+        pieces.splice(i, 1);
+        pieces.push(pc);
+        break;
       }
-      ctx.restore();
     }
+
     if (!selectedPiece) {
       view.isPanning = true;
-      view.startX = p.rx - view.x; view.startY = p.ry - view.y;
+      view.startX = p.rx - view.x;
+      view.startY = p.ry - view.y;
     }
     draw();
   }
@@ -266,30 +270,34 @@
 
     if (e.touches && e.touches.length === 2) {
       const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2, midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       const ns = Math.max(0.1, Math.min(5, view.scale * (dist / view.lastDist)));
       view.x = midX - (midX - view.x) * (ns / view.scale);
       view.y = midY - (midY - view.y) * (ns / view.scale);
       view.scale = ns; view.lastDist = dist;
       draw(); return;
     }
+
     const p = getPoint(e);
     if (selectedPiece) {
-      selectedPiece.x = p.x - dragOffset.x; selectedPiece.y = p.y - dragOffset.y;
+      selectedPiece.x = p.x - dragOffset.x;
+      selectedPiece.y = p.y - dragOffset.y;
     } else if (view.isPanning) {
-      view.x = p.rx - view.startX; view.y = p.ry - view.startY;
+      view.x = p.rx - view.startX;
+      view.y = p.ry - view.startY;
     }
     draw();
   }
 
   function handleEnd() {
     if (selectedPiece) {
-      const d = Math.hypot(selectedPiece.x - selectedPiece.tx, selectedPiece.y - selectedPiece.ty);
-      if (d < 30 / view.scale) {
+      const dist = Math.hypot(selectedPiece.x - selectedPiece.tx, selectedPiece.y - selectedPiece.ty);
+      if (dist < 35 / view.scale) {
         selectedPiece.x = selectedPiece.tx; selectedPiece.y = selectedPiece.ty;
         selectedPiece.isLocked = true;
-        const win = pieces.filter(p => p.isLocked).length;
-        msgBox.innerText = (win === pieces.length) ? '완성했습니다!' : `맞춘 조각: ${win} / ${pieces.length}`;
+        const count = pieces.filter(p => p.isLocked).length;
+        msgBox.innerText = (count === pieces.length) ? '와우! 다 맞췄슈!' : `맞춘 조각: ${count} / ${pieces.length}`;
       }
     }
     selectedPiece = null; view.isPanning = false;
@@ -303,10 +311,12 @@
     resetGame();
   }
 
-  // --- 이벤트 리스너 ---
+  // --- 이벤트 바인딩 ---
+  // passive: false는 e.preventDefault()를 작동시키기 위해 필수
   canvas.addEventListener('touchstart', handleStart, { passive: false });
   window.addEventListener('touchmove', handleMove, { passive: false });
-  window.addEventListener('touchend', handleEnd);
+  window.addEventListener('touchend', handleEnd, { passive: false });
+
   canvas.addEventListener('mousedown', handleStart);
   window.addEventListener('mousemove', handleMove);
   window.addEventListener('mouseup', handleEnd);
@@ -314,22 +324,21 @@
   canvas.addEventListener('wheel', e => {
     if (!document.body.classList.contains('playing')) return;
     e.preventDefault();
-    const f = e.deltaY < 0 ? 1.1 : 0.9;
-    const ns = Math.max(0.1, Math.min(5, view.scale * f));
+    const factor = e.deltaY < 0 ? 1.1 : 0.9;
+    const ns = Math.max(0.1, Math.min(5, view.scale * factor));
     view.x = e.clientX - (e.clientX - view.x) * (ns / view.scale);
     view.y = e.clientY - (e.clientY - view.y) * (ns / view.scale);
     view.scale = ns; draw();
   }, { passive: false });
 
-  // 갤러리 무한 스크롤
   window.addEventListener('scroll', () => {
     if (document.body.classList.contains('playing')) return;
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 600) {
       if (hasNext && !isLoading) loadImages(currentPage + 1);
     }
   });
 
-  window.addEventListener('resize', () => { if(document.body.classList.contains('playing')) { resize(); draw(); }});
+  window.addEventListener('resize', () => { if(document.body.classList.contains('playing')) resize(); });
 
   loadImages();
 </script>
