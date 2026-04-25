@@ -305,7 +305,7 @@
       msgBox.innerText = '이미지를 불러오지 못했습니다.';
     };
 
-    img.src = url;
+    img.src = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
   }
 
   function backToGallery() {
