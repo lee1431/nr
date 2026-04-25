@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Ascent: Mariana to Space</title>
+    <style>
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .game-outer { position: relative; width: 400px; height: 700px; box-shadow: 0 0 50px rgba(0,255,255,0.2); border-radius: 20px; overflow: hidden; }
+        canvas { display: block; background: #001219; } /* 초기 심해 색상 */
+        .ui { position: absolute; bottom: 0; width: 100%; height: 120px; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+        .stats { position: absolute; top: 20px; left: 20px; pointer-events: none; }
+        #altimeter { font-size: 0.9rem; color: #00d4ff; }
+        #score { font-size: 2rem; font-weight: bold; }
+        .btn-group { display: flex; gap: 10px; }
+        button { padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        #dropBtn { background: #00d4ff; color: #000; width: 150px; }
+        #resetBtn { background: #444; color: #ccc; }
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <div class="game-outer" id="container">
+        <div class="stats">
+            <div id="score">0</div>
+            <div id="altimeter">Mariana Trench (-10,994m)</div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="ui">
+            <div class="btn-group">
+                <button id="dropBtn">DROP</button>
+                <button id="resetBtn">RESET</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const altEl = document.getElementById('altimeter');
+        
+        canvas.width = 400;
+        canvas.height = 700;
+
+        // 게임 설정
+        const COIN_W = 80;
+        const COIN_H = 16;
+        const TARGET_SCORE = 1000; // 우주 진입 기준
+
+        let coins = [];
+        let currentCoin = { x: 0, y: 80, vx: 3 };
+        let score = 0;
+        let isDropping = false;
+        let cameraY = 0; // 부드러운 스크롤의 핵심
+        let targetCameraY = 0;
+        let isGameOver = false;
+
+        // 배경 색상 정의 (고도별)
+        const bgColors = [
+            { limit: 0, color: '#001219' },    // 심해 (마리아나)
+            { limit: 200, color: '#005f73' },  // 중간 바다
+            { limit: 400, color: '#0a9396' },  // 얕은 바다
+            { limit: 600, color: '#94d2bd' },  // 해수면/하늘
+            { limit: 800, color: '#005f73' },  // 성층권
+            { limit: 1000, color: '#001219' }, // 대기권 밖
+            { limit: 1001, color: '#000000' }  // 우주 (무한)
+        ];
+
+        function init() {
+            coins = [{ x: 160, y: canvas.height - 140, w: COIN_W, h: COIN_H }];
+            score = 0;
+            cameraY = 0;
+            targetCameraY = 0;
+            isGameOver = false;
+            isDropping = false;
+            newLevel();
+            loop();
+        }
+
+        function newLevel() {
+            const speedInc = Math.min(score * 0.05, 7);
+            currentCoin = {
+                x: Math.random() * (canvas.width - COIN_W),
+                y: 80,
+                w: COIN_W,
+                h: COIN_H,
+                vx: (3 + speedInc) * (Math.random() > 0.5 ? 1 : -1)
+            };
+            isDropping = false;
+        }
+
+        function updateAltimeter() {
+            if (score < 1000) {
+                const depth = -10994 + (score * 11);
+                altEl.innerText = score < 600 ? `Ocean Depth (${Math.floor(depth)}m)` : `Atmosphere (${Math.floor(score * 50)}m)`;
+            } else {
+                altEl.innerText = `Deep Space (Level: ${score})`;
+                altEl.style.color = "#ff00ff";
+            }
+        }
+
+        function getBGColor() {
+            let color = bgColors[0].color;
+            for (let i = 0; i < bgColors.length; i++) {
+                if (score >= bgColors[i].limit) color = bgColors[i].color;
+            }
+            return color;
+        }
+
+        function loop() {
+            if (isGameOver) return;
+
+            // 1. 카메라 부드러운 이동 (Lerp)
+            cameraY += (targetCameraY - cameraY) * 0.1;
+
+            // 2. 배경 그리기
+            ctx.fillStyle = getBGColor();
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 3. 쌓인 동전들 (카메라 위치 반영)
+            coins.forEach((c, i) => {
+                const yPos = c.y + cameraY;
+                if (yPos > -50 && yPos < canvas.height + 50) { // 최적화: 화면 내만 그림
+                    ctx.fillStyle = `hsl(${40 + (i * 0.5)}, 80%, ${Math.max(20, 70 - (i/20))}%)`;
+                    ctx.fillRect(c.x, yPos, c.w, c.h);
+                    ctx.strokeStyle = "rgba(0,0,0,0.3)";
+                    ctx.strokeRect(c.x, yPos, c.w, c.h);
+                }
+            });
+
+            // 4. 움직이는 동전
+            if (!isDropping) {
+                currentCoin.x += currentCoin.vx;
+                if (currentCoin.x < 0 || currentCoin.x + COIN_W > canvas.width) currentCoin.vx *= -1;
+            } else {
+                currentCoin.y += 15;
+                const lastCoin = coins[coins.length - 1];
+                if (currentCoin.y + COIN_H >= lastCoin.y) {
+                    const diff = currentCoin.x - lastCoin.x;
+                    if (Math.abs(diff) < COIN_W) {
+                        // 성공적으로 쌓임
+                        score++;
+                        scoreEl.innerText = score;
+                        updateAltimeter();
+                        
+                        coins.push({ x: currentCoin.x, y: lastCoin.y - COIN_H, w: COIN_W, h: COIN_H });
+                        
+                        // 카메라 목표 지점 설정 (동전이 화면 중앙쯤 오도록)
+                        if (coins.length > 5) {
+                            targetCameraY = (canvas.height / 2) - (coins.length * COIN_H) + (600);
+                        }
+                        
+                        newLevel();
+                    } else {
+                        isGameOver = true;
+                        alert("The Tower has fallen! Score: " + score);
+                        init();
+                    }
+                }
+            }
+            
+            // 현재 동전 그리기
+            ctx.fillStyle = "#FFD700";
+            ctx.fillRect(currentCoin.x, currentCoin.y + (isDropping ? 0 : 0), COIN_W, COIN_H);
+
+            requestAnimationFrame(loop);
+        }
+
+        document.getElementById('dropBtn').addEventListener('click', () => isDropping = true);
+        document.getElementById('resetBtn').addEventListener('click', init);
+        window.onload = init;
+    </script>
+</body>
+</html>
