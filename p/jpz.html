@@ -282,7 +282,7 @@
 
   function startGame(url) {
     const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
-    currentImgUrl = cacheBusterUrl;
+    currentImgUrl = cacheBusterUrl; // 여기서 저장하고
 
     document.body.classList.add('playing');
     mainContainer.style.display = 'none';
@@ -305,8 +305,9 @@
       msgBox.innerText = '이미지를 불러오지 못했습니다.';
     };
 
-    img.src = url;
-  }
+    // 💡 2. 여기를 url 대신 cacheBusterUrl로 바꿔야 합니다!
+    img.src = cacheBusterUrl; 
+}
 
   function backToGallery() {
     document.body.classList.remove('playing');
