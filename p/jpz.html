@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chungju Jigsaw Master - Fixed</title>
+    <style>
+        :root { --bg: #121212; --accent: #2ecc71; }
+        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; touch-action: none; }
+        header { position: absolute; top: 0; width: 100%; padding: 15px; box-sizing: border-box; display: flex; justify-content: space-between; z-index: 10; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
+        .controls { display: flex; gap: 8px; }
+        button { padding: 10px 15px; border: none; border-radius: 8px; background: #333; color: white; font-weight: bold; cursor: pointer; font-size: 13px; }
+        button.active { background: var(--accent); box-shadow: 0 0 10px rgba(46, 204, 113, 0.5); }
+        #puzzle-canvas { display: block; width: 100vw; height: 100vh; }
+        #msg { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); pointer-events: none; background: rgba(0,0,0,0.8); padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.2); z-index: 10; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div id="title" style="font-weight: bold; font-size: 1.2rem; color: var(--accent);">Planet Chungju Jigsaw</div>
+    <div class="controls">
+        <button onclick="setDifficulty(8)" id="btn64">64P</button>
+        <button onclick="setDifficulty(10)" id="btn100" class="active">100P</button>
+        <button onclick="setDifficulty(12)" id="btn144">144P</button>
+        <button onclick="resetGame()" style="background: #e74c3c;">다시</button>
+    </div>
+</header>
+
+<div id="msg">확대해서 맞추면 훨씬 편해유!</div>
+<canvas id="puzzle-canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('puzzle-canvas');
+    const ctx = canvas.getContext('2d');
+    const msgBox = document.getElementById('msg');
+    const ACCENT_COLOR = '#2ecc71'; // 🌟 CSS 변수 대신 사용할 JS 상수
+    
+    let img = new Image();
+    let pieces = [];
+    let selectedPiece = null;
+    let gridSize = 10;
+    let originalPuzzleWidth, logicalPieceWidth, logicalPieceHeight, tabSize;
+
+    let viewState = {
+        scale: 1.0, panning: false,
+        pointX: window.innerWidth / 2, pointY: window.innerHeight / 2,
+        startX: 0, startY: 0, lastPinchDist: 0
+    };
+    
+    let dragOffset = { x: 0, y: 0 };
+
+    img.src = 'https://upload.wikimedia.org/wikipedia/commons/e/ec/Chungju_Lake.jpg'; 
+    img.onload = () => { setupCanvas(); resetGame(); };
+
+    function setupCanvas() {
+        canvas.width = window.innerWidth * window.devicePixelRatio;
+        canvas.height = window.innerHeight * window.devicePixelRatio;
+    }
+
+    function initPuzzle() {
+        pieces = [];
+        originalPuzzleWidth = Math.min(window.innerWidth, window.innerHeight) * 0.9;
+        logicalPieceWidth = originalPuzzleWidth / gridSize;
+        logicalPieceHeight = (logicalPieceWidth * img.height) / img.width;
+        tabSize = logicalPieceWidth * 0.22;
+
+        let connectionMap = [];
+        for(let r=0; r <= gridSize; r++) {
+            connectionMap[r] = [];
+            for(let c=0; c <= gridSize; c++) {
+                connectionMap[r][c] = {
+                    h: (c > 0 && c < gridSize) ? (Math.random() < 0.5 ? 1 : -1) : 0,
+                    v: (r > 0 && r < gridSize) ? (Math.random() < 0.5 ? 1 : -1) : 0
+                };
+            }
+        }
+
+        for (let r = 0; r < gridSize; r++) {
+            for (let c = 0; c < gridSize; c++) {
+                pieces.push({
+                    row: r, col: c,
+                    edges: {
+                        top: connectionMap[r][c].v * -1,
+                        right: connectionMap[r][c+1].h,
+                        bottom: connectionMap[r+1][c].v,
+                        left: connectionMap[r][c].h * -1
+                    },
+                    sw: img.width / gridSize,
+                    sh: img.height / gridSize,
+                    x: (Math.random() - 0.5) * originalPuzzleWidth * 1.5,
+                    y: (Math.random() - 0.5) * originalPuzzleWidth * 1.5,
+                    tx: c * logicalPieceWidth - (originalPuzzleWidth/2),
+                    ty: r * logicalPieceHeight - (gridSize * logicalPieceHeight / 2),
+                    isLocked: false
+                });
+            }
+        }
+        draw();
+    }
+
+    function drawTab(ctx, x1, y1, x2, y2, type, t, horizontal) {
+        const cx = (x1 + x2) / 2;
+        const cy = (y1 + y2) / 2;
+        const h = t * type;
+        if (horizontal) {
+            ctx.bezierCurveTo(cx - t, y1, cx - t/2, y1 + h*1.2, cx, y1 + h);
+            ctx.bezierCurveTo(cx + t/2, y1 + h*1.2, cx + t, y1, x2, y2);
+        } else {
+            ctx.bezierCurveTo(x1, cy - t, x1 + h*1.2, cy - t/2, x1 + h, cy);
+            ctx.bezierCurveTo(x1 + h*1.2, cy + t/2, x1, cy + t, x2, y2);
+        }
+    }
+
+    function getPiecePath(ctx, p, x, y, w, h, t) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        if (p.edges.top === 0) ctx.lineTo(x + w, y); else drawTab(ctx, x, y, x + w, y, p.edges.top, t, true);
+        if (p.edges.right === 0) ctx.lineTo(x + w, y + h); else drawTab(ctx, x + w, y, x + w, y + h, p.edges.right, t, false);
+        if (p.edges.bottom === 0) ctx.lineTo(x, y + h); else drawTab(ctx, x + w, y + h, x, y + h, p.edges.bottom, t, true);
+        if (p.edges.left === 0) ctx.lineTo(x, y); else drawTab(ctx, x, y + h, x, y, p.edges.left, t, false);
+        ctx.closePath();
+    }
+
+    function draw() {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const dpr = window.devicePixelRatio;
+        ctx.setTransform(viewState.scale * dpr, 0, 0, viewState.scale * dpr, viewState.pointX * dpr, viewState.pointY * dpr);
+
+        const puzzleTotalHeight = gridSize * logicalPieceHeight;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1 / viewState.scale;
+        ctx.strokeRect(-originalPuzzleWidth/2, -puzzleTotalHeight/2, originalPuzzleWidth, puzzleTotalHeight);
+
+        const sortedPieces = [...pieces].sort((a, b) => a.isLocked - b.isLocked);
+        sortedPieces.forEach(p => {
+            ctx.save();
+            const srcX = (p.col / gridSize) * img.width;
+            const srcY = (p.row / gridSize) * img.height;
+            getPiecePath(ctx, p, p.x, p.y, logicalPieceWidth, logicalPieceHeight, tabSize);
+            ctx.clip();
+            const bleed = tabSize * (img.width/originalPuzzleWidth) * 2;
+            const bleedDraw = tabSize * 2;
+            ctx.drawImage(img, srcX - bleed, srcY - bleed, p.sw + bleed*2, p.sh + bleed*2, p.x - bleedDraw, p.y - bleedDraw, logicalPieceWidth + bleedDraw*2, logicalPieceHeight + bleedDraw*2);
+            ctx.restore();
+
+            ctx.save();
+            getPiecePath(ctx, p, p.x, p.y, logicalPieceWidth, logicalPieceHeight, tabSize);
+            // 🌟 에러 수정 지점: ACCENT_COLOR 상수 사용
+            ctx.strokeStyle = p.isLocked ? 'rgba(255,255,255,0.05)' : (selectedPiece === p ? ACCENT_COLOR : 'rgba(255,255,255,0.4)');
+            ctx.lineWidth = (selectedPiece === p ? 3 : 1) / viewState.scale;
+            ctx.stroke();
+            ctx.restore();
+        });
+    }
+
+    function screenToWorld(clientX, clientY) {
+        return { x: (clientX - viewState.pointX) / viewState.scale, y: (clientY - viewState.pointY) / viewState.scale };
+    }
+
+    function handleStart(e) {
+        e.preventDefault();
+        const touches = e.touches;
+        if (touches && touches.length === 2) {
+            viewState.panning = false;
+            viewState.lastPinchDist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+            return;
+        }
+
+        const touch = touches ? touches[0] : e;
+        const worldPos = screenToWorld(touch.clientX, touch.clientY);
+        
+        selectedPiece = null;
+        for (let i = pieces.length - 1; i >= 0; i--) {
+            const p = pieces[i];
+            if (p.isLocked) continue;
+            
+            // 🌟 히트 테스트 로직 수정
+            ctx.save();
+            const dpr = window.devicePixelRatio;
+            ctx.setTransform(viewState.scale * dpr, 0, 0, viewState.scale * dpr, viewState.pointX * dpr, viewState.pointY * dpr);
+            getPiecePath(ctx, p, p.x, p.y, logicalPieceWidth, logicalPieceHeight, tabSize);
+            if (ctx.isPointInPath(touch.clientX * dpr, touch.clientY * dpr)) {
+                selectedPiece = p;
+                dragOffset.x = worldPos.x - p.x;
+                dragOffset.y = worldPos.y - p.y;
+                pieces.splice(i, 1);
+                pieces.push(selectedPiece);
+                ctx.restore();
+                break;
+            }
+            ctx.restore();
+        }
+
+        if (!selectedPiece) {
+            viewState.panning = true;
+            viewState.startX = touch.clientX - viewState.pointX;
+            viewState.startY = touch.clientY - viewState.pointY;
+        }
+        draw();
+    }
+
+    function handleMove(e) {
+        e.preventDefault();
+        const touches = e.touches;
+        if (touches && touches.length === 2) {
+            const dist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+            const midX = (touches[0].clientX + touches[1].clientX) / 2;
+            const midY = (touches[0].clientY + touches[1].clientY) / 2;
+            const factor = dist / viewState.lastPinchDist;
+            
+            const newScale = Math.max(0.5, Math.min(4.0, viewState.scale * factor));
+            const realFactor = newScale / viewState.scale;
+            viewState.pointX = midX - (midX - viewState.pointX) * realFactor;
+            viewState.pointY = midY - (midY - viewState.pointY) * realFactor;
+            viewState.scale = newScale;
+            viewState.lastPinchDist = dist;
+            draw();
+            return;
+        }
+
+        const touch = touches ? touches[0] : e;
+        if (selectedPiece) {
+            const worldPos = screenToWorld(touch.clientX, touch.clientY);
+            selectedPiece.x = worldPos.x - dragOffset.x;
+            selectedPiece.y = worldPos.y - dragOffset.y;
+        } else if (viewState.panning) {
+            viewState.pointX = touch.clientX - viewState.startX;
+            viewState.pointY = touch.clientY - viewState.startY;
+        }
+        draw();
+    }
+
+    function handleEnd() {
+        if (selectedPiece) {
+            const dist = Math.hypot(selectedPiece.x - selectedPiece.tx, selectedPiece.y - selectedPiece.ty);
+            if (dist < 15 / viewState.scale) {
+                selectedPiece.x = selectedPiece.tx;
+                selectedPiece.y = selectedPiece.ty;
+                selectedPiece.isLocked = true;
+                checkClear();
+            }
+        }
+        selectedPiece = null;
+        viewState.panning = false;
+        draw();
+    }
+
+    function setDifficulty(size) {
+        gridSize = size;
+        document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn' + (size*size)).classList.add('active');
+        resetGame();
+    }
+
+    function resetGame() {
+        viewState.scale = 0.8;
+        viewState.pointX = window.innerWidth / 2;
+        viewState.pointY = window.innerHeight / 2;
+        initPuzzle();
+    }
+
+    function checkClear() {
+        const lockedCount = pieces.filter(p => p.isLocked).length;
+        msgBox.innerText = `맞춘 조각: ${lockedCount} / ${pieces.length}`;
+        if (lockedCount === pieces.length) {
+            msgBox.innerHTML = "<b style='color:#2ecc71'>🎉 명품 충주 퍼즐 완성! 최고구만유!</b>";
+        }
+    }
+
+    canvas.addEventListener('mousedown', handleStart);
+    canvas.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    canvas.addEventListener('touchstart', handleStart, { passive: false });
+    canvas.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+    window.addEventListener('resize', () => { setupCanvas(); draw(); });
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY > 0 ? 0.9 : 1.1;
+        const newScale = Math.max(0.5, Math.min(4.0, viewState.scale * factor));
+        const realFactor = newScale / viewState.scale;
+        viewState.pointX = e.clientX - (e.clientX - viewState.pointX) * realFactor;
+        viewState.pointY = e.clientY - (e.clientY - viewState.pointY) * realFactor;
+        viewState.scale = newScale;
+        draw();
+    }, { passive: false });
+</script>
+
+</body>
+</html>
