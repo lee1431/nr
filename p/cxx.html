@@ -12,7 +12,8 @@
       margin: 0; background: var(--bg); color: white; font-family: sans-serif; 
       overflow-x: hidden; overflow-y: auto; 
     }
-    body.playing { overflow: hidden; position: fixed; width: 100%; }
+    /* 게임 중 스크롤 및 튕김 방지 */
+    body.playing { overflow: hidden; position: fixed; width: 100%; height: 100%; }
 
     header { 
       position: fixed; top: 0; left: 0; width: 100%; padding: 15px; 
@@ -47,7 +48,7 @@
       font-size: 14px; pointer-events: none; z-index: 100; white-space: nowrap;
     }
 
-    canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
     .game-only { display: none; }
     body.playing .game-only { display: inline-block; }
@@ -74,7 +75,7 @@
 </main>
 
 <section id="game-container">
-  <div id="msg-box">조각을 바닥 음각에 맞춰보셔유!</div>
+  <div id="msg-box">조각을 맞춰보셔유!</div>
   <canvas id="mainCanvas"></canvas>
 </section>
 
@@ -95,7 +96,6 @@
   let view = { x: 0, y: 0, scale: 0.7, isPanning: false, startX: 0, startY: 0, lastDist: 0 };
   let dragOffset = { x: 0, y: 0 };
 
-  // --- 이미지 목록 로드 ---
   async function loadImages(page = 1) {
     if (isLoading || (!hasNext && page !== 1)) return;
     isLoading = true;
@@ -104,17 +104,14 @@
       const data = await res.json();
       hasNext = data.has_next;
       currentPage = data.page;
-
       const html = data.items.map(item => `
         <article class="item" onclick="startGame('${item.url}')">
           <img src="${item.url}" loading="lazy" alt="img">
           <div class="list-meta">${item.filename || 'Untitled'}</div>
         </article>
       `).join('');
-
       if (page === 1) gallery.innerHTML = html;
       else gallery.insertAdjacentHTML('beforeend', html);
-
       document.getElementById('countText').innerHTML = `Total <strong>${data.total || 0}</strong> Images`;
     } catch (err) { console.error(err); } finally { isLoading = false; }
   }
@@ -140,7 +137,6 @@
     draw();
   }
 
-  // --- 퍼즐 엣지 그리기 ---
   function getPath(ctx, p, x, y) {
     ctx.beginPath(); ctx.moveTo(x, y);
     const drawEdge = (x1, y1, x2, y2, type) => {
@@ -159,7 +155,7 @@
 
   function resetGame() {
     pieces = [];
-    const baseW = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+    const baseW = Math.min(window.innerWidth, window.innerHeight) * 0.7;
     const pw = baseW / gridSize, ph = (pw * img.height) / img.width;
     let map = Array.from({length: gridSize + 1}, () => Array.from({length: gridSize + 1}, () => ({ h:0, v:0 })));
     for(let r=0; r<=gridSize; r++) for(let c=0; c<=gridSize; c++) {
@@ -168,7 +164,7 @@
     }
     for(let r=0; r<gridSize; r++) for(let c=0; c<gridSize; c++) {
       const isLeft = (r * gridSize + c) % 2 === 0;
-      const trayOffset = (pw * gridSize) / 2 + 120;
+      const trayOffset = (pw * gridSize) / 2 + 100;
       pieces.push({
         row: r, col: c, w: pw, h: ph, tab: pw*0.2, isLocked: false,
         edges: { t: map[r][c].v*-1, r: map[r][c+1].h, b: map[r+1][c].v, l: map[r][c].h*-1 },
@@ -187,7 +183,6 @@
     ctx.translate(view.x, view.y);
     ctx.scale(view.scale, view.scale);
 
-    // 가이드 음각
     pieces.forEach(p => {
       ctx.save(); getPath(ctx, p, p.tx, p.ty);
       ctx.strokeStyle = "rgba(255,255,255,0.08)"; ctx.lineWidth = 1/view.scale; ctx.stroke();
@@ -208,13 +203,15 @@
     });
   }
 
-  // --- 핵심 터치 로직 ---
+  // --- 오차 없는 좌표 추출 핵심 함수 ---
   function getPoint(e) {
+    const rect = canvas.getBoundingClientRect(); // 캔버스의 실제 위치 측정
     const t = e.touches ? e.touches[0] : e;
-    // 뷰포트 절대 좌표를 가져옴
-    const rx = t.clientX;
-    const ry = t.clientY;
-    // 현재 뷰(팬/줌) 상태를 역계산하여 월드 좌표로 변환
+    
+    // 스크롤 및 헤더 위치를 완전히 배제한 순수 캔버스 내 좌표
+    const rx = t.clientX - rect.left;
+    const ry = t.clientY - rect.top;
+    
     return {
       rx, ry,
       x: (rx - view.x) / view.scale,
@@ -228,32 +225,29 @@
       return;
     }
     
-    // 게임 중일 때는 기본 동작(스크롤) 방지
-    if(document.body.classList.contains('playing')) {
-      if(e.cancelable) e.preventDefault();
-    }
+    if(document.body.classList.contains('playing') && e.cancelable) e.preventDefault();
 
     const p = getPoint(e);
     selectedPiece = null;
-
-    // 히트 판정 (Z-index 역순: 가장 위의 조각부터)
-    // context transform 없이 순수하게 월드 좌표 내에서 판정하여 오차 제거
-    const hitCtx = document.createElement('canvas').getContext('2d');
+    const dpr = devicePixelRatio;
 
     for (let i = pieces.length - 1; i >= 0; i--) {
       const pc = pieces[i];
       if (pc.isLocked) continue;
 
-      getPath(hitCtx, pc, pc.x, pc.y);
-      // 터치 시에는 약간의 여유(Tolerance)를 주기 위해 히트 영역을 가상으로 확장하여 체크 가능
-      if (hitCtx.isPointInPath(p.x, p.y)) {
+      ctx.save();
+      // 히트 테스트 시에도 동일하게 보정된 좌표계 사용
+      ctx.setTransform(view.scale * dpr, 0, 0, view.scale * dpr, view.x * dpr, view.y * dpr);
+      getPath(ctx, pc, pc.x, pc.y);
+      if (ctx.isPointInPath(p.rx * dpr, p.ry * dpr)) {
         selectedPiece = pc;
         dragOffset.x = p.x - pc.x;
         dragOffset.y = p.y - pc.y;
         pieces.splice(i, 1);
         pieces.push(pc);
-        break;
+        ctx.restore(); break;
       }
+      ctx.restore();
     }
 
     if (!selectedPiece) {
@@ -293,7 +287,7 @@
   function handleEnd() {
     if (selectedPiece) {
       const dist = Math.hypot(selectedPiece.x - selectedPiece.tx, selectedPiece.y - selectedPiece.ty);
-      if (dist < 35 / view.scale) {
+      if (dist < 40 / view.scale) {
         selectedPiece.x = selectedPiece.tx; selectedPiece.y = selectedPiece.ty;
         selectedPiece.isLocked = true;
         const count = pieces.filter(p => p.isLocked).length;
@@ -311,12 +305,9 @@
     resetGame();
   }
 
-  // --- 이벤트 바인딩 ---
-  // passive: false는 e.preventDefault()를 작동시키기 위해 필수
   canvas.addEventListener('touchstart', handleStart, { passive: false });
   window.addEventListener('touchmove', handleMove, { passive: false });
   window.addEventListener('touchend', handleEnd, { passive: false });
-
   canvas.addEventListener('mousedown', handleStart);
   window.addEventListener('mousemove', handleMove);
   window.addEventListener('mouseup', handleEnd);
@@ -339,7 +330,6 @@
   });
 
   window.addEventListener('resize', () => { if(document.body.classList.contains('playing')) resize(); });
-
   loadImages();
 </script>
 </body>
