@@ -263,7 +263,8 @@
 
         return `
           <article class="item" onclick="startGame('${safeUrl}')">
-            <img src="${item.url}" crossorigin="anonymous" loading="lazy" alt="${filename}"> <div class="list-meta">${filename}</div>
+            <img src="${item.url}" loading="lazy" alt="${filename}">
+            <div class="list-meta">${filename}</div>
           </article>
         `;
       }).join('');
@@ -281,8 +282,7 @@
   }
 
   function startGame(url) {
-    const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
-    currentImgUrl = cacheBusterUrl; // 여기서 저장하고
+    currentImgUrl = url;
 
     document.body.classList.add('playing');
     mainContainer.style.display = 'none';
@@ -305,9 +305,8 @@
       msgBox.innerText = '이미지를 불러오지 못했습니다.';
     };
 
-    // 💡 2. 여기를 url 대신 cacheBusterUrl로 바꿔야 합니다!
-    img.src = cacheBusterUrl; 
-}
+    img.src = url;
+  }
 
   function backToGallery() {
     document.body.classList.remove('playing');
