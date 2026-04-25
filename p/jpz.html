@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planet Chungju - Puzzle Studio</title>
+    <title>Planet Chungju - Total Puzzle Studio</title>
     <style>
         :root {
             --primary: #2c3e50;
             --accent: #00d2ff;
             --bg: #121416;
-            --panel: rgba(0, 0, 0, 0.8);
+            --panel: rgba(0, 0, 0, 0.85);
         }
         body { 
             margin: 0; background: var(--bg); color: white; 
             font-family: 'Pretendard', sans-serif; overflow-x: hidden; 
-            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+            touch-action: none; /* 캔버스 조작을 위해 전체 터치 액션 제어 */
         }
+        
+        /* 1. 갤러리 뷰 */
         header { 
             padding: 20px; text-align: center; background: white; color: var(--primary);
             position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -25,58 +27,53 @@
 
         #main-container { padding: 15px; max-width: 1000px; margin: 0 auto; }
         #gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 12px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;
         }
         @media (max-width: 480px) { #gallery { grid-template-columns: 1fr 1fr; } }
         .item { 
             background: white; border-radius: 12px; overflow: hidden; cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s;
         }
-        .item:active { transform: scale(0.96); }
         .item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
         .list-meta { padding: 8px; color: #333; font-size: 0.8rem; text-align: center; }
 
+        /* 2. 게임 뷰 공통 */
         #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; flex-direction: column; }
         
         .game-header {
-            padding: 10px 15px; display: flex; flex-direction: column; gap: 10px;
-            background: var(--panel); backdrop-filter: blur(10px); z-index: 2100;
+            padding: 10px 15px; display: flex; flex-direction: column; gap: 8px;
+            background: linear-gradient(to bottom, var(--panel), transparent); z-index: 2100;
         }
         .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         
-        /* 난이도 조절 섹션 */
-        .difficulty-selector { display: flex; justify-content: center; gap: 10px; padding: 5px 0; }
-        .diff-btn { 
-            padding: 5px 15px; border: 1px solid var(--accent); border-radius: 20px; 
-            background: transparent; color: var(--accent); cursor: pointer; font-size: 12px;
+        /* 모드/난이도 버튼 스타일 */
+        .btn-group { display: flex; gap: 5px; background: #333; padding: 4px; border-radius: 10px; }
+        .tab-btn { 
+            padding: 6px 12px; border: none; border-radius: 8px; background: transparent; 
+            color: #aaa; cursor: pointer; font-size: 12px; font-weight: bold;
         }
-        .diff-btn.active { background: var(--accent); color: #000; }
+        .tab-btn.active { background: var(--accent); color: #000; }
 
-        .mode-toggle { display: flex; gap: 5px; background: #333; padding: 4px; border-radius: 10px; }
-        .mode-btn { 
-            padding: 8px 12px; border: none; border-radius: 8px; background: transparent; 
-            color: #aaa; cursor: pointer; font-size: 13px; font-weight: bold;
-        }
-        .mode-btn.active { background: var(--accent); color: #000; }
-
+        /* 슬라이딩 보드 */
         #sliding-board {
-            display: grid; gap: 2px;
-            width: 90vw; max-width: 400px; aspect-ratio: 1/1; margin: auto;
-            border: 4px solid var(--accent); background: var(--accent); border-radius: 8px; overflow: hidden;
+            display: grid; gap: 2px; width: 90vw; max-width: 400px; aspect-ratio: 1/1; 
+            margin: auto; border: 4px solid var(--accent); background: var(--accent); border-radius: 8px; overflow: hidden;
         }
         .tile { width: 100%; height: 100%; background-repeat: no-repeat; cursor: pointer; }
         .tile.empty { background: #222 !important; }
 
-        #jigsaw-canvas { display: none; width: 100%; height: 100%; cursor: grab; }
+        /* 직소 캔버스 */
+        #mainCanvas { display: none; width: 100vw; height: 100vh; cursor: crosshair; }
 
-        .game-footer { padding: 15px; text-align: center; background: linear-gradient(to top, var(--panel), transparent); }
-        .btn-ui { padding: 10px 18px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 14px;}
+        .btn-ui { padding: 8px 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 13px;}
         .btn-back { background: #444; color: white; }
         .btn-reset { background: #e74c3c; color: white; }
 
-        #loadingBox { text-align: center; padding: 40px; color: #666; }
+        #msg-box {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 10px 20px; background: var(--panel); border-radius: 20px;
+            font-size: 13px; z-index: 2100; pointer-events: none; border: 1px solid rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
@@ -84,11 +81,10 @@
 <div id="gallery-view">
     <header>
         <h1>PLANET CHUNGJU PUZZLE</h1>
-        <div id="countText">이미지 로드 중...</div>
+        <div id="countText">사진 불러오는 중...</div>
     </header>
     <main id="main-container">
         <div id="gallery"></div>
-        <div id="loadingBox">사진을 불러오고 있어유...</div>
     </main>
 </div>
 
@@ -96,51 +92,46 @@
     <div class="game-header">
         <div class="header-top">
             <button class="btn-ui btn-back" onclick="backToGallery()">← 목록</button>
-            <div class="mode-toggle">
-                <button id="mode-sliding" class="mode-btn active" onclick="switchMode('sliding')">슬라이딩</button>
-                <button id="mode-jigsaw" class="mode-btn" onclick="switchMode('jigsaw')">직소</button>
+            <div class="btn-group">
+                <button id="mode-sliding" class="tab-btn active" onclick="switchMode('sliding')">슬라이딩</button>
+                <button id="mode-jigsaw" class="tab-btn" onclick="switchMode('jigsaw')">직소</button>
             </div>
-            <button class="btn-ui btn-reset" onclick="resetCurrentGame()">다시</button>
+            <button class="btn-ui btn-reset" onclick="resetGame()">다시</button>
         </div>
         
-        <div id="sliding-difficulty" class="difficulty-selector">
-            <button class="diff-btn active" onclick="changeGridSize(3, this)">3x3</button>
-            <button class="diff-btn" onclick="changeGridSize(6, this)">6x6</button>
-            <button class="diff-btn" onclick="changeGridSize(9, this)">9x9</button>
-        </div>
+        <div id="diff-selector" class="header-top" style="justify-content: center; gap: 10px;">
+            </div>
     </div>
 
     <div id="sliding-content" style="flex: 1; display: flex; align-items: center; justify-content: center;">
         <div id="sliding-board"></div>
     </div>
-    <canvas id="jigsaw-canvas"></canvas>
+    
+    <canvas id="mainCanvas"></canvas>
 
-    <div class="game-footer">
-        <div id="game-status" style="margin-bottom:5px; font-size: 14px;">준비됐슈! 즐겁게 놀아보자구유!</div>
-    </div>
+    <div id="msg-box">준비됐슈! 한 판 해보자구유!</div>
 </div>
 
 <script>
-    // --- 설정 ---
+    // --- 설정 및 변수 ---
     const API_BASE = 'https://localflow.ddns.net/images';
     const THEME_COLOR = "#00d2ff";
     let currentFolder = new URLSearchParams(window.location.search).get('folder') || 'object';
     
-    // --- 상태 관리 ---
     let currentPage = 1, hasNext = true, isLoading = false;
     let currentImgUrl = "";
-    let gameMode = 'sliding';
-    let slidingGridSize = 3; // 기본 3x3
+    let gameMode = 'sliding'; // 'sliding' | 'jigsaw'
+    let gridSize = 3; // 슬라이딩용 (3,6,9) / 직소용 (10,15,20)
 
-    const gallery = document.getElementById('gallery');
-    const loadingBox = document.getElementById('loadingBox');
     const gameView = document.getElementById('game-view');
-    const slidingContent = document.getElementById('sliding-content');
-    const jigsawCanvas = document.getElementById('jigsaw-canvas');
-    const slidingBoard = document.getElementById('sliding-board');
-    const ctx = jigsawCanvas.getContext('2d');
+    const mainCanvas = document.getElementById('mainCanvas');
+    const ctx = mainCanvas.getContext('2d');
+    const msgBox = document.getElementById('msg-box');
 
-    // 1. 갤러리 로드 (CORS 대응 추가)
+    let img = new Image();
+    img.crossOrigin = "Anonymous";
+
+    // --- 1. 갤러리 로직 ---
     async function loadImages(page = 1) {
         if (isLoading || (!hasNext && page !== 1)) return;
         isLoading = true;
@@ -157,16 +148,16 @@
                 </article>
             `).join('');
 
-            if (page === 1) gallery.innerHTML = '';
-            gallery.insertAdjacentHTML('beforeend', itemsHtml);
+            if (page === 1) document.getElementById('gallery').innerHTML = '';
+            document.getElementById('gallery').insertAdjacentHTML('beforeend', itemsHtml);
             document.getElementById('countText').innerHTML = `Total <strong>${data.total || 0}</strong> Images`;
-            loadingBox.style.display = hasNext ? 'none' : 'block';
         } catch (err) { console.error(err); } finally { isLoading = false; }
     }
 
-    // 2. 게임 시작
+    // --- 2. 게임 제어 로직 ---
     function startGame(url) {
         currentImgUrl = url;
+        img.src = url;
         document.getElementById('gallery-view').style.display = 'none';
         gameView.style.display = 'flex';
         switchMode('sliding');
@@ -174,31 +165,43 @@
 
     function switchMode(mode) {
         gameMode = mode;
-        document.getElementById('mode-sliding').className = 'mode-btn' + (mode === 'sliding' ? ' active' : '');
-        document.getElementById('mode-jigsaw').className = 'mode-btn' + (mode === 'jigsaw' ? ' active' : '');
-        document.getElementById('sliding-difficulty').style.visibility = (mode === 'sliding' ? 'visible' : 'hidden');
+        gridSize = (mode === 'sliding') ? 3 : 10;
         
-        if (mode === 'sliding') {
-            slidingContent.style.display = 'flex';
-            jigsawCanvas.style.display = 'none';
+        document.getElementById('mode-sliding').className = 'tab-btn' + (mode === 'sliding' ? ' active' : '');
+        document.getElementById('mode-jigsaw').className = 'tab-btn' + (mode === 'jigsaw' ? ' active' : '');
+        
+        updateDiffUI();
+        resetGame();
+    }
+
+    function updateDiffUI() {
+        const container = document.getElementById('diff-selector');
+        const levels = gameMode === 'sliding' ? [3, 6, 9] : [10, 15, 20];
+        const labels = gameMode === 'sliding' ? ['3x3', '6x6', '9x9'] : ['100P', '225P', '400P'];
+        
+        container.innerHTML = levels.map((l, i) => `
+            <button class="tab-btn ${l === gridSize ? 'active' : ''}" onclick="changeLevel(${l}, this)">${labels[i]}</button>
+        `).join('');
+    }
+
+    function changeLevel(l, btn) {
+        gridSize = l;
+        document.querySelectorAll('#diff-selector .tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        resetGame();
+    }
+
+    function resetGame() {
+        if (gameMode === 'sliding') {
+            document.getElementById('sliding-content').style.display = 'flex';
+            mainCanvas.style.display = 'none';
             initSliding();
         } else {
-            slidingContent.style.display = 'none';
-            jigsawCanvas.style.display = 'block';
+            document.getElementById('sliding-content').style.display = 'none';
+            mainCanvas.style.display = 'block';
+            resizeCanvas();
             initJigsaw();
         }
-    }
-
-    function changeGridSize(size, btn) {
-        slidingGridSize = size;
-        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        initSliding();
-    }
-
-    function resetCurrentGame() {
-        if (gameMode === 'sliding') initSliding();
-        else initJigsaw();
     }
 
     function backToGallery() {
@@ -206,22 +209,17 @@
         document.getElementById('gallery-view').style.display = 'block';
     }
 
-    // --- 3-A. 슬라이딩 퍼즐 로직 (N x N 대응) ---
+    // --- 3-A. 슬라이딩 퍼즐 로직 ---
     let slidingTiles = [];
     function initSliding() {
-        const total = slidingGridSize * slidingGridSize;
+        const total = gridSize * gridSize;
         slidingTiles = Array.from({length: total}, (_, i) => i);
-        
-        // 셔플 (난이도에 따라 셔플 횟수 조절)
-        const shuffleCount = slidingGridSize * 100;
-        for(let i=0; i < shuffleCount; i++) {
+        for(let i=0; i < gridSize * 50; i++) {
             const emptyIdx = slidingTiles.indexOf(total - 1);
-            const r = Math.floor(emptyIdx / slidingGridSize), c = emptyIdx % slidingGridSize;
+            const r = Math.floor(emptyIdx / gridSize), c = emptyIdx % gridSize;
             const adj = [];
-            if(r > 0) adj.push(emptyIdx - slidingGridSize); 
-            if(r < slidingGridSize - 1) adj.push(emptyIdx + slidingGridSize);
-            if(c > 0) adj.push(emptyIdx - 1); 
-            if(c < slidingGridSize - 1) adj.push(emptyIdx + 1);
+            if(r > 0) adj.push(emptyIdx - gridSize); if(r < gridSize - 1) adj.push(emptyIdx + gridSize);
+            if(c > 0) adj.push(emptyIdx - 1); if(c < gridSize - 1) adj.push(emptyIdx + 1);
             const target = adj[Math.floor(Math.random() * adj.length)];
             [slidingTiles[emptyIdx], slidingTiles[target]] = [slidingTiles[target], slidingTiles[emptyIdx]];
         }
@@ -229,161 +227,183 @@
     }
 
     function renderSliding() {
-        slidingBoard.innerHTML = '';
-        slidingBoard.style.gridTemplateColumns = `repeat(${slidingGridSize}, 1fr)`;
-        const bW = slidingBoard.clientWidth;
-        const total = slidingGridSize * slidingGridSize;
-        const emptyValue = total - 1;
-
+        const board = document.getElementById('sliding-board');
+        board.innerHTML = '';
+        board.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+        const bW = board.clientWidth;
         slidingTiles.forEach((tIdx, i) => {
             const div = document.createElement('div');
-            const isEmpty = tIdx === emptyValue;
+            const isEmpty = tIdx === (gridSize * gridSize - 1);
             div.className = 'tile' + (isEmpty ? ' empty' : '');
             if (!isEmpty) {
-                const r = Math.floor(tIdx / slidingGridSize), c = tIdx % slidingGridSize;
+                const r = Math.floor(tIdx / gridSize), c = tIdx % gridSize;
                 div.style.backgroundImage = `url(${currentImgUrl})`;
                 div.style.backgroundSize = `${bW}px ${bW}px`;
-                div.style.backgroundPosition = `-${c * (bW/slidingGridSize)}px -${r * (bW/slidingGridSize)}px`;
+                div.style.backgroundPosition = `-${c * (bW/gridSize)}px -${r * (bW/gridSize)}px`;
             }
             div.onclick = () => {
-                const emptyIdx = slidingTiles.indexOf(emptyValue);
-                const r = Math.floor(i / slidingGridSize), c = i % slidingGridSize;
-                const er = Math.floor(emptyIdx / slidingGridSize), ec = emptyIdx % slidingGridSize;
-                if(Math.abs(r - er) + Math.abs(c - ec) === 1) {
+                const emptyIdx = slidingTiles.indexOf(gridSize * gridSize - 1);
+                const r = Math.floor(i/gridSize), c = i%gridSize, er = Math.floor(emptyIdx/gridSize), ec = emptyIdx%gridSize;
+                if(Math.abs(r-er) + Math.abs(c-ec) === 1) {
                     [slidingTiles[i], slidingTiles[emptyIdx]] = [slidingTiles[emptyIdx], slidingTiles[i]];
                     renderSliding();
-                    if(slidingTiles.every((t, idx) => t === idx)) {
-                        setTimeout(() => alert("와따! 성공했구만유! 손재주가 보통이 아니셔유!"), 100);
-                    }
+                    if(slidingTiles.every((t, idx) => t === idx)) msgBox.innerText = "성공했슈! 대단하구먼!";
                 }
             };
-            slidingBoard.appendChild(div);
+            board.appendChild(div);
         });
     }
 
-    // --- 3-B. 직소 퍼즐 로직 (CORS 완벽 대응) ---
-    function initJigsaw() {
-        let jigsawImg = new Image();
-        // ⭐ 핵심: src 설정 전에 crossOrigin을 반드시 먼저 선언
-        jigsawImg.crossOrigin = "Anonymous"; 
-        jigsawImg.src = currentImgUrl;
-        
-        jigsawImg.onload = () => {
-            setupJigsawCanvas();
-            createJigsawPieces(jigsawImg);
-            drawJigsaw(jigsawImg);
-        };
-    }
+    // --- 3-B. 직소 퍼즐 로직 (형님 코드 통합) ---
+    let pieces = [], selectedPiece = null;
+    let view = { x: 0, y: 0, scale: 0.7, isPanning: false, startX: 0, startY: 0, lastDist: 0 };
+    let dragOffset = { x: 0, y: 0 };
 
-    // (이하 직소 로직은 기존과 동일하나 인자로 이미지를 받도록 유지)
-    let jigsawPieces = [], view = { x: 0, y: 0, scale: 0.7 };
-    let selectedPiece = null, dragOffset = {x:0, y:0};
-
-    function setupJigsawCanvas() {
-        jigsawCanvas.width = window.innerWidth * devicePixelRatio;
-        jigsawCanvas.height = window.innerHeight * devicePixelRatio;
+    function resizeCanvas() {
+        mainCanvas.width = window.innerWidth * devicePixelRatio;
+        mainCanvas.height = window.innerHeight * devicePixelRatio;
         view.x = window.innerWidth / 2; view.y = window.innerHeight / 2;
     }
 
-    function createJigsawPieces(img) {
-        const size = 10; 
-        jigsawPieces = [];
+    function drawJigsawEdge(ctx, x1, y1, x2, y2, type) {
+        if (type === 0) { ctx.lineTo(x2, y2); return; }
+        const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, nx = -(y2 - y1), ny = (x2 - x1);
+        const neck = 0.12, headW = 0.22, deep = 0.35;
+        ctx.bezierCurveTo(x1+(x2-x1)*(0.5-neck), y1+(y2-y1)*(0.5-neck), mx+nx*deep*type-(x2-x1)*headW, my+ny*deep*type-(y2-y1)*headW, mx+nx*deep*type, my+ny*deep*type);
+        ctx.bezierCurveTo(mx+nx*deep*type+(x2-x1)*headW, my+ny*deep*type+(y2-y1)*headW, x1+(x2-x1)*(0.5+neck), y1+(y2-y1)*(0.5+neck), x2, y2);
+    }
+
+    function getPath(ctx, p, x, y) {
+        ctx.beginPath(); ctx.moveTo(x, y);
+        drawJigsawEdge(ctx, x, y, x + p.w, y, p.edges.t);
+        drawJigsawEdge(ctx, x + p.w, y, x + p.w, y + p.h, p.edges.r);
+        drawJigsawEdge(ctx, x + p.w, y + p.h, x, y + p.h, p.edges.b);
+        drawJigsawEdge(ctx, x, y + p.h, x, y, p.edges.l);
+        ctx.closePath();
+    }
+
+    function initJigsaw() {
+        pieces = [];
         const baseW = Math.min(window.innerWidth, window.innerHeight) * 0.8;
-        const pw = baseW / size, ph = (pw * img.height) / img.width;
+        const pw = baseW / gridSize, ph = (pw * img.height) / img.width;
         let map = [];
-        for(let r=0; r<=size; r++) {
+        for(let r=0; r<=gridSize; r++) {
             map[r] = [];
-            for(let c=0; c<=size; c++) map[r][c] = { h: (c>0 && c<size)?(Math.random()<0.5?1:-1):0, v: (r>0 && r<size)?(Math.random()<0.5?1:-1):0 };
+            for(let c=0; c<=gridSize; c++) map[r][c] = { h: (c>0 && c<gridSize)?(Math.random()<0.5?1:-1):0, v: (r>0 && r<gridSize)?(Math.random()<0.5?1:-1):0 };
         }
-        for(let r=0; r<size; r++) {
-            for(let c=0; c<size; c++) {
-                jigsawPieces.push({
+        for(let r=0; r<gridSize; r++) {
+            for(let c=0; c<gridSize; c++) {
+                const side = Math.random() < 0.5 ? -1 : 1;
+                const boardHalf = (pw * gridSize) / 2;
+                pieces.push({
                     row: r, col: c, w: pw, h: ph, tab: pw * 0.2,
                     edges: { t: map[r][c].v * -1, r: map[r][c+1].h, b: map[r+1][c].v, l: map[r][c].h * -1 },
-                    x: (Math.random()-0.5) * window.innerWidth * 1.2,
-                    y: (Math.random()-0.5) * window.innerHeight * 1.2,
-                    tx: (c - size/2) * pw, ty: (r - size/2) * ph, isLocked: false
+                    x: side * (boardHalf + 100 + Math.random() * (window.innerWidth/view.scale/2 - boardHalf - 150)),
+                    y: (Math.random() - 0.5) * (window.innerHeight / view.scale),
+                    tx: (c - gridSize/2) * pw, ty: (r - gridSize/2) * ph, isLocked: false
                 });
             }
         }
+        draw();
     }
 
-    function drawJigsaw(img) {
-        if(!img) return;
-        ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0, 0, jigsawCanvas.width, jigsawCanvas.height);
+    function draw() {
+        ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
         const dpr = devicePixelRatio;
         ctx.setTransform(view.scale*dpr, 0, 0, view.scale*dpr, view.x*dpr, view.y*dpr);
 
-        jigsawPieces.forEach(p => {
-            drawPath(ctx, p, p.tx, p.ty);
-            ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.stroke();
+        pieces.forEach(p => {
+            getPath(ctx, p, p.tx, p.ty);
+            ctx.strokeStyle = "rgba(255,255,255,0.08)"; ctx.lineWidth = 1.5/view.scale; ctx.stroke();
+            ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fill();
         });
 
-        [...jigsawPieces].sort((a,b)=>a.isLocked-b.isLocked).forEach(p => {
-            ctx.save(); drawPath(ctx, p, p.x, p.y); ctx.clip();
-            const sw = img.width/10, sh = img.height/10;
-            const b = p.tab * (img.width/(p.w*10)) * 2;
-            ctx.drawImage(img, p.col*sw-b, p.row*sh-b, sw+b*2, sh+b*2, p.x-p.tab*2, p.y-p.tab*2, p.w+p.tab*4, p.h+p.tab*4);
+        [...pieces].sort((a,b)=>a.isLocked-b.isLocked).forEach(p => {
+            ctx.save(); getPath(ctx, p, p.x, p.y); ctx.clip();
+            const sx = (p.col/gridSize)*img.width, sy = (p.row/gridSize)*img.height;
+            const sw = img.width/gridSize, sh = img.height/gridSize;
+            const bleed = p.tab * (img.width/(p.w*gridSize))*2, bd = p.tab*2;
+            ctx.drawImage(img, sx-bleed, sy-bleed, sw+bleed*2, sh+bleed*2, p.x-bd, p.y-bd, p.w+bd*2, p.h+bd*2);
             ctx.restore();
-            ctx.save(); drawPath(ctx, p, p.x, p.y); 
-            ctx.strokeStyle = p.isLocked ? "rgba(255,255,255,0.1)" : (selectedPiece===p ? THEME_COLOR : "rgba(255,255,255,0.3)");
+            ctx.save(); getPath(ctx, p, p.x, p.y);
+            ctx.strokeStyle = p.isLocked ? "rgba(255,255,255,0.05)" : (selectedPiece===p ? THEME_COLOR : "rgba(255,255,255,0.3)");
             ctx.lineWidth = (selectedPiece===p?3:1)/view.scale; ctx.stroke(); ctx.restore();
         });
     }
 
-    function drawPath(ctx, p, x, y) {
-        ctx.beginPath(); ctx.moveTo(x, y);
-        const edge = (x1,y1,x2,y2,type) => {
-            if(type===0) { ctx.lineTo(x2,y2); return; }
-            const mx=(x1+x2)/2, my=(y1+y2)/2, nx=-(y2-y1), ny=(x2-x1), n=0.12, h=0.22, d=0.35;
-            ctx.bezierCurveTo(x1+(x2-x1)*(0.5-n), y1+(y2-y1)*(0.5-n), mx+nx*d*type-(x2-x1)*h, my+ny*d*type-(y2-y1)*h, mx+nx*d*type, my+ny*d*type);
-            ctx.bezierCurveTo(mx+nx*d*type+(x2-x1)*h, my+ny*d*type+(y2-y1)*h, x1+(x2-x1)*(0.5+n), y1+(y2-y1)*(0.5+n), x2, y2);
-        };
-        edge(x, y, x+p.w, y, p.edges.t); edge(x+p.w, y, x+p.w, y+p.h, p.edges.r);
-        edge(x+p.w, y+p.h, x, y+p.h, p.edges.b); edge(x, y+p.h, x, y, p.edges.l);
-        ctx.closePath();
+    // --- 인터랙션 (Mouse & Touch) ---
+    function getMouse(e) {
+        const t = e.touches ? e.touches[0] : e;
+        return { x: (t.clientX - view.x)/view.scale, y: (t.clientY - view.y)/view.scale, rx: t.clientX, ry: t.clientY };
+    }
+    function handleStart(e) {
+        if(gameMode!=='jigsaw') return;
+        if(e.touches && e.touches.length === 2) {
+            view.lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+            return;
+        }
+        const m = getMouse(e); selectedPiece = null;
+        for(let i=pieces.length-1; i>=0; i--) {
+            const p = pieces[i]; if(p.isLocked) continue;
+            ctx.save(); const dpr = devicePixelRatio;
+            ctx.setTransform(view.scale*dpr, 0, 0, view.scale*dpr, view.x*dpr, view.y*dpr);
+            getPath(ctx, p, p.x, p.y);
+            if(ctx.isPointInPath(m.rx*dpr, m.ry*dpr)) {
+                selectedPiece = p; dragOffset.x = m.x-p.x; dragOffset.y = m.y-p.y;
+                pieces.splice(i, 1); pieces.push(p); ctx.restore(); break;
+            }
+            ctx.restore();
+        }
+        if(!selectedPiece) { view.isPanning = true; view.startX = m.rx - view.x; view.startY = m.ry - view.y; }
+        draw();
+    }
+    function handleMove(e) {
+        if(gameMode!=='jigsaw') return;
+        if(e.touches && e.touches.length === 2) {
+            const dist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+            const midX = (e.touches[0].clientX+e.touches[1].clientX)/2, midY = (e.touches[0].clientY+e.touches[1].clientY)/2;
+            const ns = Math.max(0.2, Math.min(5, view.scale * (dist/view.lastDist)));
+            view.x = midX - (midX-view.x)*(ns/view.scale); view.y = midY - (midY-view.y)*(ns/view.scale);
+            view.scale = ns; view.lastDist = dist; draw(); return;
+        }
+        const m = getMouse(e);
+        if(selectedPiece) { selectedPiece.x = m.x-dragOffset.x; selectedPiece.y = m.y-dragOffset.y; }
+        else if(view.isPanning) { view.x = m.rx-view.startX; view.y = m.ry-view.startY; }
+        draw();
+    }
+    function handleEnd() {
+        if(selectedPiece) {
+            const d = Math.hypot(selectedPiece.x-selectedPiece.tx, selectedPiece.y-selectedPiece.ty);
+            if(d < 25/view.scale) {
+                selectedPiece.x = selectedPiece.tx; selectedPiece.y = selectedPiece.ty; selectedPiece.isLocked = true;
+                msgBox.innerText = `맞춘 조각: ${pieces.filter(p=>p.isLocked).length} / ${pieces.length}`;
+            }
+        }
+        selectedPiece = null; view.isPanning = false; draw();
     }
 
-    // --- 공통 이벤트 ---
+    // 이벤트 리스너 등록
+    mainCanvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    mainCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, {passive:false});
+    mainCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, {passive:false});
+    window.addEventListener('touchend', handleEnd);
+    mainCanvas.addEventListener('wheel', e => {
+        e.preventDefault(); const f = e.deltaY < 0 ? 1.1 : 0.9;
+        const ns = Math.max(0.2, Math.min(5, view.scale * f));
+        view.x = e.clientX - (e.clientX-view.x)*(ns/view.scale);
+        view.y = e.clientY - (e.clientY-view.y)*(ns/view.scale);
+        view.scale = ns; draw();
+    }, {passive:false});
+
+    // 윈도우 스크롤 (무한 스크롤)
     window.addEventListener('scroll', () => {
         if(gameView.style.display==='flex' || isLoading || !hasNext) return;
         if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 800) loadImages(currentPage + 1);
     });
 
-    // 캔버스 드래그 등 이벤트는 동일하게 유지...
-    jigsawCanvas.addEventListener('mousedown', (e) => {
-        if(gameMode!=='jigsaw') return;
-        const mx = (e.clientX-view.x)/view.scale, my = (e.clientY-view.y)/view.scale;
-        for(let i=jigsawPieces.length-1; i>=0; i--) {
-            const p = jigsawPieces[i];
-            if(!p.isLocked && mx > p.x-20 && mx < p.x+p.w+20 && my > p.y-20 && my < p.y+p.h+20) {
-                selectedPiece = p; dragOffset.x = mx-p.x; dragOffset.y = my-p.y;
-                jigsawPieces.splice(i,1); jigsawPieces.push(p); break;
-            }
-        }
-    });
-
-    window.addEventListener('mousemove', (e) => {
-        if(selectedPiece) {
-            const mx = (e.clientX-view.x)/view.scale, my = (e.clientY-view.y)/view.scale;
-            selectedPiece.x = mx - dragOffset.x; selectedPiece.y = my - dragOffset.y;
-            // 직소 이미지를 다시 그리기 위해 전역 변수나 로직 보완 필요 (생략된 부분)
-            // 여기서는 성능을 위해 간단히 drawJigsaw 호출
-            const tempImg = new Image(); tempImg.src = currentImgUrl;
-            drawJigsaw(tempImg); 
-        }
-    });
-
-    window.addEventListener('mouseup', () => {
-        if(selectedPiece) {
-            const d = Math.hypot(selectedPiece.x-selectedPiece.tx, selectedPiece.y-selectedPiece.ty);
-            if(d < 25/view.scale) { selectedPiece.x=selectedPiece.tx; selectedPiece.y=selectedPiece.ty; selectedPiece.isLocked=true; }
-            selectedPiece = null;
-            const tempImg = new Image(); tempImg.src = currentImgUrl;
-            drawJigsaw(tempImg);
-        }
-    });
-
+    // 초기 실행
     loadImages(1);
 </script>
 </body>
