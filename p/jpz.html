@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Planet Chungju - Jigsaw Gallery</title>
-
   <style>
     :root {
       --bg: #121416;
@@ -12,9 +11,7 @@
       --panel: rgba(0, 0, 0, 0.8);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -37,12 +34,7 @@
       background: linear-gradient(to bottom, var(--panel), transparent);
     }
 
-    .btns {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
+    .btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 
     button {
       padding: 10px 16px;
@@ -57,22 +49,11 @@
       font-size: 13px;
     }
 
-    button.active {
-      background: var(--accent);
-      color: #000;
-      border-color: var(--accent);
-    }
+    button.active { background: var(--accent); color: #000; border-color: var(--accent); }
 
-    #main-container {
-      min-height: 100vh;
-      padding: 85px 16px 30px;
-    }
+    #main-container { min-height: 100vh; padding: 85px 16px 30px; }
 
-    #countText {
-      margin-bottom: 14px;
-      color: #aaa;
-      font-size: 14px;
-    }
+    #countText { margin-bottom: 14px; color: #aaa; font-size: 14px; }
 
     #gallery {
       display: grid;
@@ -89,10 +70,7 @@
       transition: 0.2s;
     }
 
-    .item:hover {
-      transform: translateY(-3px);
-      border-color: var(--accent);
-    }
+    .item:hover { transform: translateY(-3px); border-color: var(--accent); }
 
     .item img {
       width: 100%;
@@ -136,55 +114,26 @@
       white-space: nowrap;
     }
 
-    canvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      touch-action: none;
-    }
+    canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
 
-    .game-only {
-      display: none;
-    }
-
-    body.playing {
-      overflow: hidden;
-    }
-
-    body.playing .game-only {
-      display: inline-block;
-    }
-
-    body.playing .gallery-only {
-      display: none;
-    }
+    .game-only { display: none; }
+    body.playing { overflow: hidden; }
+    body.playing .game-only { display: inline-block; }
+    body.playing .gallery-only { display: none; }
 
     @media (max-width: 640px) {
-      header {
-        align-items: flex-start;
-        gap: 10px;
-      }
-
-      button {
-        padding: 8px 11px;
-        font-size: 12px;
-      }
-
-      #gallery {
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        gap: 10px;
-      }
+      header { align-items: flex-start; gap: 10px; }
+      button { padding: 8px 11px; font-size: 12px; }
+      #gallery { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
     }
   </style>
 </head>
-
 <body>
 
 <header>
   <div style="font-weight:800; font-size:1.1rem;">
     PLANET <span style="color:var(--accent)">CHUNGJU</span>
   </div>
-
   <div class="btns">
     <button class="game-only" onclick="backToGallery()">목록</button>
     <button class="game-only active level-btn" onclick="changeLevel(10, this)">100P</button>
@@ -230,49 +179,35 @@
   let gridSize = 10;
 
   let view = {
-    x: 0,
-    y: 0,
-    scale: 0.7,
-    isPanning: false,
-    startX: 0,
-    startY: 0,
-    lastDist: 0
+    x: 0, y: 0, scale: 0.7,
+    isPanning: false, startX: 0, startY: 0, lastDist: 0
   };
 
   let dragOffset = { x: 0, y: 0 };
 
+  // --- 갤러리 로딩 로직 ---
   async function loadImages(page = 1) {
     if (isLoading || (!hasNext && page !== 1)) return;
-
     isLoading = true;
-
     try {
       const res = await fetch(`${API_BASE}/api/gallery/${encodeURIComponent(currentFolder)}?page=${page}&page_size=24`);
       const data = await res.json();
-
       hasNext = data.has_next;
       currentPage = data.page;
-
-      if (page === 1) {
-        gallery.innerHTML = '';
-      }
+      if (page === 1) gallery.innerHTML = '';
 
       const itemsHtml = data.items.map(item => {
         const safeUrl = String(item.url).replace(/'/g, "\\'");
-        const filename = item.filename || 'Untitled';
-
         return `
           <article class="item" onclick="startGame('${safeUrl}')">
-            <img src="${item.url}" loading="lazy" alt="${filename}">
-            <div class="list-meta">${filename}</div>
+            <img src="${item.url}" loading="lazy" alt="Image">
+            <div class="list-meta">${item.filename || 'Untitled'}</div>
           </article>
         `;
       }).join('');
 
       gallery.insertAdjacentHTML('beforeend', itemsHtml);
-
-      document.getElementById('countText').innerHTML =
-        `Total <strong>${data.total || 0}</strong> Images`;
+      document.getElementById('countText').innerHTML = `Total <strong>${data.total || 0}</strong> Images`;
     } catch (err) {
       console.error(err);
       document.getElementById('countText').innerText = '이미지를 불러오지 못했습니다.';
@@ -281,30 +216,23 @@
     }
   }
 
+  // --- 퍼즐 엔진 로직 ---
   function startGame(url) {
     currentImgUrl = url;
-
     document.body.classList.add('playing');
     mainContainer.style.display = 'none';
     gameContainer.style.display = 'block';
-
     pieces = [];
     selectedPiece = null;
     msgBox.innerText = '이미지 로딩 중...';
 
     img = new Image();
     img.crossOrigin = "Anonymous";
-
     img.onload = () => {
       resize();
       resetGame();
       msgBox.innerText = '조각을 바닥 음각에 맞춰보셔유!';
     };
-
-    img.onerror = () => {
-      msgBox.innerText = '이미지를 불러오지 못했습니다.';
-    };
-
     img.src = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
   }
 
@@ -312,92 +240,52 @@
     document.body.classList.remove('playing');
     gameContainer.style.display = 'none';
     mainContainer.style.display = 'block';
-
     selectedPiece = null;
-    view.isPanning = false;
   }
 
   function resize() {
     canvas.width = window.innerWidth * devicePixelRatio;
     canvas.height = window.innerHeight * devicePixelRatio;
-
     view.x = window.innerWidth / 2;
     view.y = window.innerHeight / 2;
   }
 
   function drawJigsawEdge(ctx, x1, y1, x2, y2, type) {
-    if (type === 0) {
-      ctx.lineTo(x2, y2);
-      return;
-    }
-
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
-    const nx = -(y2 - y1);
-    const ny = (x2 - x1);
-
-    const neck = 0.12;
-    const headW = 0.22;
-    const deep = 0.35;
-
-    const cp1x = x1 + (x2 - x1) * (0.5 - neck);
-    const cp1y = y1 + (y2 - y1) * (0.5 - neck);
-    const cp2x = mx + nx * deep * type - (x2 - x1) * headW;
-    const cp2y = my + ny * deep * type - (y2 - y1) * headW;
-    const cp3x = mx + nx * deep * type + (x2 - x1) * headW;
-    const cp3y = my + ny * deep * type + (y2 - y1) * headW;
-    const cp4x = x1 + (x2 - x1) * (0.5 + neck);
-    const cp4y = y1 + (y2 - y1) * (0.5 + neck);
-
-    ctx.bezierCurveTo(
-      cp1x,
-      cp1y,
-      cp2x,
-      cp2y,
-      mx + nx * deep * type,
-      my + ny * deep * type
-    );
-
-    ctx.bezierCurveTo(
-      cp3x,
-      cp3y,
-      cp4x,
-      cp4y,
-      x2,
-      y2
-    );
+    if (type === 0) { ctx.lineTo(x2, y2); return; }
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const nx = -(y2 - y1), ny = (x2 - x1);
+    const neck = 0.12, headW = 0.22, deep = 0.35;
+    const cp1x = x1 + (x2 - x1) * (0.5 - neck), cp1y = y1 + (y2 - y1) * (0.5 - neck);
+    const cp2x = mx + nx * deep * type - (x2 - x1) * headW, cp2y = my + ny * deep * type - (y2 - y1) * headW;
+    const cp3x = mx + nx * deep * type + (x2 - x1) * headW, cp3y = my + ny * deep * type + (y2 - y1) * headW;
+    const cp4x = x1 + (x2 - x1) * (0.5 + neck), cp4y = y1 + (y2 - y1) * (0.5 + neck);
+    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, mx + nx * deep * type, my + ny * deep * type);
+    ctx.bezierCurveTo(cp3x, cp3y, cp4x, cp4y, x2, y2);
   }
 
   function getPath(ctx, p, x, y) {
     ctx.beginPath();
     ctx.moveTo(x, y);
-
     drawJigsawEdge(ctx, x, y, x + p.w, y, p.edges.t);
     drawJigsawEdge(ctx, x + p.w, y, x + p.w, y + p.h, p.edges.r);
     drawJigsawEdge(ctx, x + p.w, y + p.h, x, y + p.h, p.edges.b);
     drawJigsawEdge(ctx, x, y + p.h, x, y, p.edges.l);
-
     ctx.closePath();
   }
 
   function resetGame() {
     if (!img.complete || !img.width || !img.height) return;
-
     pieces = [];
     selectedPiece = null;
     view.scale = 0.7;
-    view.x = window.innerWidth / 2;
-    view.y = window.innerHeight / 2;
 
     const baseW = Math.min(window.innerWidth, window.innerHeight) * 0.8;
     const pw = baseW / gridSize;
     const ph = (pw * img.height) / img.width;
 
     let map = [];
-
     for (let r = 0; r <= gridSize; r++) {
       map[r] = [];
-
       for (let c = 0; c <= gridSize; c++) {
         map[r][c] = {
           h: (c > 0 && c < gridSize) ? (Math.random() < 0.5 ? 1 : -1) : 0,
@@ -406,55 +294,41 @@
       }
     }
 
+    const boardW = pw * gridSize, boardH = ph * gridSize;
+
     for (let r = 0; r < gridSize; r++) {
       for (let c = 0; c < gridSize; c++) {
-        const side = Math.random() < 0.5 ? -1 : 1;
-        const boardHalf = (pw * gridSize) / 2;
-        const trayGap = 120 + Math.random() * 260;
+        const index = r * gridSize + c;
+        // 트레이 시스템: 좌측/우측에 격자형 배치
+        const isLeft = index % 2 === 0;
+        const rowInTray = Math.floor(index / 2);
+        const trayCols = 2;
+        const marginX = boardW / 2 + 150;
+        const spacingX = pw * 1.2, spacingY = ph * 1.1;
 
-        const spawnX = side * (boardHalf + trayGap);
-        const spawnY = (Math.random() - 0.5) * (window.innerHeight / view.scale);
+        const spawnX = (isLeft ? -1 : 1) * (marginX + (rowInTray % trayCols) * spacingX);
+        const spawnY = (Math.floor(rowInTray / trayCols) * spacingY) - (window.innerHeight);
 
         pieces.push({
-          row: r,
-          col: c,
-          edges: {
-            t: map[r][c].v * -1,
-            r: map[r][c + 1].h,
-            b: map[r + 1][c].v,
-            l: map[r][c].h * -1
-          },
-          w: pw,
-          h: ph,
-          tab: pw * 0.2,
-          x: spawnX,
-          y: spawnY,
-          tx: (c - gridSize / 2) * pw,
-          ty: (r - gridSize / 2) * ph,
+          row: r, col: c,
+          edges: { t: map[r][c].v * -1, r: map[r][c + 1].h, b: map[r + 1][c].v, l: map[r][c].h * -1 },
+          w: pw, h: ph, tab: pw * 0.2,
+          x: spawnX, y: spawnY,
+          tx: (c - gridSize / 2) * pw, ty: (r - gridSize / 2) * ph,
           isLocked: false
         });
       }
     }
-
-    msgBox.innerText = `맞춘 조각: 0 / ${pieces.length}`;
     draw();
   }
 
   function draw() {
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     const dpr = devicePixelRatio;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.setTransform(view.scale * dpr, 0, 0, view.scale * dpr, view.x * dpr, view.y * dpr);
 
-    ctx.setTransform(
-      view.scale * dpr,
-      0,
-      0,
-      view.scale * dpr,
-      view.x * dpr,
-      view.y * dpr
-    );
-
+    // 바닥 음각
     pieces.forEach(p => {
       ctx.save();
       getPath(ctx, p, p.tx, p.ty);
@@ -466,45 +340,31 @@
       ctx.restore();
     });
 
-    const sorted = [...pieces].sort((a, b) => a.isLocked - b.isLocked);
+    // 조각 (잠긴 것 -> 일반 -> 선택된 것 순서로 그림)
+    const sorted = [...pieces].sort((a, b) => {
+      if (a === selectedPiece) return 1;
+      if (b === selectedPiece) return -1;
+      return a.isLocked - b.isLocked;
+    });
 
     sorted.forEach(p => {
       ctx.save();
+      if (p === selectedPiece) {
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetY = 10;
+      }
       getPath(ctx, p, p.x, p.y);
       ctx.clip();
-
-      const sx = (p.col / gridSize) * img.width;
-      const sy = (p.row / gridSize) * img.height;
-      const sw = img.width / gridSize;
-      const sh = img.height / gridSize;
-
+      const sw = img.width / gridSize, sh = img.height / gridSize;
       const bleed = p.tab * (img.width / (p.w * gridSize)) * 2;
-      const bd = p.tab * 2;
-
-      ctx.drawImage(
-        img,
-        sx - bleed,
-        sy - bleed,
-        sw + bleed * 2,
-        sh + bleed * 2,
-        p.x - bd,
-        p.y - bd,
-        p.w + bd * 2,
-        p.h + bd * 2
-      );
-
+      ctx.drawImage(img, (p.col/gridSize)*img.width - bleed, (p.row/gridSize)*img.height - bleed, sw + bleed*2, sh + bleed*2, p.x - p.tab*2, p.y - p.tab*2, p.w + p.tab*4, p.h + p.tab*4);
       ctx.restore();
 
       ctx.save();
       getPath(ctx, p, p.x, p.y);
-
-      ctx.strokeStyle = p.isLocked
-        ? "rgba(255,255,255,0.05)"
-        : selectedPiece === p
-          ? THEME_COLOR
-          : "rgba(255,255,255,0.3)";
-
-      ctx.lineWidth = (selectedPiece === p ? 3 : 1) / view.scale;
+      ctx.strokeStyle = p.isLocked ? "rgba(255,255,255,0.05)" : (p === selectedPiece ? THEME_COLOR : "rgba(255,255,255,0.3)");
+      ctx.lineWidth = (p === selectedPiece ? 3 : 1) / view.scale;
       ctx.stroke();
       ctx.restore();
     });
@@ -512,196 +372,110 @@
 
   function getMouse(e) {
     const t = e.touches ? e.touches[0] : e;
-
-    return {
-      x: (t.clientX - view.x) / view.scale,
-      y: (t.clientY - view.y) / view.scale,
-      rx: t.clientX,
-      ry: t.clientY
-    };
+    return { x: (t.clientX - view.x) / view.scale, y: (t.clientY - view.y) / view.scale, rx: t.clientX, ry: t.clientY };
   }
 
   function handleStart(e) {
     if (e.touches && e.touches.length === 2) {
-      view.lastDist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
+      view.lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       return;
     }
-
     const m = getMouse(e);
+    const dpr = devicePixelRatio;
     selectedPiece = null;
 
     for (let i = pieces.length - 1; i >= 0; i--) {
       const p = pieces[i];
-
       if (p.isLocked) continue;
-
       ctx.save();
-
-      const dpr = devicePixelRatio;
-
-      ctx.setTransform(
-        view.scale * dpr,
-        0,
-        0,
-        view.scale * dpr,
-        view.x * dpr,
-        view.y * dpr
-      );
-
+      ctx.setTransform(view.scale * dpr, 0, 0, view.scale * dpr, view.x * dpr, view.y * dpr);
       getPath(ctx, p, p.x, p.y);
-
       if (ctx.isPointInPath(m.rx * dpr, m.ry * dpr)) {
         selectedPiece = p;
-        dragOffset.x = m.x - p.x;
-        dragOffset.y = m.y - p.y;
-
-        pieces.splice(i, 1);
-        pieces.push(p);
-
-        ctx.restore();
-        break;
+        dragOffset.x = m.x - p.x; dragOffset.y = m.y - p.y;
+        pieces.splice(i, 1); pieces.push(p); // 상단으로 올리기
+        ctx.restore(); break;
       }
-
       ctx.restore();
     }
-
     if (!selectedPiece) {
       view.isPanning = true;
-      view.startX = m.rx - view.x;
-      view.startY = m.ry - view.y;
+      view.startX = m.rx - view.x; view.startY = m.ry - view.y;
     }
-
     draw();
   }
 
   function handleMove(e) {
     if (!document.body.classList.contains('playing')) return;
-
     e.preventDefault();
-
     if (e.touches && e.touches.length === 2) {
-      const dist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-
-      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-
+      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2, midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
       const factor = dist / view.lastDist;
-      const ns = Math.max(0.2, Math.min(5, view.scale * factor));
-      const rf = ns / view.scale;
-
-      view.x = midX - (midX - view.x) * rf;
-      view.y = midY - (midY - view.y) * rf;
-      view.scale = ns;
-      view.lastDist = dist;
-
-      draw();
-      return;
+      const ns = Math.max(0.1, Math.min(5, view.scale * factor));
+      view.x = midX - (midX - view.x) * (ns / view.scale);
+      view.y = midY - (midY - view.y) * (ns / view.scale);
+      view.scale = ns; view.lastDist = dist;
+      draw(); return;
     }
-
     const m = getMouse(e);
-
     if (selectedPiece) {
-      selectedPiece.x = m.x - dragOffset.x;
-      selectedPiece.y = m.y - dragOffset.y;
+      selectedPiece.x = m.x - dragOffset.x; selectedPiece.y = m.y - dragOffset.y;
     } else if (view.isPanning) {
-      view.x = m.rx - view.startX;
-      view.y = m.ry - view.startY;
+      view.x = m.rx - view.startX; view.y = m.ry - view.startY;
     }
-
     draw();
   }
 
   function handleEnd() {
-    if (!document.body.classList.contains('playing')) return;
-
     if (selectedPiece) {
-      const d = Math.hypot(
-        selectedPiece.x - selectedPiece.tx,
-        selectedPiece.y - selectedPiece.ty
-      );
-
-      if (d < 25 / view.scale) {
-        selectedPiece.x = selectedPiece.tx;
-        selectedPiece.y = selectedPiece.ty;
+      const d = Math.hypot(selectedPiece.x - selectedPiece.tx, selectedPiece.y - selectedPiece.ty);
+      if (d < 30 / view.scale) {
+        selectedPiece.x = selectedPiece.tx; selectedPiece.y = selectedPiece.ty;
         selectedPiece.isLocked = true;
-
         const win = pieces.filter(p => p.isLocked).length;
-
-        if (win === pieces.length) {
-          msgBox.innerText = '완성했습니다!';
-        } else {
-          msgBox.innerText = `맞춘 조각: ${win} / ${pieces.length}`;
-        }
+        msgBox.innerText = (win === pieces.length) ? '축하혀유! 완성했슈!' : `맞춘 조각: ${win} / ${pieces.length}`;
       }
     }
-
-    selectedPiece = null;
-    view.isPanning = false;
-
+    selectedPiece = null; view.isPanning = false;
     draw();
   }
 
   function changeLevel(n, btn) {
     gridSize = n;
-
-    document.querySelectorAll('.level-btn').forEach(b => {
-      b.classList.remove('active');
-    });
-
+    document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
     resetGame();
   }
 
+  // --- 이벤트 리스너 ---
   canvas.addEventListener('mousedown', handleStart);
   window.addEventListener('mousemove', handleMove);
   window.addEventListener('mouseup', handleEnd);
-
   canvas.addEventListener('touchstart', handleStart, { passive: false });
   canvas.addEventListener('touchmove', handleMove, { passive: false });
   window.addEventListener('touchend', handleEnd);
 
-  window.addEventListener('resize', () => {
-    if (document.body.classList.contains('playing')) {
-      resize();
-      draw();
-    }
-  });
-
   canvas.addEventListener('wheel', e => {
     if (!document.body.classList.contains('playing')) return;
-
     e.preventDefault();
-
     const f = e.deltaY < 0 ? 1.1 : 0.9;
-    const ns = Math.max(0.2, Math.min(5, view.scale * f));
-    const rf = ns / view.scale;
-
-    view.x = e.clientX - (e.clientX - view.x) * rf;
-    view.y = e.clientY - (e.clientY - view.y) * rf;
-    view.scale = ns;
-
-    draw();
+    const ns = Math.max(0.1, Math.min(5, view.scale * f));
+    view.x = e.clientX - (e.clientX - view.x) * (ns / view.scale);
+    view.y = e.clientY - (e.clientY - view.y) * (ns / view.scale);
+    view.scale = ns; draw();
   }, { passive: false });
 
   window.addEventListener('scroll', () => {
     if (document.body.classList.contains('playing')) return;
-
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
-      if (hasNext && !isLoading) {
-        loadImages(currentPage + 1);
-      }
+      if (hasNext && !isLoading) loadImages(currentPage + 1);
     }
   });
 
+  window.addEventListener('resize', () => { if(document.body.classList.contains('playing')) { resize(); draw(); }});
+
   loadImages();
 </script>
-
 </body>
 </html>
