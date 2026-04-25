@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Planet Chungju - Mobile Puzzle</title>
+  <title>Planet Chungju - Pro Puzzle</title>
   <style>
     :root {
       --grid-size: 3;
@@ -19,13 +19,12 @@
       overflow-x: hidden;
     }
 
-    /* 헤더 스타일링 */
+    /* 헤더 */
     header { 
       padding: 20px 15px; text-align: center; background: white; 
       box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
     }
-    h1 { font-size: 1.4rem; margin: 0; color: var(--primary-color); letter-spacing: -0.5px; }
-    #routeInfo { font-size: 0.75rem; color: #aaa; margin-top: 4px; text-transform: uppercase; }
+    h1 { font-size: 1.4rem; margin: 0; color: var(--primary-color); }
     #countText { font-size: 0.85rem; margin-top: 8px; color: var(--accent-color); font-weight: 600; }
 
     /* 갤러리 레이아웃 */
@@ -35,35 +34,40 @@
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 12px;
     }
-    @media (max-width: 400px) {
-      #gallery { grid-template-columns: 1fr 1fr; }
-    }
+    @media (max-width: 400px) { #gallery { grid-template-columns: 1fr 1fr; } }
 
     .item {
       background: white; border-radius: 12px; overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      transition: transform 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s;
     }
     .item:active { transform: scale(0.97); }
     .item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
-    .list-meta { padding: 10px; font-size: 0.8rem; text-align: center; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .list-meta { padding: 10px; font-size: 0.8rem; text-align: center; color: #555; }
 
-    /* 퍼즐 게임 인터페이스 */
+    /* 퍼즐 게임 UI */
     #game-container {
       display: none; flex-direction: column; align-items: center;
       padding: 20px 10px; min-height: 100vh; background: var(--bg-color);
     }
     
-    .game-header { text-align: center; margin-bottom: 20px; }
-    #move-counter { font-weight: bold; color: var(--accent-color); }
+    .difficulty-selector {
+      display: flex; gap: 8px; margin-bottom: 20px; width: 100%; max-width: 400px;
+    }
+    .diff-btn {
+      flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;
+      background: white; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+    }
+    .diff-btn.active {
+      background: var(--primary-color); color: white; border-color: var(--primary-color);
+    }
 
     #puzzle-board {
       display: grid;
       grid-template-columns: repeat(var(--grid-size), 1fr);
-      gap: 2px;
+      gap: 1px; /* 격자가 많을수록 선을 얇게 */
       border: 4px solid var(--primary-color);
       background: var(--primary-color);
-      width: 90vw; max-width: 400px; aspect-ratio: 1/1;
+      width: 92vw; max-width: 420px; aspect-ratio: 1/1;
       border-radius: 8px; overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
@@ -73,54 +77,46 @@
       background-repeat: no-repeat;
       cursor: pointer;
       touch-action: manipulation;
-      transition: transform 0.1s ease-out, filter 0.2s;
-      position: relative;
     }
-    .tile:active { filter: brightness(0.8); }
-    .empty { background: #cbd5e0 !important; cursor: default; }
+    .empty { background: #cbd5e0 !important; }
 
-    /* 컨트롤 버튼 */
     .game-ui { 
-      margin-top: 25px; display: flex; gap: 10px; width: 100%; max-width: 400px; 
+      margin-top: 25px; display: flex; gap: 10px; width: 100%; max-width: 420px; 
     }
     .btn { 
       flex: 1; padding: 16px; border-radius: 14px; border: none; 
       font-size: 1rem; font-weight: bold; cursor: pointer;
-      box-shadow: 0 4px 0 rgba(0,0,0,0.1);
     }
-    .btn-back { background: #fff; color: #666; }
+    .btn-back { background: #fff; color: #666; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .btn-shuffle { background: var(--accent-color); color: white; }
     
-    /* 힌트 이미지 */
     #hint-img {
-        width: 80px; height: 80px; border-radius: 8px; margin-top: 15px;
-        border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        width: 60px; height: 60px; border-radius: 6px; margin-top: 15px;
+        border: 2px solid white;
     }
-
-    #loadingBox { text-align: center; padding: 40px; color: #999; }
   </style>
-
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9382191250873184" crossorigin="anonymous"></script>
-  
 </head> 
 <body>
 
   <header id="page-header">
     <h1 id="folderTitle">PLANET CHUNGJU</h1>
-    <div id="routeInfo">/gallery/view</div>
     <div id="countText">이미지 로드 중...</div>
   </header>
 
   <main id="main-container">
     <div id="gallery"></div>
-    <div id="loadingBox">사진을 불러오는 중입니다...</div>
+    <div id="loadingBox" style="text-align:center; padding:50px; color:#999;">Loading...</div>
   </main>
 
   <section id="game-container">
-    <div class="game-header">
-        <h2 style="margin:0 0 5px 0;">🧩 퍼즐 도전!</h2>
-        <div id="status">Moves: <span id="move-counter">0</span></div>
+    <div class="difficulty-selector">
+      <button class="diff-btn active" onclick="changeDifficulty(3, this)">3x3 (쉬움)</button>
+      <button class="diff-btn" onclick="changeDifficulty(6, this)">6x6 (보통)</button>
+      <button class="diff-btn" onclick="changeDifficulty(9, this)">9x9 (지옥)</button>
     </div>
+
+    <div id="status" style="margin-bottom:10px;">Moves: <span id="move-counter" style="font-weight:bold; color:var(--accent-color);">0</span></div>
 
     <div id="puzzle-board"></div>
     
@@ -137,8 +133,6 @@
     let currentFolder = new URLSearchParams(window.location.search).get('folder') || 'object';
     
     const gallery = document.getElementById('gallery');
-    const loadingBox = document.getElementById('loadingBox');
-    const countText = document.getElementById('countText');
     const gameContainer = document.getElementById('game-container');
     const mainContainer = document.getElementById('main-container');
     const pageHeader = document.getElementById('page-header');
@@ -147,51 +141,48 @@
 
     let currentPage = 1, hasNext = true, isLoading = false;
     let tiles = [], currentImg = "", moves = 0;
-    const gridSize = 3; // 3x3 고정 (필요시 수정 가능)
-
-    // 초기 설정
-    document.documentElement.style.setProperty('--grid-size', gridSize);
+    let gridSize = 3; // 기본값
 
     async function loadImages(page = 1) {
       if (isLoading || (!hasNext && page !== 1)) return;
       isLoading = true;
-      loadingBox.style.display = 'block';
-
       try {
         const res = await fetch(`${API_BASE}/api/gallery/${encodeURIComponent(currentFolder)}?page=${page}&page_size=24`);
         const data = await res.json();
-        
         hasNext = data.has_next;
         currentPage = data.page;
 
         const itemsHtml = data.items.map(item => `
           <article class="item" onclick="startGame('${item.url}')">
-            <img src="${item.url}" loading="lazy" alt="puzzle-source">
+            <img src="${item.url}" loading="lazy">
             <div class="list-meta">${item.filename || 'Untitled'}</div>
           </article>
         `).join('');
 
         if (page === 1) gallery.innerHTML = '';
         gallery.insertAdjacentHTML('beforeend', itemsHtml);
-        countText.innerHTML = `Total <strong>${data.total || 0}</strong> Pieces`;
-        
-        loadingBox.style.display = hasNext ? 'none' : 'block';
-        if(!hasNext) loadingBox.textContent = "끝까지 확인하셨습니다! ✨";
-      } catch (err) {
-        loadingBox.textContent = "이미지를 가져오는데 실패했습니다.";
-      } finally { isLoading = false; }
+        document.getElementById('countText').innerHTML = `Total <strong>${data.total || 0}</strong> Images`;
+      } catch (err) { console.error(err); } finally { isLoading = false; }
     }
 
     function startGame(imgSrc) {
       currentImg = imgSrc;
-      moves = 0;
-      moveDisplay.innerText = moves;
       document.getElementById('hint-img').src = imgSrc;
-      
-      window.scrollTo({top: 0, behavior: 'smooth'});
+      window.scrollTo(0, 0);
       mainContainer.style.display = 'none';
       pageHeader.style.display = 'none';
       gameContainer.style.display = 'flex';
+      initBoard();
+    }
+
+    // 난이도 변경 함수
+    function changeDifficulty(size, btn) {
+      gridSize = size;
+      document.documentElement.style.setProperty('--grid-size', gridSize);
+      
+      // 버튼 활성화 스타일 처리
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       
       initBoard();
     }
@@ -199,7 +190,6 @@
     function initBoard() {
       moves = 0;
       moveDisplay.innerText = moves;
-      // 인덱스 배열 생성 [0, 1, 2... 8]
       tiles = Array.from({length: gridSize * gridSize}, (_, i) => i);
       shuffleBoard();
       renderBoard();
@@ -207,13 +197,12 @@
 
     function renderBoard() {
       puzzleBoard.innerHTML = '';
-      const boardWidth = puzzleBoard.clientWidth || 400; // 0일 경우 대비
+      const boardWidth = puzzleBoard.clientWidth || 400;
       const tileSize = boardWidth / gridSize;
 
       tiles.forEach((tileIndex, i) => {
         const div = document.createElement('div');
         const isEmpty = tileIndex === gridSize * gridSize - 1;
-        
         div.className = 'tile' + (isEmpty ? ' empty' : '');
         
         if (!isEmpty) {
@@ -234,7 +223,6 @@
       const row = Math.floor(index / gridSize), col = index % gridSize;
       const eRow = Math.floor(emptyIndex / gridSize), eCol = emptyIndex % gridSize;
 
-      // 상하좌우 인접 여부 확인
       if (Math.abs(row - eRow) + Math.abs(col - eCol) === 1) {
         [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
         moves++;
@@ -245,29 +233,24 @@
     }
 
     function shuffleBoard() {
-      // 단순히 랜덤 shuffle을 하면 '풀 수 없는 퍼즐'이 생길 수 있음
-      // 따라서 빈 칸을 랜덤하게 이동시키는 방식으로 섞음
-      for (let i = 0; i < 200; i++) {
+      // 9x9의 경우 더 많이 섞어야 함 (난이도 비례 셔플)
+      const shuffleCount = gridSize * gridSize * 20; 
+      for (let i = 0; i < shuffleCount; i++) {
         const emptyIndex = tiles.indexOf(gridSize * gridSize - 1);
         const r = Math.floor(emptyIndex / gridSize), c = emptyIndex % gridSize;
-        const neighbors = [];
-        if (r > 0) neighbors.push(emptyIndex - gridSize);
-        if (r < gridSize - 1) neighbors.push(emptyIndex + gridSize);
-        if (c > 0) neighbors.push(emptyIndex - 1);
-        if (c < gridSize - 1) neighbors.push(emptyIndex + 1);
-        
-        const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+        const n = [];
+        if (r > 0) n.push(emptyIndex - gridSize);
+        if (r < gridSize - 1) n.push(emptyIndex + gridSize);
+        if (c > 0) n.push(emptyIndex - 1);
+        if (c < gridSize - 1) n.push(emptyIndex + 1);
+        const next = n[Math.floor(Math.random() * n.length)];
         [tiles[emptyIndex], tiles[next]] = [tiles[next], tiles[emptyIndex]];
       }
     }
 
     function checkWin() {
-      const isWin = tiles.every((t, i) => t === i);
-      if (isWin) {
-        setTimeout(() => {
-          alert(`축하합니다! 🎉\n${moves}번 만에 완성하셨습니다!`);
-          backToGallery();
-        }, 300);
+      if (tiles.every((t, i) => t === i)) {
+        setTimeout(() => alert(`완벽합니다! 🎉\n${gridSize}x${gridSize} 모드 클리어!`), 200);
       }
     }
 
@@ -277,12 +260,10 @@
       pageHeader.style.display = 'block';
     }
 
-    // 반응형 대응: 화면 회전이나 크기 변경 시 보드 다시 그리기
     window.addEventListener('resize', () => {
       if (gameContainer.style.display === 'flex') renderBoard();
     });
 
-    // 무한 스크롤
     window.addEventListener('scroll', () => {
       if (gameContainer.style.display === 'flex' || isLoading || !hasNext) return;
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 800) {
@@ -290,8 +271,6 @@
       }
     });
 
-    // 시작
-    document.getElementById('folderTitle').textContent = "PLANET " + currentFolder.toUpperCase();
     loadImages(1);
   </script>
 </body>
