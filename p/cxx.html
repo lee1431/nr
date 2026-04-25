@@ -12,7 +12,6 @@
       margin: 0; background: var(--bg); color: white; font-family: sans-serif; 
       overflow-x: hidden; overflow-y: auto; 
     }
-    /* 게임 중 스크롤 및 튕김 방지 */
     body.playing { overflow: hidden; position: fixed; width: 100%; height: 100%; }
 
     header { 
@@ -153,25 +152,50 @@
     ctx.closePath();
   }
 
+  // --- 조각 사방 분산 배치 로직 수정 ---
   function resetGame() {
     pieces = [];
     const baseW = Math.min(window.innerWidth, window.innerHeight) * 0.7;
     const pw = baseW / gridSize, ph = (pw * img.height) / img.width;
+    
     let map = Array.from({length: gridSize + 1}, () => Array.from({length: gridSize + 1}, () => ({ h:0, v:0 })));
     for(let r=0; r<=gridSize; r++) for(let c=0; c<=gridSize; c++) {
       if(c>0 && c<gridSize) map[r][c].h = Math.random() < 0.5 ? 1 : -1;
       if(r>0 && r<gridSize) map[r][c].v = Math.random() < 0.5 ? 1 : -1;
     }
-    for(let r=0; r<gridSize; r++) for(let c=0; c<gridSize; c++) {
-      const isLeft = (r * gridSize + c) % 2 === 0;
-      const trayOffset = (pw * gridSize) / 2 + 100;
-      pieces.push({
-        row: r, col: c, w: pw, h: ph, tab: pw*0.2, isLocked: false,
-        edges: { t: map[r][c].v*-1, r: map[r][c+1].h, b: map[r+1][c].v, l: map[r][c].h*-1 },
-        x: (isLeft ? -1 : 1) * (trayOffset + Math.random()*150),
-        y: (Math.random() - 0.5) * (window.innerHeight / view.scale),
-        tx: (c - gridSize/2) * pw, ty: (r - gridSize/2) * ph
-      });
+
+    const boardW = pw * gridSize;
+    const boardH = ph * gridSize;
+
+    for(let r=0; r<gridSize; r++) {
+      for(let c=0; c<gridSize; c++) {
+        // 상하좌우(0,1,2,3) 중 하나를 무작위 선택
+        const side = (r * gridSize + c) % 4;
+        let spawnX, spawnY;
+        const margin = 120; // 퍼즐판으로부터 최소 거리
+
+        if (side === 0) { // 상 (Top)
+          spawnX = (Math.random() - 0.5) * (window.innerWidth / view.scale);
+          spawnY = -boardH/2 - margin - Math.random() * 200;
+        } else if (side === 1) { // 하 (Bottom)
+          spawnX = (Math.random() - 0.5) * (window.innerWidth / view.scale);
+          spawnY = boardH/2 + margin + Math.random() * 200;
+        } else if (side === 2) { // 좌 (Left)
+          spawnX = -boardW/2 - margin - Math.random() * 200;
+          spawnY = (Math.random() - 0.5) * (window.innerHeight / view.scale);
+        } else { // 우 (Right)
+          spawnX = boardW/2 + margin + Math.random() * 200;
+          spawnY = (Math.random() - 0.5) * (window.innerHeight / view.scale);
+        }
+
+        pieces.push({
+          row: r, col: c, w: pw, h: ph, tab: pw*0.2, isLocked: false,
+          edges: { t: map[r][c].v*-1, r: map[r][c+1].h, b: map[r+1][c].v, l: map[r][c].h*-1 },
+          x: spawnX,
+          y: spawnY,
+          tx: (c - gridSize/2) * pw, ty: (r - gridSize/2) * ph
+        });
+      }
     }
     draw();
   }
@@ -203,20 +227,12 @@
     });
   }
 
-  // --- 오차 없는 좌표 추출 핵심 함수 ---
   function getPoint(e) {
-    const rect = canvas.getBoundingClientRect(); // 캔버스의 실제 위치 측정
+    const rect = canvas.getBoundingClientRect();
     const t = e.touches ? e.touches[0] : e;
-    
-    // 스크롤 및 헤더 위치를 완전히 배제한 순수 캔버스 내 좌표
     const rx = t.clientX - rect.left;
     const ry = t.clientY - rect.top;
-    
-    return {
-      rx, ry,
-      x: (rx - view.x) / view.scale,
-      y: (ry - view.y) / view.scale
-    };
+    return { rx, ry, x: (rx - view.x) / view.scale, y: (ry - view.y) / view.scale };
   }
 
   function handleStart(e) {
@@ -224,19 +240,14 @@
       view.lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       return;
     }
-    
     if(document.body.classList.contains('playing') && e.cancelable) e.preventDefault();
-
     const p = getPoint(e);
     selectedPiece = null;
     const dpr = devicePixelRatio;
-
     for (let i = pieces.length - 1; i >= 0; i--) {
       const pc = pieces[i];
       if (pc.isLocked) continue;
-
       ctx.save();
-      // 히트 테스트 시에도 동일하게 보정된 좌표계 사용
       ctx.setTransform(view.scale * dpr, 0, 0, view.scale * dpr, view.x * dpr, view.y * dpr);
       getPath(ctx, pc, pc.x, pc.y);
       if (ctx.isPointInPath(p.rx * dpr, p.ry * dpr)) {
@@ -249,7 +260,6 @@
       }
       ctx.restore();
     }
-
     if (!selectedPiece) {
       view.isPanning = true;
       view.startX = p.rx - view.x;
@@ -261,7 +271,6 @@
   function handleMove(e) {
     if(!document.body.classList.contains('playing')) return;
     if(e.cancelable) e.preventDefault();
-
     if (e.touches && e.touches.length === 2) {
       const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -272,7 +281,6 @@
       view.scale = ns; view.lastDist = dist;
       draw(); return;
     }
-
     const p = getPoint(e);
     if (selectedPiece) {
       selectedPiece.x = p.x - dragOffset.x;
