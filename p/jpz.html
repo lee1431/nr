@@ -3,291 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chungju Jigsaw Master - Fixed</title>
+    <title>Planet Chungju - Puzzle Studio</title>
     <style>
-        :root { --bg: #121212; --accent: #2ecc71; }
-        body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; touch-action: none; }
-        header { position: absolute; top: 0; width: 100%; padding: 15px; box-sizing: border-box; display: flex; justify-content: space-between; z-index: 10; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); }
-        .controls { display: flex; gap: 8px; }
-        button { padding: 10px 15px; border: none; border-radius: 8px; background: #333; color: white; font-weight: bold; cursor: pointer; font-size: 13px; }
-        button.active { background: var(--accent); box-shadow: 0 0 10px rgba(46, 204, 113, 0.5); }
-        #puzzle-canvas { display: block; width: 100vw; height: 100vh; }
-        #msg { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); pointer-events: none; background: rgba(0,0,0,0.8); padding: 12px 25px; border-radius: 25px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.2); z-index: 10; }
+        :root {
+            --primary: #2c3e50;
+            --accent: #00d2ff;
+            --bg: #121416;
+            --panel: rgba(0, 0, 0, 0.8);
+        }
+
+        body { 
+            margin: 0; background: var(--bg); color: white; 
+            font-family: 'Pretendard', sans-serif; overflow-x: hidden; 
+            -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+        }
+
+        /* 1. 공통 헤더 */
+        header { 
+            padding: 20px; text-align: center; background: white; color: var(--primary);
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        header h1 { margin: 0; font-size: 1.2rem; font-weight: 800; }
+        #countText { font-size: 0.8rem; color: #888; margin-top: 5px; }
+
+        /* 2. 갤러리 섹션 */
+        #main-container { padding: 15px; max-width: 1000px; margin: 0 auto; }
+        #gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        @media (max-width: 480px) { #gallery { grid-template-columns: 1fr 1fr; } }
+        .item { 
+            background: white; border-radius: 12px; overflow: hidden; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.2s;
+        }
+        .item:active { transform: scale(0.96); }
+        .item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
+        .list-meta { padding: 8px; color: #333; font-size: 0.8rem; text-align: center; }
+
+        /* 3. 게임 섹션 */
+        #game-view { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; flex-direction: column; }
+        
+        .game-header {
+            padding: 15px; display: flex; justify-content: space-between; align-items: center;
+            background: var(--panel); backdrop-filter: blur(10px); z-index: 2100;
+        }
+        .mode-toggle { display: flex; gap: 5px; background: #333; padding: 4px; border-radius: 10px; }
+        .mode-btn { 
+            padding: 8px 12px; border: none; border-radius: 8px; background: transparent; 
+            color: #aaa; cursor: pointer; font-size: 13px; font-weight: bold;
+        }
+        .mode-btn.active { background: var(--accent); color: #000; }
+
+        /* 슬라이딩 퍼즐용 보드 */
+        #sliding-board {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+            width: 90vw; max-width: 400px; aspect-ratio: 1/1; margin: auto;
+            border: 4px solid var(--accent); background: var(--accent); border-radius: 8px; overflow: hidden;
+        }
+        .tile { width: 100%; height: 100%; background-repeat: no-repeat; cursor: pointer; }
+        .tile.empty { background: #222 !important; }
+
+        /* 직소 퍼즐용 캔버스 */
+        #jigsaw-canvas { display: none; width: 100%; height: 100%; cursor: grab; }
+
+        /* 하단 UI */
+        .game-footer { padding: 20px; text-align: center; background: linear-gradient(to top, var(--panel), transparent); }
+        .btn-ui { padding: 12px 20px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-back { background: #444; color: white; }
+        .btn-reset { background: #e74c3c; color: white; }
+
+        #loadingBox { text-align: center; padding: 40px; color: #666; }
     </style>
 </head>
 <body>
 
-<header>
-    <div id="title" style="font-weight: bold; font-size: 1.2rem; color: var(--accent);">Planet Chungju Jigsaw</div>
-    <div class="controls">
-        <button onclick="setDifficulty(8)" id="btn64">64P</button>
-        <button onclick="setDifficulty(10)" id="btn100" class="active">100P</button>
-        <button onclick="setDifficulty(12)" id="btn144">144P</button>
-        <button onclick="resetGame()" style="background: #e74c3c;">다시</button>
-    </div>
-</header>
+<div id="gallery-view">
+    <header>
+        <h1>PLANET CHUNGJU PUZZLE</h1>
+        <div id="countText">이미지 로드 중...</div>
+    </header>
+    <main id="main-container">
+        <div id="gallery"></div>
+        <div id="loadingBox">사진을 불러오고 있어유...</div>
+    </main>
+</div>
 
-<div id="msg">확대해서 맞추면 훨씬 편해유!</div>
-<canvas id="puzzle-canvas"></canvas>
+<div id="game-view">
+    <div class="game-header">
+        <button class="btn-ui btn-back" onclick="backToGallery()">← 목록</button>
+        <div class="mode-toggle">
+            <button id="mode-sliding" class="mode-btn active" onclick="switchMode('sliding')">슬라이딩</button>
+            <button id="mode-jigsaw" class="mode-btn" onclick="switchMode('jigsaw')">직소</button>
+        </div>
+        <button class="btn-ui btn-reset" onclick="resetCurrentGame()">다시</button>
+    </div>
+
+    <div id="sliding-content" style="flex: 1; display: flex; align-items: center; justify-content: center;">
+        <div id="sliding-board"></div>
+    </div>
+    <canvas id="jigsaw-canvas"></canvas>
+
+    <div class="game-footer">
+        <div id="game-status" style="margin-bottom:10px; font-size: 14px;">준비됐슈!</div>
+    </div>
+</div>
 
 <script>
-    const canvas = document.getElementById('puzzle-canvas');
-    const ctx = canvas.getContext('2d');
-    const msgBox = document.getElementById('msg');
-    const ACCENT_COLOR = '#2ecc71'; // 🌟 CSS 변수 대신 사용할 JS 상수
+    // --- 설정 ---
+    const API_BASE = 'https://localflow.ddns.net/images';
+    const THEME_COLOR = "#00d2ff";
+    let currentFolder = new URLSearchParams(window.location.search).get('folder') || 'object';
     
-    let img = new Image();
-    let pieces = [];
-    let selectedPiece = null;
-    let gridSize = 10;
-    let originalPuzzleWidth, logicalPieceWidth, logicalPieceHeight, tabSize;
-
-    let viewState = {
-        scale: 1.0, panning: false,
-        pointX: window.innerWidth / 2, pointY: window.innerHeight / 2,
-        startX: 0, startY: 0, lastPinchDist: 0
-    };
+    // --- 상태 관리 ---
+    let currentPage = 1, hasNext = true, isLoading = false;
+    let currentImgUrl = "";
+    let gameMode = 'sliding'; // 'sliding' or 'jigsaw'
     
-    let dragOffset = { x: 0, y: 0 };
+    // 갤러리 관련
+    const gallery = document.getElementById('gallery');
+    const loadingBox = document.getElementById('loadingBox');
 
-    img.src = 'https://upload.wikimedia.org/wikipedia/commons/e/ec/Chungju_Lake.jpg'; 
-    img.onload = () => { setupCanvas(); resetGame(); };
+    // 게임 관련
+    const gameView = document.getElementById('game-view');
+    const slidingContent = document.getElementById('sliding-content');
+    const jigsawCanvas = document.getElementById('jigsaw-canvas');
+    const slidingBoard = document.getElementById('sliding-board');
+    const ctx = jigsawCanvas.getContext('2d');
 
-    function setupCanvas() {
-        canvas.width = window.innerWidth * window.devicePixelRatio;
-        canvas.height = window.innerHeight * window.devicePixelRatio;
+    // 1. 갤러리 로직
+    async function loadImages(page = 1) {
+        if (isLoading || (!hasNext && page !== 1)) return;
+        isLoading = true;
+        try {
+            const res = await fetch(`${API_BASE}/api/gallery/${encodeURIComponent(currentFolder)}?page=${page}&page_size=24`);
+            const data = await res.json();
+            hasNext = data.has_next;
+            currentPage = data.page;
+
+            const itemsHtml = data.items.map(item => `
+                <article class="item" onclick="startGame('${item.url}')">
+                    <img src="${item.url}" loading="lazy">
+                    <div class="list-meta">${item.filename || 'Untitled'}</div>
+                </article>
+            `).join('');
+
+            if (page === 1) gallery.innerHTML = '';
+            gallery.insertAdjacentHTML('beforeend', itemsHtml);
+            document.getElementById('countText').innerHTML = `Total <strong>${data.total || 0}</strong> Images`;
+            loadingBox.style.display = hasNext ? 'none' : 'block';
+        } catch (err) { console.error(err); } finally { isLoading = false; }
     }
 
-    function initPuzzle() {
-        pieces = [];
-        originalPuzzleWidth = Math.min(window.innerWidth, window.innerHeight) * 0.9;
-        logicalPieceWidth = originalPuzzleWidth / gridSize;
-        logicalPieceHeight = (logicalPieceWidth * img.height) / img.width;
-        tabSize = logicalPieceWidth * 0.22;
-
-        let connectionMap = [];
-        for(let r=0; r <= gridSize; r++) {
-            connectionMap[r] = [];
-            for(let c=0; c <= gridSize; c++) {
-                connectionMap[r][c] = {
-                    h: (c > 0 && c < gridSize) ? (Math.random() < 0.5 ? 1 : -1) : 0,
-                    v: (r > 0 && r < gridSize) ? (Math.random() < 0.5 ? 1 : -1) : 0
-                };
-            }
-        }
-
-        for (let r = 0; r < gridSize; r++) {
-            for (let c = 0; c < gridSize; c++) {
-                pieces.push({
-                    row: r, col: c,
-                    edges: {
-                        top: connectionMap[r][c].v * -1,
-                        right: connectionMap[r][c+1].h,
-                        bottom: connectionMap[r+1][c].v,
-                        left: connectionMap[r][c].h * -1
-                    },
-                    sw: img.width / gridSize,
-                    sh: img.height / gridSize,
-                    x: (Math.random() - 0.5) * originalPuzzleWidth * 1.5,
-                    y: (Math.random() - 0.5) * originalPuzzleWidth * 1.5,
-                    tx: c * logicalPieceWidth - (originalPuzzleWidth/2),
-                    ty: r * logicalPieceHeight - (gridSize * logicalPieceHeight / 2),
-                    isLocked: false
-                });
-            }
-        }
-        draw();
+    // 2. 게임 시작 & 모드 스위칭
+    function startGame(url) {
+        currentImgUrl = url;
+        document.getElementById('gallery-view').style.display = 'none';
+        gameView.style.display = 'flex';
+        switchMode('sliding'); // 기본 모드는 슬라이딩으로 시작
     }
 
-    function drawTab(ctx, x1, y1, x2, y2, type, t, horizontal) {
-        const cx = (x1 + x2) / 2;
-        const cy = (y1 + y2) / 2;
-        const h = t * type;
-        if (horizontal) {
-            ctx.bezierCurveTo(cx - t, y1, cx - t/2, y1 + h*1.2, cx, y1 + h);
-            ctx.bezierCurveTo(cx + t/2, y1 + h*1.2, cx + t, y1, x2, y2);
+    function switchMode(mode) {
+        gameMode = mode;
+        document.getElementById('mode-sliding').className = 'mode-btn' + (mode === 'sliding' ? ' active' : '');
+        document.getElementById('mode-jigsaw').className = 'mode-btn' + (mode === 'jigsaw' ? ' active' : '');
+        
+        if (mode === 'sliding') {
+            slidingContent.style.display = 'flex';
+            jigsawCanvas.style.display = 'none';
+            initSliding();
         } else {
-            ctx.bezierCurveTo(x1, cy - t, x1 + h*1.2, cy - t/2, x1 + h, cy);
-            ctx.bezierCurveTo(x1 + h*1.2, cy + t/2, x1, cy + t, x2, y2);
+            slidingContent.style.display = 'none';
+            jigsawCanvas.style.display = 'block';
+            initJigsaw();
         }
     }
 
-    function getPiecePath(ctx, p, x, y, w, h, t) {
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        if (p.edges.top === 0) ctx.lineTo(x + w, y); else drawTab(ctx, x, y, x + w, y, p.edges.top, t, true);
-        if (p.edges.right === 0) ctx.lineTo(x + w, y + h); else drawTab(ctx, x + w, y, x + w, y + h, p.edges.right, t, false);
-        if (p.edges.bottom === 0) ctx.lineTo(x, y + h); else drawTab(ctx, x + w, y + h, x, y + h, p.edges.bottom, t, true);
-        if (p.edges.left === 0) ctx.lineTo(x, y); else drawTab(ctx, x, y + h, x, y, p.edges.left, t, false);
-        ctx.closePath();
+    function resetCurrentGame() {
+        if (gameMode === 'sliding') initSliding();
+        else initJigsaw();
     }
 
-    function draw() {
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function backToGallery() {
+        gameView.style.display = 'none';
+        document.getElementById('gallery-view').style.display = 'block';
+    }
 
-        const dpr = window.devicePixelRatio;
-        ctx.setTransform(viewState.scale * dpr, 0, 0, viewState.scale * dpr, viewState.pointX * dpr, viewState.pointY * dpr);
+    // --- 3-A. 슬라이딩 퍼즐 로직 ---
+    let slidingTiles = [];
+    function initSliding() {
+        slidingTiles = Array.from({length: 9}, (_, i) => i);
+        // 간단한 셔플
+        for(let i=0; i<100; i++) {
+            const emptyIdx = slidingTiles.indexOf(8);
+            const r = Math.floor(emptyIdx / 3), c = emptyIdx % 3;
+            const adj = [];
+            if(r>0) adj.push(emptyIdx-3); if(r<2) adj.push(emptyIdx+3);
+            if(c>0) adj.push(emptyIdx-1); if(c<2) adj.push(emptyIdx+1);
+            const target = adj[Math.floor(Math.random() * adj.length)];
+            [slidingTiles[emptyIdx], slidingTiles[target]] = [slidingTiles[target], slidingTiles[emptyIdx]];
+        }
+        renderSliding();
+    }
 
-        const puzzleTotalHeight = gridSize * logicalPieceHeight;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-        ctx.lineWidth = 1 / viewState.scale;
-        ctx.strokeRect(-originalPuzzleWidth/2, -puzzleTotalHeight/2, originalPuzzleWidth, puzzleTotalHeight);
-
-        const sortedPieces = [...pieces].sort((a, b) => a.isLocked - b.isLocked);
-        sortedPieces.forEach(p => {
-            ctx.save();
-            const srcX = (p.col / gridSize) * img.width;
-            const srcY = (p.row / gridSize) * img.height;
-            getPiecePath(ctx, p, p.x, p.y, logicalPieceWidth, logicalPieceHeight, tabSize);
-            ctx.clip();
-            const bleed = tabSize * (img.width/originalPuzzleWidth) * 2;
-            const bleedDraw = tabSize * 2;
-            ctx.drawImage(img, srcX - bleed, srcY - bleed, p.sw + bleed*2, p.sh + bleed*2, p.x - bleedDraw, p.y - bleedDraw, logicalPieceWidth + bleedDraw*2, logicalPieceHeight + bleedDraw*2);
-            ctx.restore();
-
-            ctx.save();
-            getPiecePath(ctx, p, p.x, p.y, logicalPieceWidth, logicalPieceHeight, tabSize);
-            // 🌟 에러 수정 지점: ACCENT_COLOR 상수 사용
-            ctx.strokeStyle = p.isLocked ? 'rgba(255,255,255,0.05)' : (selectedPiece === p ? ACCENT_COLOR : 'rgba(255,255,255,0.4)');
-            ctx.lineWidth = (selectedPiece === p ? 3 : 1) / viewState.scale;
-            ctx.stroke();
-            ctx.restore();
+    function renderSliding() {
+        slidingBoard.innerHTML = '';
+        const bW = slidingBoard.clientWidth;
+        slidingTiles.forEach((tIdx, i) => {
+            const div = document.createElement('div');
+            const isEmpty = tIdx === 8;
+            div.className = 'tile' + (isEmpty ? ' empty' : '');
+            if (!isEmpty) {
+                const r = Math.floor(tIdx/3), c = tIdx%3;
+                div.style.backgroundImage = `url(${currentImgUrl})`;
+                div.style.backgroundSize = `${bW}px ${bW}px`;
+                div.style.backgroundPosition = `-${c * (bW/3)}px -${r * (bW/3)}px`;
+            }
+            div.onclick = () => {
+                const emptyIdx = slidingTiles.indexOf(8);
+                const r = Math.floor(i/3), c = i%3, er = Math.floor(emptyIdx/3), ec = emptyIdx%3;
+                if(Math.abs(r-er) + Math.abs(c-ec) === 1) {
+                    [slidingTiles[i], slidingTiles[emptyIdx]] = [slidingTiles[emptyIdx], slidingTiles[i]];
+                    renderSliding();
+                    if(slidingTiles.every((t, idx) => t === idx)) alert("와따! 성공했구만유!");
+                }
+            };
+            slidingBoard.appendChild(div);
         });
     }
 
-    function screenToWorld(clientX, clientY) {
-        return { x: (clientX - viewState.pointX) / viewState.scale, y: (clientY - viewState.pointY) / viewState.scale };
+    // --- 3-B. 직소 퍼즐 로직 (Canvas) ---
+    let jigsawImg = new Image();
+    let jigsawPieces = [], view = { x: 0, y: 0, scale: 0.7 };
+    let selectedPiece = null, dragOffset = {x:0, y:0};
+
+    function initJigsaw() {
+        jigsawImg.crossOrigin = "Anonymous";
+        jigsawImg.src = currentImgUrl;
+        jigsawImg.onload = () => {
+            setupJigsawCanvas();
+            createJigsawPieces();
+            drawJigsaw();
+        };
     }
 
-    function handleStart(e) {
-        e.preventDefault();
-        const touches = e.touches;
-        if (touches && touches.length === 2) {
-            viewState.panning = false;
-            viewState.lastPinchDist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
-            return;
-        }
+    function setupJigsawCanvas() {
+        jigsawCanvas.width = window.innerWidth * devicePixelRatio;
+        jigsawCanvas.height = window.innerHeight * devicePixelRatio;
+        view.x = window.innerWidth / 2; view.y = window.innerHeight / 2;
+    }
 
-        const touch = touches ? touches[0] : e;
-        const worldPos = screenToWorld(touch.clientX, touch.clientY);
+    function createJigsawPieces() {
+        const size = 10; // 100P 고정
+        jigsawPieces = [];
+        const baseW = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+        const pw = baseW / size, ph = (pw * jigsawImg.height) / jigsawImg.width;
         
-        selectedPiece = null;
-        for (let i = pieces.length - 1; i >= 0; i--) {
-            const p = pieces[i];
-            if (p.isLocked) continue;
-            
-            // 🌟 히트 테스트 로직 수정
-            ctx.save();
-            const dpr = window.devicePixelRatio;
-            ctx.setTransform(viewState.scale * dpr, 0, 0, viewState.scale * dpr, viewState.pointX * dpr, viewState.pointY * dpr);
-            getPiecePath(ctx, p, p.x, p.y, logicalPieceWidth, logicalPieceHeight, tabSize);
-            if (ctx.isPointInPath(touch.clientX * dpr, touch.clientY * dpr)) {
-                selectedPiece = p;
-                dragOffset.x = worldPos.x - p.x;
-                dragOffset.y = worldPos.y - p.y;
-                pieces.splice(i, 1);
-                pieces.push(selectedPiece);
-                ctx.restore();
-                break;
+        let map = [];
+        for(let r=0; r<=size; r++) {
+            map[r] = [];
+            for(let c=0; c<=size; c++) map[r][c] = { h: (c>0 && c<size)?(Math.random()<0.5?1:-1):0, v: (r>0 && r<size)?(Math.random()<0.5?1:-1):0 };
+        }
+
+        for(let r=0; r<size; r++) {
+            for(let c=0; c<size; c++) {
+                jigsawPieces.push({
+                    row: r, col: c, w: pw, h: ph, tab: pw * 0.2,
+                    edges: { t: map[r][c].v * -1, r: map[r][c+1].h, b: map[r+1][c].v, l: map[r][c].h * -1 },
+                    x: (Math.random()-0.5) * window.innerWidth * 1.5,
+                    y: (Math.random()-0.5) * window.innerHeight * 1.5,
+                    tx: (c - size/2) * pw, ty: (r - size/2) * ph, isLocked: false
+                });
             }
+        }
+    }
+
+    function drawJigsaw() {
+        ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0, 0, jigsawCanvas.width, jigsawCanvas.height);
+        const dpr = devicePixelRatio;
+        ctx.setTransform(view.scale*dpr, 0, 0, view.scale*dpr, view.x*dpr, view.y*dpr);
+
+        // 음각 가이드
+        jigsawPieces.forEach(p => {
+            drawPath(ctx, p, p.tx, p.ty);
+            ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.stroke();
+            ctx.fillStyle = "rgba(0,0,0,0.1)"; ctx.fill();
+        });
+
+        // 조각들
+        [...jigsawPieces].sort((a,b)=>a.isLocked-b.isLocked).forEach(p => {
+            ctx.save(); drawPath(ctx, p, p.x, p.y); ctx.clip();
+            const sw = jigsawImg.width/10, sh = jigsawImg.height/10;
+            const b = p.tab * (jigsawImg.width/(p.w*10)) * 2;
+            ctx.drawImage(jigsawImg, p.col*sw-b, p.row*sh-b, sw+b*2, sh+b*2, p.x-p.tab*2, p.y-p.tab*2, p.w+p.tab*4, p.h+p.tab*4);
             ctx.restore();
-        }
-
-        if (!selectedPiece) {
-            viewState.panning = true;
-            viewState.startX = touch.clientX - viewState.pointX;
-            viewState.startY = touch.clientY - viewState.pointY;
-        }
-        draw();
+            ctx.save(); drawPath(ctx, p, p.x, p.y); 
+            ctx.strokeStyle = p.isLocked ? "rgba(255,255,255,0.05)" : (selectedPiece===p ? THEME_COLOR : "rgba(255,255,255,0.3)");
+            ctx.lineWidth = (selectedPiece===p?3:1)/view.scale; ctx.stroke(); ctx.restore();
+        });
     }
 
-    function handleMove(e) {
-        e.preventDefault();
-        const touches = e.touches;
-        if (touches && touches.length === 2) {
-            const dist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
-            const midX = (touches[0].clientX + touches[1].clientX) / 2;
-            const midY = (touches[0].clientY + touches[1].clientY) / 2;
-            const factor = dist / viewState.lastPinchDist;
-            
-            const newScale = Math.max(0.5, Math.min(4.0, viewState.scale * factor));
-            const realFactor = newScale / viewState.scale;
-            viewState.pointX = midX - (midX - viewState.pointX) * realFactor;
-            viewState.pointY = midY - (midY - viewState.pointY) * realFactor;
-            viewState.scale = newScale;
-            viewState.lastPinchDist = dist;
-            draw();
-            return;
-        }
-
-        const touch = touches ? touches[0] : e;
-        if (selectedPiece) {
-            const worldPos = screenToWorld(touch.clientX, touch.clientY);
-            selectedPiece.x = worldPos.x - dragOffset.x;
-            selectedPiece.y = worldPos.y - dragOffset.y;
-        } else if (viewState.panning) {
-            viewState.pointX = touch.clientX - viewState.startX;
-            viewState.pointY = touch.clientY - viewState.startY;
-        }
-        draw();
+    function drawPath(ctx, p, x, y) {
+        ctx.beginPath(); ctx.moveTo(x, y);
+        const edge = (x1,y1,x2,y2,type) => {
+            if(type===0) { ctx.lineTo(x2,y2); return; }
+            const mx=(x1+x2)/2, my=(y1+y2)/2, nx=-(y2-y1), ny=(x2-x1), n=0.12, h=0.22, d=0.35;
+            ctx.bezierCurveTo(x1+(x2-x1)*(0.5-n), y1+(y2-y1)*(0.5-n), mx+nx*d*type-(x2-x1)*h, my+ny*d*type-(y2-y1)*h, mx+nx*d*type, my+ny*d*type);
+            ctx.bezierCurveTo(mx+nx*d*type+(x2-x1)*h, my+ny*d*type+(y2-y1)*h, x1+(x2-x1)*(0.5+n), y1+(y2-y1)*(0.5+n), x2, y2);
+        };
+        edge(x, y, x+p.w, y, p.edges.t); edge(x+p.w, y, x+p.w, y+p.h, p.edges.r);
+        edge(x+p.w, y+p.h, x, y+p.h, p.edges.b); edge(x, y+p.h, x, y, p.edges.l);
+        ctx.closePath();
     }
 
-    function handleEnd() {
-        if (selectedPiece) {
-            const dist = Math.hypot(selectedPiece.x - selectedPiece.tx, selectedPiece.y - selectedPiece.ty);
-            if (dist < 15 / viewState.scale) {
-                selectedPiece.x = selectedPiece.tx;
-                selectedPiece.y = selectedPiece.ty;
-                selectedPiece.isLocked = true;
-                checkClear();
+    // --- 공통 이벤트 ---
+    window.addEventListener('scroll', () => {
+        if(gameView.style.display==='flex' || isLoading || !hasNext) return;
+        if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 800) loadImages(currentPage + 1);
+    });
+
+    const handleJigsawMove = (e) => {
+        if(gameMode!=='jigsaw') return;
+        const t = e.touches ? e.touches[0] : e;
+        const mx = (t.clientX - view.x)/view.scale, my = (t.clientY - view.y)/view.scale;
+        if(selectedPiece) { selectedPiece.x = mx - dragOffset.x; selectedPiece.y = my - dragOffset.y; drawJigsaw(); }
+    };
+
+    jigsawCanvas.addEventListener('mousedown', (e) => {
+        if(gameMode!=='jigsaw') return;
+        const mx = (e.clientX-view.x)/view.scale, my = (e.clientY-view.y)/view.scale;
+        for(let i=jigsawPieces.length-1; i>=0; i--) {
+            const p = jigsawPieces[i];
+            if(!p.isLocked && mx > p.x-20 && mx < p.x+p.w+20 && my > p.y-20 && my < p.y+p.h+20) {
+                selectedPiece = p; dragOffset.x = mx-p.x; dragOffset.y = my-p.y;
+                jigsawPieces.splice(i,1); jigsawPieces.push(p); break;
             }
         }
-        selectedPiece = null;
-        viewState.panning = false;
-        draw();
-    }
-
-    function setDifficulty(size) {
-        gridSize = size;
-        document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn' + (size*size)).classList.add('active');
-        resetGame();
-    }
-
-    function resetGame() {
-        viewState.scale = 0.8;
-        viewState.pointX = window.innerWidth / 2;
-        viewState.pointY = window.innerHeight / 2;
-        initPuzzle();
-    }
-
-    function checkClear() {
-        const lockedCount = pieces.filter(p => p.isLocked).length;
-        msgBox.innerText = `맞춘 조각: ${lockedCount} / ${pieces.length}`;
-        if (lockedCount === pieces.length) {
-            msgBox.innerHTML = "<b style='color:#2ecc71'>🎉 명품 충주 퍼즐 완성! 최고구만유!</b>";
+    });
+    window.addEventListener('mousemove', handleJigsawMove);
+    window.addEventListener('mouseup', () => {
+        if(selectedPiece) {
+            const d = Math.hypot(selectedPiece.x-selectedPiece.tx, selectedPiece.y-selectedPiece.ty);
+            if(d < 25/view.scale) { selectedPiece.x=selectedPiece.tx; selectedPiece.y=selectedPiece.ty; selectedPiece.isLocked=true; }
+            selectedPiece = null; drawJigsaw();
         }
-    }
+    });
 
-    canvas.addEventListener('mousedown', handleStart);
-    canvas.addEventListener('mousemove', handleMove);
-    window.addEventListener('mouseup', handleEnd);
-    canvas.addEventListener('touchstart', handleStart, { passive: false });
-    canvas.addEventListener('touchmove', handleMove, { passive: false });
-    window.addEventListener('touchend', handleEnd);
-    window.addEventListener('resize', () => { setupCanvas(); draw(); });
-    canvas.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        const factor = e.deltaY > 0 ? 0.9 : 1.1;
-        const newScale = Math.max(0.5, Math.min(4.0, viewState.scale * factor));
-        const realFactor = newScale / viewState.scale;
-        viewState.pointX = e.clientX - (e.clientX - viewState.pointX) * realFactor;
-        viewState.pointY = e.clientY - (e.clientY - viewState.pointY) * realFactor;
-        viewState.scale = newScale;
-        draw();
-    }, { passive: false });
+    // 초기 로드
+    loadImages(1);
 </script>
-
 </body>
 </html>
