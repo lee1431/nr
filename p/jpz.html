@@ -5,242 +5,88 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Planet Chungju - Jigsaw Gallery</title>
   <style>
-    :root {
-      --bg: #121416;
-      --accent: #00d2ff;
-      --panel: rgba(0, 0, 0, 0.8);
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: white;
-      font-family: sans-serif;
-      overflow-x: hidden;
-    }
-
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 100;
-      background: linear-gradient(to bottom, var(--panel), transparent);
-    }
-
+    :root { --bg: #121416; --accent: #00d2ff; --panel: rgba(0, 0, 0, 0.8); }
+    * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+    body { margin: 0; background: var(--bg); color: white; font-family: sans-serif; overflow: hidden; }
+    header { position: fixed; top: 0; left: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 100; background: linear-gradient(to bottom, var(--panel), transparent); pointer-events: none; }
+    header > * { pointer-events: auto; }
     .btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-
-    button {
-      padding: 10px 16px;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      background: var(--panel);
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: 0.2s;
-      font-size: 13px;
-    }
-
+    button { padding: 10px 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: var(--panel); color: white; font-weight: bold; cursor: pointer; backdrop-filter: blur(10px); transition: 0.2s; font-size: 13px; }
     button.active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-    #main-container { min-height: 100vh; padding: 85px 16px 30px; }
-
-    #countText { margin-bottom: 14px; color: #aaa; font-size: 14px; }
-
-    #gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 14px;
-    }
-
-    .item {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .item:hover { transform: translateY(-3px); border-color: var(--accent); }
-
-    .item img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      display: block;
-      background: #222;
-    }
-
-    .list-meta {
-      padding: 9px;
-      font-size: 12px;
-      color: #ccc;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    #game-container {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      overflow: hidden;
-      touch-action: none;
-      z-index: 50;
-    }
-
-    #msg-box {
-      position: absolute;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 12px 25px;
-      background: var(--panel);
-      border-radius: 30px;
-      backdrop-filter: blur(10px);
-      font-size: 14px;
-      pointer-events: none;
-      z-index: 100;
-      white-space: nowrap;
-    }
-
-    canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
-
+    #main-container { height: 100vh; overflow-y: auto; padding: 85px 16px 30px; }
+    #gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
+    .item { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; cursor: pointer; }
+    .item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
+    .list-meta { padding: 9px; font-size: 12px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #game-container { display: none; position: fixed; inset: 0; background: var(--bg); overflow: hidden; touch-action: none; z-index: 50; }
+    #msg-box { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 25px; background: var(--panel); border-radius: 30px; font-size: 14px; pointer-events: none; z-index: 100; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
     .game-only { display: none; }
-    body.playing { overflow: hidden; }
     body.playing .game-only { display: inline-block; }
-    body.playing .gallery-only { display: none; }
-
-    @media (max-width: 640px) {
-      header { align-items: flex-start; gap: 10px; }
-      button { padding: 8px 11px; font-size: 12px; }
-      #gallery { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-    }
+    body.playing #main-container { display: none; }
+    @media (max-width: 640px) { #gallery { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; } }
   </style>
 </head>
 <body>
 
 <header>
-  <div style="font-weight:800; font-size:1.1rem;">
-    PLANET <span style="color:var(--accent)">CHUNGJU</span>
-  </div>
+  <div style="font-weight:800; font-size:1.1rem;">PLANET <span style="color:var(--accent)">CHUNGJU</span></div>
   <div class="btns">
     <button class="game-only" onclick="backToGallery()">목록</button>
     <button class="game-only active level-btn" onclick="changeLevel(10, this)">100P</button>
     <button class="game-only level-btn" onclick="changeLevel(15, this)">225P</button>
-    <button class="game-only level-btn" onclick="changeLevel(20, this)">400P</button>
     <button class="game-only" onclick="resetGame()" style="background:#e74c3c;">다시</button>
   </div>
 </header>
 
 <main id="main-container">
-  <div id="countText">이미지 불러오는 중...</div>
+  <div id="countText" style="margin-bottom:10px; color:#aaa;">이미지 불러오는 중...</div>
   <section id="gallery"></section>
 </main>
 
 <section id="game-container">
-  <div id="msg-box">조각을 바닥 음각에 맞춰보셔유!</div>
+  <div id="msg-box">조각을 맞춰보셔유!</div>
   <canvas id="mainCanvas"></canvas>
 </section>
 
 <script>
   const API_BASE = 'https://localflow.ddns.net/images';
   let currentFolder = new URLSearchParams(window.location.search).get('folder') || 'object';
-
-  const gallery = document.getElementById('gallery');
-  const gameContainer = document.getElementById('game-container');
-  const mainContainer = document.getElementById('main-container');
   const canvas = document.getElementById('mainCanvas');
   const ctx = canvas.getContext('2d');
   const msgBox = document.getElementById('msg-box');
 
-  const THEME_COLOR = "#00d2ff";
-
-  let currentPage = 1;
-  let hasNext = true;
-  let isLoading = false;
-
   let img = new Image();
   img.crossOrigin = "Anonymous";
-
-  let currentImgUrl = "";
-  let pieces = [];
-  let selectedPiece = null;
-  let gridSize = 10;
-
-  let view = {
-    x: 0, y: 0, scale: 0.7,
-    isPanning: false, startX: 0, startY: 0, lastDist: 0
-  };
-
+  let pieces = [], selectedPiece = null, gridSize = 10;
+  let view = { x: 0, y: 0, scale: 0.7, isPanning: false, startX: 0, startY: 0, lastDist: 0 };
   let dragOffset = { x: 0, y: 0 };
 
-  // --- 갤러리 로딩 로직 ---
-  async function loadImages(page = 1) {
-    if (isLoading || (!hasNext && page !== 1)) return;
-    isLoading = true;
+  // --- 이미지 로딩 ---
+  async function loadImages() {
     try {
-      const res = await fetch(`${API_BASE}/api/gallery/${encodeURIComponent(currentFolder)}?page=${page}&page_size=24`);
+      const res = await fetch(`${API_BASE}/api/gallery/${encodeURIComponent(currentFolder)}?page=1&page_size=40`);
       const data = await res.json();
-      hasNext = data.has_next;
-      currentPage = data.page;
-      if (page === 1) gallery.innerHTML = '';
-
-      const itemsHtml = data.items.map(item => {
-        const safeUrl = String(item.url).replace(/'/g, "\\'");
-        return `
-          <article class="item" onclick="startGame('${safeUrl}')">
-            <img src="${item.url}" loading="lazy" alt="Image">
-            <div class="list-meta">${item.filename || 'Untitled'}</div>
-          </article>
-        `;
-      }).join('');
-
-      gallery.insertAdjacentHTML('beforeend', itemsHtml);
-      document.getElementById('countText').innerHTML = `Total <strong>${data.total || 0}</strong> Images`;
-    } catch (err) {
-      console.error(err);
-      document.getElementById('countText').innerText = '이미지를 불러오지 못했습니다.';
-    } finally {
-      isLoading = false;
-    }
+      document.getElementById('gallery').innerHTML = data.items.map(item => `
+        <article class="item" onclick="startGame('${item.url}')">
+          <img src="${item.url}" alt="img">
+          <div class="list-meta">${item.filename || 'Untitled'}</div>
+        </article>
+      `).join('');
+      document.getElementById('countText').innerHTML = `Total <strong>${data.total}</strong> Images`;
+    } catch (e) { console.error(e); }
   }
 
-  // --- 퍼즐 엔진 로직 ---
   function startGame(url) {
-    currentImgUrl = url;
     document.body.classList.add('playing');
-    mainContainer.style.display = 'none';
-    gameContainer.style.display = 'block';
-    pieces = [];
-    selectedPiece = null;
-    msgBox.innerText = '이미지 로딩 중...';
-
-    img = new Image();
-    img.crossOrigin = "Anonymous";
-    img.onload = () => {
-      resize();
-      resetGame();
-      msgBox.innerText = '조각을 바닥 음각에 맞춰보셔유!';
-    };
-    img.src = url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
+    document.getElementById('game-container').style.display = 'block';
+    img.onload = () => { resize(); resetGame(); };
+    img.src = url + "?v=" + Date.now();
   }
 
   function backToGallery() {
     document.body.classList.remove('playing');
-    gameContainer.style.display = 'none';
-    mainContainer.style.display = 'block';
-    selectedPiece = null;
+    document.getElementById('game-container').style.display = 'none';
   }
 
   function resize() {
@@ -248,131 +94,88 @@
     canvas.height = window.innerHeight * devicePixelRatio;
     view.x = window.innerWidth / 2;
     view.y = window.innerHeight / 2;
+    draw();
   }
 
-  function drawJigsawEdge(ctx, x1, y1, x2, y2, type) {
-    if (type === 0) { ctx.lineTo(x2, y2); return; }
-    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-    const nx = -(y2 - y1), ny = (x2 - x1);
-    const neck = 0.12, headW = 0.22, deep = 0.35;
-    const cp1x = x1 + (x2 - x1) * (0.5 - neck), cp1y = y1 + (y2 - y1) * (0.5 - neck);
-    const cp2x = mx + nx * deep * type - (x2 - x1) * headW, cp2y = my + ny * deep * type - (y2 - y1) * headW;
-    const cp3x = mx + nx * deep * type + (x2 - x1) * headW, cp3y = my + ny * deep * type + (y2 - y1) * headW;
-    const cp4x = x1 + (x2 - x1) * (0.5 + neck), cp4y = y1 + (y2 - y1) * (0.5 + neck);
-    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, mx + nx * deep * type, my + ny * deep * type);
-    ctx.bezierCurveTo(cp3x, cp3y, cp4x, cp4y, x2, y2);
-  }
-
+  // --- 퍼즐 엔진 ---
   function getPath(ctx, p, x, y) {
     ctx.beginPath();
     ctx.moveTo(x, y);
-    drawJigsawEdge(ctx, x, y, x + p.w, y, p.edges.t);
-    drawJigsawEdge(ctx, x + p.w, y, x + p.w, y + p.h, p.edges.r);
-    drawJigsawEdge(ctx, x + p.w, y + p.h, x, y + p.h, p.edges.b);
-    drawJigsawEdge(ctx, x, y + p.h, x, y, p.edges.l);
+    const drawEdge = (x1, y1, x2, y2, type) => {
+      if (type === 0) { ctx.lineTo(x2, y2); return; }
+      const mx = (x1+x2)/2, my = (y1+y2)/2, nx = -(y2-y1), ny = (x2-x1);
+      const n = 0.12, h = 0.22, d = 0.35 * type;
+      ctx.bezierCurveTo(x1+(x2-x1)*(0.5-n), y1+(y2-y1)*(0.5-n), mx+nx*d-(x2-x1)*h, my+ny*d-(y2-y1)*h, mx+nx*d, my+ny*d);
+      ctx.bezierCurveTo(mx+nx*d+(x2-x1)*h, my+ny*d+(y2-y1)*h, x1+(x2-x1)*(0.5+n), y1+(y2-y1)*(0.5+n), x2, y2);
+    };
+    drawEdge(x, y, x + p.w, y, p.edges.t);
+    drawEdge(x + p.w, y, x + p.w, y + p.h, p.edges.r);
+    drawEdge(x + p.w, y + p.h, x, y + p.h, p.edges.b);
+    drawEdge(x, y + p.h, x, y, p.edges.l);
     ctx.closePath();
   }
 
   function resetGame() {
-    if (!img.complete || !img.width || !img.height) return;
     pieces = [];
-    selectedPiece = null;
-    view.scale = 0.7;
-
-    const baseW = Math.min(window.innerWidth, window.innerHeight) * 0.8;
-    const pw = baseW / gridSize;
-    const ph = (pw * img.height) / img.width;
-
-    let map = [];
-    for (let r = 0; r <= gridSize; r++) {
-      map[r] = [];
-      for (let c = 0; c <= gridSize; c++) {
-        map[r][c] = {
-          h: (c > 0 && c < gridSize) ? (Math.random() < 0.5 ? 1 : -1) : 0,
-          v: (r > 0 && r < gridSize) ? (Math.random() < 0.5 ? 1 : -1) : 0
-        };
-      }
+    const base = Math.min(window.innerWidth, window.innerHeight) * 0.7;
+    const pw = base / gridSize, ph = (pw * img.height) / img.width;
+    let map = Array.from({length: gridSize + 1}, () => Array.from({length: gridSize + 1}, () => ({ h:0, v:0 })));
+    for(let r=0; r<=gridSize; r++) for(let c=0; c<=gridSize; c++) {
+      if(c>0 && c<gridSize) map[r][c].h = Math.random() < 0.5 ? 1 : -1;
+      if(r>0 && r<gridSize) map[r][c].v = Math.random() < 0.5 ? 1 : -1;
     }
-
-    const boardW = pw * gridSize, boardH = ph * gridSize;
-
-    for (let r = 0; r < gridSize; r++) {
-      for (let c = 0; c < gridSize; c++) {
-        const index = r * gridSize + c;
-        // 트레이 시스템: 좌측/우측에 격자형 배치
-        const isLeft = index % 2 === 0;
-        const rowInTray = Math.floor(index / 2);
-        const trayCols = 2;
-        const marginX = boardW / 2 + 150;
-        const spacingX = pw * 1.2, spacingY = ph * 1.1;
-
-        const spawnX = (isLeft ? -1 : 1) * (marginX + (rowInTray % trayCols) * spacingX);
-        const spawnY = (Math.floor(rowInTray / trayCols) * spacingY) - (window.innerHeight);
-
-        pieces.push({
-          row: r, col: c,
-          edges: { t: map[r][c].v * -1, r: map[r][c + 1].h, b: map[r + 1][c].v, l: map[r][c].h * -1 },
-          w: pw, h: ph, tab: pw * 0.2,
-          x: spawnX, y: spawnY,
-          tx: (c - gridSize / 2) * pw, ty: (r - gridSize / 2) * ph,
-          isLocked: false
-        });
-      }
+    for(let r=0; r<gridSize; r++) for(let c=0; c<gridSize; c++) {
+      const isLeft = (r * gridSize + c) % 2 === 0;
+      pieces.push({
+        row: r, col: c, w: pw, h: ph, tab: pw*0.2, isLocked: false,
+        edges: { t: map[r][c].v*-1, r: map[r][c+1].h, b: map[r+1][c].v, l: map[r][c].h*-1 },
+        x: (isLeft ? -1 : 1) * (base * 0.8 + Math.random()*100),
+        y: (Math.random() - 0.5) * window.innerHeight,
+        tx: (c - gridSize/2) * pw, ty: (r - gridSize/2) * ph
+      });
     }
     draw();
   }
 
   function draw() {
     const dpr = devicePixelRatio;
-    ctx.setTransform(1,0,0,1,0,0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(view.scale * dpr, 0, 0, view.scale * dpr, view.x * dpr, view.y * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.translate(view.x, view.y);
+    ctx.scale(view.scale, view.scale);
 
-    // 바닥 음각
+    // 가이드 라인
     pieces.forEach(p => {
-      ctx.save();
-      getPath(ctx, p, p.tx, p.ty);
-      ctx.strokeStyle = "rgba(255,255,255,0.08)";
-      ctx.lineWidth = 1.5 / view.scale;
-      ctx.stroke();
-      ctx.fillStyle = "rgba(0,0,0,0.2)";
-      ctx.fill();
-      ctx.restore();
+      ctx.save(); getPath(ctx, p, p.tx, p.ty);
+      ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.stroke();
+      ctx.fillStyle = "rgba(0,0,0,0.2)"; ctx.fill(); ctx.restore();
     });
 
-    // 조각 (잠긴 것 -> 일반 -> 선택된 것 순서로 그림)
-    const sorted = [...pieces].sort((a, b) => {
-      if (a === selectedPiece) return 1;
-      if (b === selectedPiece) return -1;
-      return a.isLocked - b.isLocked;
-    });
-
-    sorted.forEach(p => {
+    // 조각 (정렬: 잠김 -> 일반 -> 선택됨)
+    [...pieces].sort((a,b) => (a===selectedPiece?2:(a.isLocked?-1:0)) - (b===selectedPiece?2:(b.isLocked?-1:0))).forEach(p => {
       ctx.save();
-      if (p === selectedPiece) {
-        ctx.shadowColor = "rgba(0,0,0,0.5)";
-        ctx.shadowBlur = 20;
-        ctx.shadowOffsetY = 10;
-      }
-      getPath(ctx, p, p.x, p.y);
-      ctx.clip();
-      const sw = img.width / gridSize, sh = img.height / gridSize;
-      const bleed = p.tab * (img.width / (p.w * gridSize)) * 2;
-      ctx.drawImage(img, (p.col/gridSize)*img.width - bleed, (p.row/gridSize)*img.height - bleed, sw + bleed*2, sh + bleed*2, p.x - p.tab*2, p.y - p.tab*2, p.w + p.tab*4, p.h + p.tab*4);
+      if(p === selectedPiece) { ctx.shadowColor = "black"; ctx.shadowBlur = 15; }
+      getPath(ctx, p, p.x, p.y); ctx.clip();
+      const sw = img.width/gridSize, sh = img.height/gridSize, b = p.tab*(img.width/(p.w*gridSize))*2;
+      ctx.drawImage(img, (p.col/gridSize)*img.width-b, (p.row/gridSize)*img.height-b, sw+b*2, sh+b*2, p.x-p.tab*2, p.y-p.tab*2, p.w+p.tab*4, p.h+p.tab*4);
       ctx.restore();
-
-      ctx.save();
-      getPath(ctx, p, p.x, p.y);
-      ctx.strokeStyle = p.isLocked ? "rgba(255,255,255,0.05)" : (p === selectedPiece ? THEME_COLOR : "rgba(255,255,255,0.3)");
-      ctx.lineWidth = (p === selectedPiece ? 3 : 1) / view.scale;
-      ctx.stroke();
-      ctx.restore();
+      ctx.save(); getPath(ctx, p, p.x, p.y);
+      ctx.strokeStyle = p.isLocked ? "rgba(255,255,255,0.1)" : (p===selectedPiece?"#00d2ff":"white");
+      ctx.lineWidth = (p===selectedPiece?3:1)/view.scale; ctx.stroke(); ctx.restore();
     });
   }
 
-  function getMouse(e) {
-    const t = e.touches ? e.touches[0] : e;
-    return { x: (t.clientX - view.x) / view.scale, y: (t.clientY - view.y) / view.scale, rx: t.clientX, ry: t.clientY };
+  // --- 핵심: 터치/마우스 통합 좌표 함수 ---
+  function getPoint(e) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches ? e.touches[0] : e;
+    const rx = touch.clientX - rect.left;
+    const ry = touch.clientY - rect.top;
+    return {
+      rx, ry,
+      x: (rx - view.x) / view.scale,
+      y: (ry - view.y) / view.scale
+    };
   }
 
   function handleStart(e) {
@@ -380,49 +183,57 @@
       view.lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       return;
     }
-    const m = getMouse(e);
-    const dpr = devicePixelRatio;
-    selectedPiece = null;
+    // 터치 시 스크롤 방지 및 즉각 반응
+    if(e.cancelable) e.preventDefault();
 
+    const p = getPoint(e);
+    selectedPiece = null;
+    const dpr = devicePixelRatio;
+
+    // 히트 테스트 (역순 - 가장 위 조각부터)
     for (let i = pieces.length - 1; i >= 0; i--) {
-      const p = pieces[i];
-      if (p.isLocked) continue;
+      const pc = pieces[i];
+      if (pc.isLocked) continue;
+      
       ctx.save();
       ctx.setTransform(view.scale * dpr, 0, 0, view.scale * dpr, view.x * dpr, view.y * dpr);
-      getPath(ctx, p, p.x, p.y);
-      if (ctx.isPointInPath(m.rx * dpr, m.ry * dpr)) {
-        selectedPiece = p;
-        dragOffset.x = m.x - p.x; dragOffset.y = m.y - p.y;
-        pieces.splice(i, 1); pieces.push(p); // 상단으로 올리기
+      getPath(ctx, pc, pc.x, pc.y);
+      if (ctx.isPointInPath(p.rx * dpr, p.ry * dpr)) {
+        selectedPiece = pc;
+        dragOffset.x = p.x - pc.x;
+        dragOffset.y = p.y - pc.y;
+        pieces.splice(i, 1); pieces.push(pc);
         ctx.restore(); break;
       }
       ctx.restore();
     }
+
     if (!selectedPiece) {
       view.isPanning = true;
-      view.startX = m.rx - view.x; view.startY = m.ry - view.y;
+      view.startX = p.rx - view.x;
+      view.startY = p.ry - view.y;
     }
     draw();
   }
 
   function handleMove(e) {
-    if (!document.body.classList.contains('playing')) return;
-    e.preventDefault();
+    if(e.cancelable) e.preventDefault();
     if (e.touches && e.touches.length === 2) {
       const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
       const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2, midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      const factor = dist / view.lastDist;
-      const ns = Math.max(0.1, Math.min(5, view.scale * factor));
+      const ns = Math.max(0.1, Math.min(5, view.scale * (dist / view.lastDist)));
       view.x = midX - (midX - view.x) * (ns / view.scale);
       view.y = midY - (midY - view.y) * (ns / view.scale);
       view.scale = ns; view.lastDist = dist;
       draw(); return;
     }
-    const m = getMouse(e);
+    const p = getPoint(e);
     if (selectedPiece) {
-      selectedPiece.x = m.x - dragOffset.x; selectedPiece.y = m.y - dragOffset.y;
+      selectedPiece.x = p.x - dragOffset.x;
+      selectedPiece.y = p.y - dragOffset.y;
     } else if (view.isPanning) {
-      view.x = m.rx - view.startX; view.y = m.ry - view.startY;
+      view.x = p.rx - view.startX;
+      view.y = p.ry - view.startY;
     }
     draw();
   }
@@ -434,7 +245,7 @@
         selectedPiece.x = selectedPiece.tx; selectedPiece.y = selectedPiece.ty;
         selectedPiece.isLocked = true;
         const win = pieces.filter(p => p.isLocked).length;
-        msgBox.innerText = (win === pieces.length) ? '축하혀유! 완성했슈!' : `맞춘 조각: ${win} / ${pieces.length}`;
+        msgBox.innerText = `맞춘 조각: ${win} / ${pieces.length}`;
       }
     }
     selectedPiece = null; view.isPanning = false;
@@ -448,34 +259,15 @@
     resetGame();
   }
 
-  // --- 이벤트 리스너 ---
+  canvas.addEventListener('touchstart', handleStart, { passive: false });
+  window.addEventListener('touchmove', handleMove, { passive: false });
+  window.addEventListener('touchend', handleEnd);
   canvas.addEventListener('mousedown', handleStart);
   window.addEventListener('mousemove', handleMove);
   window.addEventListener('mouseup', handleEnd);
-  canvas.addEventListener('touchstart', handleStart, { passive: false });
-  canvas.addEventListener('touchmove', handleMove, { passive: false });
-  window.addEventListener('touchend', handleEnd);
-
-  canvas.addEventListener('wheel', e => {
-    if (!document.body.classList.contains('playing')) return;
-    e.preventDefault();
-    const f = e.deltaY < 0 ? 1.1 : 0.9;
-    const ns = Math.max(0.1, Math.min(5, view.scale * f));
-    view.x = e.clientX - (e.clientX - view.x) * (ns / view.scale);
-    view.y = e.clientY - (e.clientY - view.y) * (ns / view.scale);
-    view.scale = ns; draw();
-  }, { passive: false });
-
-  window.addEventListener('scroll', () => {
-    if (document.body.classList.contains('playing')) return;
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 400) {
-      if (hasNext && !isLoading) loadImages(currentPage + 1);
-    }
-  });
-
-  window.addEventListener('resize', () => { if(document.body.classList.contains('playing')) { resize(); draw(); }});
-
+  
   loadImages();
+  window.addEventListener('resize', resize);
 </script>
 </body>
 </html>
