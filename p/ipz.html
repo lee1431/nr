@@ -51,11 +51,11 @@
     }
     
     .difficulty-selector {
-      display: flex; gap: 8px; margin-bottom: 20px; width: 100%; max-width: 400px;
+      display: flex; gap: 8px; margin-bottom: 20px; width: 100%; max-width: 420px;
     }
     .diff-btn {
       flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;
-      background: white; cursor: pointer; font-size: 0.85rem; font-weight: 600;
+      background: white; cursor: pointer; font-size: 0.8rem; font-weight: 600;
     }
     .diff-btn.active {
       background: var(--primary-color); color: white; border-color: var(--primary-color);
@@ -64,7 +64,7 @@
     #puzzle-board {
       display: grid;
       grid-template-columns: repeat(var(--grid-size), 1fr);
-      gap: 1px; /* 격자가 많을수록 선을 얇게 */
+      gap: 1px;
       border: 4px solid var(--primary-color);
       background: var(--primary-color);
       width: 92vw; max-width: 420px; aspect-ratio: 1/1;
@@ -72,27 +72,42 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
 
-    .tile {
-      width: 100%; height: 100%;
-      background-repeat: no-repeat;
-      cursor: pointer;
-      touch-action: manipulation;
-    }
+    .tile { width: 100%; height: 100%; background-repeat: no-repeat; cursor: pointer; touch-action: manipulation; }
     .empty { background: #cbd5e0 !important; }
 
-    .game-ui { 
-      margin-top: 25px; display: flex; gap: 10px; width: 100%; max-width: 420px; 
-    }
-    .btn { 
-      flex: 1; padding: 16px; border-radius: 14px; border: none; 
-      font-size: 1rem; font-weight: bold; cursor: pointer;
-    }
+    .game-ui { margin-top: 25px; display: flex; gap: 10px; width: 100%; max-width: 420px; }
+    .btn { flex: 1; padding: 16px; border-radius: 14px; border: none; font-size: 1rem; font-weight: bold; cursor: pointer; }
     .btn-back { background: #fff; color: #666; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .btn-shuffle { background: var(--accent-color); color: white; }
     
+    /* 힌트 이미지 영역 */
+    .hint-container { margin-top: 20px; text-align: center; }
     #hint-img {
-        width: 60px; height: 60px; border-radius: 6px; margin-top: 15px;
-        border: 2px solid white;
+        width: 80px; height: 80px; border-radius: 8px; 
+        border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        cursor: pointer; transition: transform 0.2s;
+    }
+    #hint-img:active { transform: scale(0.9); }
+    .hint-label { font-size: 0.7rem; color: #888; margin-top: 5px; }
+
+    /* 🌟 팝업 스타일 추가 */
+    #hint-popup {
+      display: none; /* 기본 숨김 */
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85); /* 배경 어둡게 */
+      z-index: 2000; justify-content: center; align-items: center;
+      flex-direction: column;
+      animation: fadeIn 0.3s ease;
+    }
+    #hint-popup img {
+      max-width: 90%; max-height: 80%;
+      border: 4px solid white; border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
+    #hint-popup p { color: white; margin-top: 20px; font-weight: bold; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
     }
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9382191250873184" crossorigin="anonymous"></script>
@@ -101,32 +116,40 @@
 
   <header id="page-header">
     <h1 id="folderTitle">PLANET CHUNGJU</h1>
-    <div id="countText">이미지 로드 중...</div>
+    <div id="countText">불러오는 중...</div>
   </header>
 
   <main id="main-container">
     <div id="gallery"></div>
-    <div id="loadingBox" style="text-align:center; padding:50px; color:#999;">Loading...</div>
+    <div id="loadingBox" style="text-align:center; padding:50px; color:#999;">사진을 찾는 중...</div>
   </main>
 
   <section id="game-container">
     <div class="difficulty-selector">
-      <button class="diff-btn active" onclick="changeDifficulty(3, this)">3x3 (쉬움)</button>
-      <button class="diff-btn" onclick="changeDifficulty(6, this)">6x6 (보통)</button>
-      <button class="diff-btn" onclick="changeDifficulty(9, this)">9x9 (지옥)</button>
+      <button class="diff-btn active" onclick="changeDifficulty(3, this)">3x3</button>
+      <button class="diff-btn" onclick="changeDifficulty(6, this)">6x6</button>
+      <button class="diff-btn" onclick="changeDifficulty(9, this)">9x9</button>
     </div>
 
     <div id="status" style="margin-bottom:10px;">Moves: <span id="move-counter" style="font-weight:bold; color:var(--accent-color);">0</span></div>
 
     <div id="puzzle-board"></div>
     
-    <img id="hint-img" src="" alt="Hint">
+    <div class="hint-container" onclick="toggleHint(true)">
+        <img id="hint-img" src="" alt="Hint Mini">
+        <div class="hint-label">이미지 크게 보기</div>
+    </div>
 
     <div class="game-ui">
-      <button class="btn btn-back" onclick="backToGallery()">목록으로</button>
-      <button class="btn btn-shuffle" onclick="initBoard()">새로 섞기</button>
+      <button class="btn btn-back" onclick="backToGallery()">그만하기</button>
+      <button class="btn btn-shuffle" onclick="initBoard()">다시 섞기</button>
     </div>
   </section>
+
+  <div id="hint-popup" onclick="toggleHint(false)">
+      <img id="popup-img" src="" alt="Hint Large">
+      <p>터치하면 다시 돌아갑니다</p>
+  </div>
 
   <script>
     const API_BASE = 'https://localflow.ddns.net/images';
@@ -138,10 +161,12 @@
     const pageHeader = document.getElementById('page-header');
     const puzzleBoard = document.getElementById('puzzle-board');
     const moveDisplay = document.getElementById('move-counter');
+    const hintPopup = document.getElementById('hint-popup');
+    const popupImg = document.getElementById('popup-img');
 
     let currentPage = 1, hasNext = true, isLoading = false;
     let tiles = [], currentImg = "", moves = 0;
-    let gridSize = 3; // 기본값
+    let gridSize = 3;
 
     async function loadImages(page = 1) {
       if (isLoading || (!hasNext && page !== 1)) return;
@@ -167,7 +192,9 @@
 
     function startGame(imgSrc) {
       currentImg = imgSrc;
-      document.getElementById('hint-img').src = imgSrc;
+      document.getElementById('hint-img').src = imgSrc; // 하단 미니 힌트
+      popupImg.src = imgSrc; // 팝업용 이미지 미리 세팅
+      
       window.scrollTo(0, 0);
       mainContainer.style.display = 'none';
       pageHeader.style.display = 'none';
@@ -175,15 +202,16 @@
       initBoard();
     }
 
-    // 난이도 변경 함수
+    // 🌟 팝업 토글 함수
+    function toggleHint(show) {
+      hintPopup.style.display = show ? 'flex' : 'none';
+    }
+
     function changeDifficulty(size, btn) {
       gridSize = size;
       document.documentElement.style.setProperty('--grid-size', gridSize);
-      
-      // 버튼 활성화 스타일 처리
       document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      
       initBoard();
     }
 
@@ -233,7 +261,6 @@
     }
 
     function shuffleBoard() {
-      // 9x9의 경우 더 많이 섞어야 함 (난이도 비례 셔플)
       const shuffleCount = gridSize * gridSize * 20; 
       for (let i = 0; i < shuffleCount; i++) {
         const emptyIndex = tiles.indexOf(gridSize * gridSize - 1);
@@ -250,7 +277,7 @@
 
     function checkWin() {
       if (tiles.every((t, i) => t === i)) {
-        setTimeout(() => alert(`완벽합니다! 🎉\n${gridSize}x${gridSize} 모드 클리어!`), 200);
+        setTimeout(() => alert(`클리어! 🎉\n${moves}번 움직여 성공하셨습니다.`), 200);
       }
     }
 
