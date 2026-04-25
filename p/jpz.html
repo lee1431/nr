@@ -263,8 +263,7 @@
 
         return `
           <article class="item" onclick="startGame('${safeUrl}')">
-            <img src="${item.url}" loading="lazy" alt="${filename}">
-            <div class="list-meta">${filename}</div>
+            <img src="${item.url}" crossorigin="anonymous" loading="lazy" alt="${filename}"> <div class="list-meta">${filename}</div>
           </article>
         `;
       }).join('');
@@ -282,7 +281,8 @@
   }
 
   function startGame(url) {
-    currentImgUrl = url;
+    const cacheBusterUrl = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+    currentImgUrl = cacheBusterUrl;
 
     document.body.classList.add('playing');
     mainContainer.style.display = 'none';
