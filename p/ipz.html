@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Planet Chungju - Pro Puzzle</title>
+  <title>STANCE - Pro Puzzle</title>
   <style>
     :root {
       --grid-size: 3;
       --primary-color: #2c3e50;
       --accent-color: #3498db;
       --bg-color: #f4f7f6;
+      --board-max-size: min(90vw, 75vh); 
     }
 
     body { 
@@ -19,7 +20,6 @@
       overflow-x: hidden;
     }
 
-    /* 헤더 */
     header { 
       padding: 20px 15px; text-align: center; background: white; 
       box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
@@ -27,20 +27,18 @@
     h1 { font-size: 1.4rem; margin: 0; color: var(--primary-color); }
     #countText { font-size: 0.85rem; margin-top: 8px; color: var(--accent-color); font-weight: 600; }
 
-    /* 갤러리 레이아웃 */
-    #main-container { padding: 15px; max-width: 800px; margin: 0 auto; }
+    #main-container { padding: 15px; max-width: 1000px; margin: 0 auto; }
     #gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 15px;
     }
-    @media (max-width: 400px) { #gallery { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 450px) { #gallery { grid-template-columns: 1fr 1fr; gap: 10px; } }
 
     .item {
       background: white; border-radius: 12px; overflow: hidden;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.2s;
     }
-    .item:active { transform: scale(0.97); }
     .item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
     .list-meta { padding: 10px; font-size: 0.8rem; text-align: center; color: #555; }
 
@@ -48,14 +46,16 @@
     #game-container {
       display: none; flex-direction: column; align-items: center;
       padding: 20px 10px; min-height: 100vh; background: var(--bg-color);
+      box-sizing: border-box;
     }
     
     .difficulty-selector {
-      display: flex; gap: 8px; margin-bottom: 20px; width: 100%; max-width: 420px;
+      display: flex; gap: 8px; margin-bottom: 15px; 
+      width: var(--board-max-size); /* 보드 크기에 맞춤 */
     }
     .diff-btn {
-      flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;
-      background: white; cursor: pointer; font-size: 0.8rem; font-weight: 600;
+      flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd;
+      background: white; cursor: pointer; font-size: 0.9rem; font-weight: 600;
     }
     .diff-btn.active {
       background: var(--primary-color); color: white; border-color: var(--primary-color);
@@ -65,57 +65,50 @@
       display: grid;
       grid-template-columns: repeat(var(--grid-size), 1fr);
       gap: 1px;
-      border: 4px solid var(--primary-color);
+      border: 6px solid var(--primary-color);
       background: var(--primary-color);
-      width: 92vw; max-width: 420px; aspect-ratio: 1/1;
-      border-radius: 8px; overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      width: var(--board-max-size); 
+      height: var(--board-max-size); /* 1:1 비율 유지 */
+      border-radius: 12px; overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
     }
 
     .tile { width: 100%; height: 100%; background-repeat: no-repeat; cursor: pointer; touch-action: manipulation; }
     .empty { background: #cbd5e0 !important; }
 
-    .game-ui { margin-top: 25px; display: flex; gap: 10px; width: 100%; max-width: 420px; }
-    .btn { flex: 1; padding: 16px; border-radius: 14px; border: none; font-size: 1rem; font-weight: bold; cursor: pointer; }
+    .game-ui { 
+      margin-top: 20px; display: flex; gap: 12px; 
+      width: var(--board-max-size); 
+    }
+    .btn { flex: 1; padding: 18px; border-radius: 14px; border: none; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
     .btn-back { background: #fff; color: #666; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .btn-shuffle { background: var(--accent-color); color: white; }
     
-    /* 힌트 이미지 영역 */
     .hint-container { margin-top: 20px; text-align: center; }
     #hint-img {
         width: 80px; height: 80px; border-radius: 8px; 
         border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        cursor: pointer; transition: transform 0.2s;
+        cursor: pointer;
     }
-    #hint-img:active { transform: scale(0.9); }
-    .hint-label { font-size: 0.7rem; color: #888; margin-top: 5px; }
+    .hint-label { font-size: 0.75rem; color: #888; margin-top: 8px; }
 
-    /* 🌟 팝업 스타일 추가 */
+    /* 팝업 */
     #hint-popup {
-      display: none; /* 기본 숨김 */
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85); /* 배경 어둡게 */
-      z-index: 2000; justify-content: center; align-items: center;
-      flex-direction: column;
-      animation: fadeIn 0.3s ease;
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9); z-index: 2000; justify-content: center; align-items: center;
+      flex-direction: column; animation: fadeIn 0.2s ease;
     }
-    #hint-popup img {
-      max-width: 90%; max-height: 80%;
-      border: 4px solid white; border-radius: 12px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    }
-    #hint-popup p { color: white; margin-top: 20px; font-weight: bold; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; } to { opacity: 1; }
-    }
+    #hint-popup img { max-width: 90%; max-height: 80%; border: 4px solid white; border-radius: 12px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9382191250873184" crossorigin="anonymous"></script>
-</head> 
+  
+</head>
 <body>
 
   <header id="page-header">
-    <h1 id="folderTitle">PLANET CHUNGJU</h1>
+    <h1 id="folderTitle">STANCE</h1>
     <div id="countText">불러오는 중...</div>
   </header>
 
@@ -131,7 +124,7 @@
       <button class="diff-btn" onclick="changeDifficulty(9, this)">9x9</button>
     </div>
 
-    <div id="status" style="margin-bottom:10px;">Moves: <span id="move-counter" style="font-weight:bold; color:var(--accent-color);">0</span></div>
+    <div id="status" style="margin-bottom:10px; font-size: 1.1rem;">Moves: <span id="move-counter" style="font-weight:bold; color:var(--accent-color);">0</span></div>
 
     <div id="puzzle-board"></div>
     
@@ -148,7 +141,7 @@
 
   <div id="hint-popup" onclick="toggleHint(false)">
       <img id="popup-img" src="" alt="Hint Large">
-      <p>터치하면 다시 돌아갑니다</p>
+      <p style="color:white; margin-top:15px;">터치하면 돌아갑니다</p>
   </div>
 
   <script>
@@ -192,17 +185,18 @@
 
     function startGame(imgSrc) {
       currentImg = imgSrc;
-      document.getElementById('hint-img').src = imgSrc; // 하단 미니 힌트
-      popupImg.src = imgSrc; // 팝업용 이미지 미리 세팅
+      document.getElementById('hint-img').src = imgSrc;
+      popupImg.src = imgSrc;
       
       window.scrollTo(0, 0);
       mainContainer.style.display = 'none';
       pageHeader.style.display = 'none';
       gameContainer.style.display = 'flex';
-      initBoard();
+      
+      // 약간의 지연 후 렌더링해야 정확한 clientWidth를 가져옴
+      setTimeout(initBoard, 50);
     }
 
-    // 🌟 팝업 토글 함수
     function toggleHint(show) {
       hintPopup.style.display = show ? 'flex' : 'none';
     }
@@ -225,7 +219,7 @@
 
     function renderBoard() {
       puzzleBoard.innerHTML = '';
-      const boardWidth = puzzleBoard.clientWidth || 400;
+      const boardWidth = puzzleBoard.clientWidth; // CSS 변수에 의해 결정된 실제 너비
       const tileSize = boardWidth / gridSize;
 
       tiles.forEach((tileIndex, i) => {
