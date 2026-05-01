@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Personal Library</title>
+    <title>Stance Library</title>
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -17,12 +17,10 @@
         .container { max-width: 1000px; margin: 0 auto; }
         header { margin-bottom: 40px; text-align: center; }
         
-        /* 필터 버튼 */
         .filter-nav { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; }
         .filter-btn { padding: 8px 16px; border: 1px solid var(--border-color); background: var(--card-bg); cursor: pointer; border-radius: 20px; transition: 0.2s; }
         .filter-btn.active { background: var(--primary-color); color: #white; border-color: var(--primary-color); color: white; }
 
-        /* 그리드 레이아웃 */
         .library-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .card { background: var(--card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
         .card-tag { font-size: 12px; font-weight: bold; text-transform: uppercase; color: var(--accent-color); margin-bottom: 8px; }
@@ -34,7 +32,6 @@
         .btn-view { background: #eee; color: #333; }
         .btn-action { background: var(--accent-color); color: white; }
 
-        /* 모달 (코드 보기/이미지 확대) */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; width: 90%; max-width: 800px; max-height: 80vh; border-radius: 12px; padding: 30px; overflow-y: auto; position: relative; }
         .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; }
@@ -45,7 +42,7 @@
 
 <div class="container">
     <header>
-        <h1>My Library</h1>
+        <h1>Stance Library</h1>
         <p>프로젝트에 바로 활용 가능한 컴포넌트 및 에셋 저장소</p>
     </header>
 
@@ -57,12 +54,10 @@
     </nav>
 
     <div id="library-grid" class="library-grid">
-        <!-- 데이터 로딩 전 표시 -->
         <p>Loading library items...</p>
     </div>
 </div>
 
-<!-- 모달 창 -->
 <div id="modal" onclick="closeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
         <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -73,10 +68,8 @@
 <script>
     let libraryData = [];
 
-    // 1. 데이터 가져오기
     async function loadLibrary() {
         try {
-            // 실제 서버에서는 'data.json' 경로로 호출
             const response = await fetch('https://mrdindoin.ddns.net/jsonhub/api/json/localflow/data');
             libraryData = await response.json();
             renderItems(libraryData);
@@ -86,7 +79,6 @@
         }
     }
 
-    // 2. 아이템 렌더링
     function renderItems(items) {
         const grid = document.getElementById('library-grid');
         grid.innerHTML = items.map(item => `
@@ -101,7 +93,6 @@
         `).join('');
     }
 
-    // 3. 타입별 버튼 생성
     function renderButtons(item) {
         if (item.category === 'component') {
             return `<button class="btn btn-action" onclick="showCode(${item.id})">코드 복사</button>`;
@@ -115,7 +106,6 @@
         }
     }
 
-    // 4. 기능 함수들
     function filterItems(category) {
         const btns = document.querySelectorAll('.filter-btn');
         btns.forEach(btn => btn.classList.remove('active'));
@@ -163,7 +153,6 @@
         return div.innerHTML;
     }
 
-    // 초기 로드
     loadLibrary();
 </script>
 </body>
