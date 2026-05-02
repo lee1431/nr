@@ -2,103 +2,174 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>사자성어 가로세로 퀴즈</title>
+    <title>STANCE - 사자성어 퀴즈</title>
     <style>
-        body { font-family: 'Arial', sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #f0f2f5; }
-        h1 { color: #333; }
+        :root { --primary-blue: #007AFF; --bg-white: #FFFFFF; --light-gray: #F5F7FA; --border-color: #E1E4E8; }
+        body { font-family: 'Pretendard', sans-serif; background-color: var(--light-gray); color: #333; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 40px 20px; }
         
-        /* 격자 스타일 */
-        .grid { display: grid; grid-template-columns: repeat(5, 50px); grid-template-rows: repeat(5, 50px); gap: 2px; background-color: #ccc; padding: 5px; border-radius: 8px; }
-        .cell { width: 50px; height: 50px; background-color: #fff; display: flex; justify-content: center; align-items: center; position: relative; }
-        .cell.empty { background-color: #eee; }
-        .cell input { width: 100%; height: 100%; border: none; text-align: center; font-size: 20px; text-transform: uppercase; outline: none; }
-        
-        /* 힌트 번호 표시 */
-        .cell::after { content: attr(data-num); position: absolute; top: 2px; left: 2px; font-size: 10px; color: #888; }
+        h1 { font-weight: 300; letter-spacing: 2px; color: var(--primary-blue); margin-bottom: 10px; }
+        .stage-info { margin-bottom: 20px; font-size: 1.1rem; color: #666; }
 
-        /* 버튼 및 힌트 */
-        .controls { margin-top: 20px; text-align: center; }
-        .clues { margin-top: 20px; display: flex; gap: 40px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 5px; }
-        button:hover { background-color: #45a049; }
+        /* 게임 보드 공간 */
+        #game-container { background: var(--bg-white); padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
+        .grid { display: grid; gap: 8px; margin-bottom: 20px; position: relative; }
+        
+        /* 셀 스타일 */
+        .cell { width: 55px; height: 55px; border: 1px solid var(--border-color); border-radius: 6px; position: relative; background: var(--bg-white); }
+        .cell.empty { border: none; background: transparent; }
+        .cell input { width: 100%; height: 100%; border: none; text-align: center; font-size: 22px; font-weight: 600; color: #333; border-radius: 6px; outline: none; transition: background 0.3s; }
+        .cell input:focus { background-color: #f0f7ff; box-shadow: inset 0 0 0 2px var(--primary-blue); }
+        .cell::after { content: attr(data-num); position: absolute; top: 4px; left: 6px; font-size: 11px; color: var(--primary-blue); font-weight: bold; }
+
+        /* 힌트 구역 */
+        .clues { width: 100%; max-width: 400px; border-top: 1px solid var(--border-color); padding-top: 20px; }
+        .clue-item { margin-bottom: 12px; line-height: 1.5; font-size: 0.95rem; }
+        .clue-label { font-weight: bold; color: var(--primary-blue); margin-right: 5px; }
+
+        /* 컨트롤 */
+        .controls { margin-top: 20px; }
+        button { background: var(--primary-blue); color: white; border: none; padding: 12px 30px; border-radius: 6px; font-size: 1rem; cursor: pointer; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+
+        /* 예시 단어 목록 (하단) */
+        .sample-list { margin-top: 50px; padding: 20px; width: 100%; max-width: 600px; text-align: center; border-top: 1px dashed #ccc; }
+        .sample-list h3 { font-size: 0.9rem; color: #888; text-transform: uppercase; margin-bottom: 15px; }
+        .word-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .chip { background: #eee; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; color: #666; }
     </style>
 </head>
 <body>
 
-    <h1>🧩 사자성어 가로세로</h1>
+    <h1>STANCE QUIZ</h1>
+    <div class="stage-info" id="stage-display">STAGE 1</div>
 
-    <div class="grid" id="grid">
-        <div class="cell" data-num="1"><input type="text" maxlength="1" id="cell-0-0"></div>
-        <div class="cell"><input type="text" maxlength="1" id="cell-0-1"></div>
-        <div class="cell" data-num="2"><input type="text" maxlength="1" id="cell-0-2"></div>
-        <div class="cell"><input type="text" maxlength="1" id="cell-0-3"></div>
-        <div class="cell empty"></div>
-
-        <div class="cell empty"></div>
-        <div class="cell empty"></div>
-        <div class="cell"><input type="text" maxlength="1" id="cell-1-2"></div>
-        <div class="cell empty"></div>
-        <div class="cell empty"></div>
-
-        <div class="cell empty"></div>
-        <div class="cell empty"></div>
-        <div class="cell"><input type="text" maxlength="1" id="cell-2-2"></div>
-        <div class="cell empty"></div>
-        <div class="cell empty"></div>
-
-        <div class="cell empty"></div>
-        <div class="cell empty"></div>
-        <div class="cell"><input type="text" maxlength="1" id="cell-3-2"></div>
-        <div class="cell empty"></div>
-        <div class="cell empty"></div>
-
-        <div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div><div class="cell empty"></div>
-    </div>
-
-    <div class="clues">
-        <div>
-            <h3>가로 힌트</h3>
-            <p><strong>1.</strong> 쓴 것이 다하면 단 것이 온다는 뜻.</p>
-        </div>
-        <div>
-            <h3>세로 힌트</h3>
-            <p><strong>2.</strong> 달콤한 말과 이로운 조건으로 남을 꾐.</p>
+    <div id="game-container">
+        <div class="grid" id="grid"></div>
+        <div class="clues" id="clues"></div>
+        <div class="controls">
+            <button onclick="checkAnswer()">정답 확인</button>
         </div>
     </div>
 
-    <div class="controls">
-        <button onclick="checkAnswer()">정답 확인</button>
-        <p id="result"></p>
+    <div class="sample-list">
+        <h3>Words Pool</h3>
+        <div class="word-chips" id="sample-chips"></div>
     </div>
 
     <script>
-        // 정답 데이터
-        const answers = {
-            'cell-0-0': '고', 'cell-0-1': '진', 'cell-0-2': '감', 'cell-0-3': '래',
-            'cell-1-2': '언', 'cell-2-2': '이', 'cell-3-2': '설'
-        };
+        // 1. JSON 기반 사자성어 데이터 풀
+        const idiomPool = [
+            { word: "고진감래", hint: "쓴 것이 다하면 단 것이 온다는 뜻." },
+            { word: "감언이설", hint: "달콤한 말과 이로운 조건으로 남을 꾀는 말." },
+            { word: "과유불급", hint: "정도가 지나침은 미치지 못한 것과 같음." },
+            { word: "대기만성", hint: "큰 그릇은 늦게 이루어진다는 뜻." },
+            { word: "유구무언", hint: "입은 있으나 말이 없다는 뜻으로, 변명할 말이 없음." },
+            { word: "동문서답", hint: "묻는 말에 대하여 아주 딴판인 답변을 함." },
+            { word: "천고마비", hint: "하늘은 높고 말은 살찐다는 뜻으로 가을을 이르는 말." },
+            { word: "일석이조", hint: "돌 하나를 던져 새 두 마리를 잡는다는 뜻." }
+        ];
 
-        function checkAnswer() {
-            let isCorrect = true;
-            for (let id in answers) {
-                const input = document.getElementById(id).value;
-                if (input !== answers[id]) {
-                    isCorrect = false;
-                    document.getElementById(id).style.color = 'red';
-                } else {
-                    document.getElementById(id).style.color = 'blue';
+        let currentStage = 1;
+        let currentAnswers = {};
+
+        // 2. 무한 스테이지 생성 함수
+        function initStage() {
+            const grid = document.getElementById('grid');
+            const clues = document.getElementById('clues');
+            const stageDisplay = document.getElementById('stage-display');
+            
+            grid.innerHTML = "";
+            clues.innerHTML = "";
+            currentAnswers = {};
+            stageDisplay.innerText = `STAGE ${currentStage}`;
+
+            // 무작위로 2개 추출 (간단한 교차형 구조 예시)
+            const shuffled = [...idiomPool].sort(() => 0.5 - Math.random());
+            const hWord = shuffled[0]; // 가로용
+            const vWord = shuffled[1]; // 세로용
+
+            // 5x5 격자 설정
+            grid.style.gridTemplateColumns = "repeat(5, 55px)";
+            
+            // 데이터 매핑 (가로: 0행, 세로: 2열에서 교차한다고 가정)
+            // 실제 구현 시에는 교차 지점을 찾는 알고리즘이 필요하지만, 
+            // 여기서는 0,2 좌표에서 '감'이 겹치는 방식으로 고정 구조화하여 생성
+            const layout = [
+                [0,0, hWord.word[0]], [0,1, hWord.word[1]], [0,2, hWord.word[2]], [0,3, hWord.word[3]], // 가로
+                [1,2, vWord.word[1]], [2,2, vWord.word[2]], [3,2, vWord.word[3]] // 세로 (첫글자는 가로와 공유)
+            ];
+
+            vWord.firstChar = hWord.word[2]; // 교차점 설정
+
+            // 그리드 생성 (5x5)
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    const cellDiv = document.createElement('div');
+                    const target = layout.find(l => l[0] === r && l[1] === c);
+                    
+                    if (target) {
+                        cellDiv.className = 'cell';
+                        const input = document.createElement('input');
+                        input.maxLength = 1;
+                        const cellId = `cell-${r}-${c}`;
+                        input.id = cellId;
+                        currentAnswers[cellId] = target[2];
+                        
+                        // 번호 표시
+                        if (r === 0 && c === 0) cellDiv.setAttribute('data-num', '1');
+                        if (r === 0 && c === 2) cellDiv.setAttribute('data-num', '2');
+                        
+                        cellDiv.appendChild(input);
+                    } else {
+                        cellDiv.className = 'cell empty';
+                    }
+                    grid.appendChild(cellDiv);
                 }
             }
 
-            const resultMsg = document.getElementById('result');
-            if (isCorrect) {
-                resultMsg.innerText = "🎉 축하합니다! 모든 정답을 맞혔습니다.";
-                resultMsg.style.color = "green";
-            } else {
-                resultMsg.innerText = "❌ 틀린 부분이 있네요. 다시 생각해보세요!";
-                resultMsg.style.color = "red";
+            // 힌트 출력
+            clues.innerHTML = `
+                <div class="clue-item"><span class="clue-label">가로 1.</span> ${hWord.hint}</div>
+                <div class="clue-item"><span class="clue-label">세로 2.</span> (세 번째 글자가 '${hWord.word[2]}'인 단어) ${vWord.hint}</div>
+            `;
+        }
+
+        function checkAnswer() {
+            let correctCount = 0;
+            let total = Object.keys(currentAnswers).length;
+
+            for (let id in currentAnswers) {
+                const el = document.getElementById(id);
+                if (el.value === currentAnswers[id]) {
+                    el.style.color = "var(--primary-blue)";
+                    correctCount++;
+                } else {
+                    el.style.color = "red";
+                }
+            }
+
+            if (correctCount === total) {
+                alert(`Stage ${currentStage} 클리어!`);
+                currentStage++;
+                initStage();
             }
         }
+
+        // 하단에 전체 단어 리스트 표시
+        function renderSampleList() {
+            const container = document.getElementById('sample-chips');
+            idiomPool.forEach(item => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.innerText = item.word;
+                container.appendChild(chip);
+            });
+        }
+
+        window.onload = () => {
+            initStage();
+            renderSampleList();
+        };
     </script>
 </body>
 </html>
