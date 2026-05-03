@@ -664,7 +664,7 @@
           return;
         }
 
-        await apiFetch("https://localflow.ddns.net/support/api/posts", {
+        await apiFetch("/api/posts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
