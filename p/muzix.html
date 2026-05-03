@@ -1175,7 +1175,7 @@
             <span class="track-title">${title}</span>
             <span class="track-sub">${subtitle}</span>
           </span>
-          <span class="duration">${formatTime(track.duration)}</span>
+          <span class="duration" data-duration-index="${index}">${formatTime(track.duration)}</span>
           <span class="icon-btn ${added ? 'is-added' : ''}" data-add="${index}" aria-label="현재 재생목록에 추가">+</span>
         </button>
       `;
@@ -1242,6 +1242,15 @@
       });
     }
 
+    function updateTrackDuration(index) {
+      const track = tracks[index];
+      if (!track) return;
+
+      document.querySelectorAll(`[data-duration-index="${index}"]`).forEach((element) => {
+        element.textContent = formatTime(track.duration);
+      });
+    }
+
     function selectTrack(index, playNow = true) {
       if (!tracks.length) return;
       activeIndex = (index + tracks.length) % tracks.length;
@@ -1249,6 +1258,42 @@
       loadAudioForCurrentTrack(true);
       renderPlayer(true);
       if (playNow) play();
+    }
+
+    function scrollLibraryToTrack(index = activeIndex) {
+      requestAnimationFrame(() => {
+        const row = els.libraryList.querySelector(`[data-index="${index}"]`);
+        if (!row) return;
+
+        row.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        });
+
+        row.animate([
+          { borderColor: 'rgba(121, 247, 255, .95)', boxShadow: '0 0 0 rgba(76, 201, 255, 0)' },
+          { borderColor: 'rgba(121, 247, 255, .95)', boxShadow: '0 0 28px rgba(76, 201, 255, .36)' },
+          { borderColor: 'rgba(76, 201, 255, .56)', boxShadow: '0 10px 26px rgba(0,0,0,.20)' }
+        ], {
+          duration: 900,
+          easing: 'ease-out'
+        });
+      });
+    }
+
+    function mixAndFocusTrack() {
+      if (!tracks.length) return;
+
+      const nextIndex = shuffleNext();
+      if (searchTerm) {
+        searchTerm = '';
+        els.searchInput.value = '';
+        renderLibrary();
+      }
+
+      selectTrack(nextIndex, true);
+      scrollLibraryToTrack(nextIndex);
     }
 
     async function play() {
@@ -1413,10 +1458,9 @@
       const track = currentTrack();
       if (track && Number.isFinite(audio.duration) && audio.duration > 0) {
         track.duration = Math.round(audio.duration);
+        updateTrackDuration(activeIndex);
       }
       renderPlayer();
-      renderLibrary();
-      renderQueue();
     });
 
     audio.addEventListener('timeupdate', () => {
@@ -1430,7 +1474,7 @@
     els.playButton.addEventListener('click', togglePlay);
     els.prevButton.addEventListener('click', prev);
     els.nextButton.addEventListener('click', next);
-    els.quickShuffleButton.addEventListener('click', () => selectTrack(shuffleNext(), true));
+    els.quickShuffleButton.addEventListener('click', mixAndFocusTrack);
     els.playAllButton.addEventListener('click', playAllTracks);
     els.clearQueueButton.addEventListener('click', clearQueue);
     els.saveQueueButton.addEventListener('click', saveQueueAsPlaylist);
