@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>STANCE Music Player</title>
+  <title>Neon Glass Music Player</title>
   <style>
     * {
       box-sizing: border-box;
@@ -90,10 +89,6 @@
 
     input {
       color: inherit;
-    }
-
-    input[type="range"] {
-      accent-color: var(--neon-cyan);
     }
 
     .app {
@@ -315,28 +310,6 @@
       align-items: center;
       gap: 22px;
       margin-top: 24px;
-    }
-
-    .volume-control {
-      position: relative;
-      z-index: 1;
-      width: min(100%, 260px);
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr) 42px;
-      align-items: center;
-      gap: 10px;
-      margin: 16px auto 0;
-      color: rgba(193, 226, 255, .76);
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .volume-control input {
-      width: 100%;
-    }
-
-    .volume-value {
-      text-align: right;
     }
 
     .round-btn,
@@ -895,12 +868,6 @@
             <button class="round-btn" id="nextButton" type="button" aria-label="다음 곡">⏭</button>
           </div>
 
-          <label class="volume-control">
-            <span>VOL</span>
-            <input id="volumeSlider" type="range" min="0" max="100" value="80" aria-label="볼륨" />
-            <span class="volume-value" id="volumeValue">80%</span>
-          </label>
-
           <div class="player-modes" aria-label="재생 모드">
             <button class="mode-icon is-active" type="button" data-mode="repeat" aria-label="전체 반복">↻</button>
             <button class="mode-icon" type="button" data-mode="shuffle" aria-label="셔플">⤨</button>
@@ -965,7 +932,7 @@
   </main>
 
   <script>
-    const TRACKS_JSON_URL = 'https://localflow.ddns.net/fu/static/data/tracks.json';
+    const TRACKS_JSON_URL = '../assets/tracks.json';
     const FALLBACK_COVER_GRADIENT = 'linear-gradient(145deg, #0f2f5f 0%, #4cc9ff 42%, #8b7cff 100%)';
 
     let tracks = [];
@@ -998,8 +965,6 @@
       queueEmpty: document.querySelector('#queueEmpty'),
       clearQueueButton: document.querySelector('#clearQueueButton'),
       saveQueueButton: document.querySelector('#saveQueueButton'),
-      volumeSlider: document.querySelector('#volumeSlider'),
-      volumeValue: document.querySelector('#volumeValue'),
       modeButtons: document.querySelectorAll('[data-mode]')
     };
 
@@ -1010,7 +975,6 @@
     let playMode = 'repeat';
     let queue = [];
     let savedPlaylists = [];
-    audio.volume = 0.8;
 
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -1320,12 +1284,6 @@
       });
     }
 
-    function setVolume(value) {
-      const volume = Math.min(100, Math.max(0, Number(value) || 0));
-      audio.volume = volume / 100;
-      els.volumeValue.textContent = `${Math.round(volume)}%`;
-    }
-
     async function loadTracks() {
       try {
         const response = await fetch(TRACKS_JSON_URL, { cache: 'no-store' });
@@ -1369,7 +1327,6 @@
     els.quickShuffleButton.addEventListener('click', () => selectTrack(shuffleNext(), true));
     els.clearQueueButton.addEventListener('click', clearQueue);
     els.saveQueueButton.addEventListener('click', saveQueueAsPlaylist);
-    els.volumeSlider.addEventListener('input', (event) => setVolume(event.target.value));
 
     els.modeButtons.forEach((button) => {
       button.addEventListener('click', () => setMode(button.dataset.mode));
@@ -1428,7 +1385,6 @@
       if (card) loadSavedPlaylist(Number(card.dataset.playlistLoad));
     });
 
-    setVolume(els.volumeSlider.value);
     loadTracks();
   </script>
 </body>
