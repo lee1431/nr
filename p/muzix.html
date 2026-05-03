@@ -2,699 +2,1303 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ELEVEN TRACKS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Neon Glass Music Player</title>
   <style>
-    :root {
-      --bg: #f6f7f2;
-      --panel: rgba(255,255,255,0.82);
-      --text: #1f2a22;
-      --muted: #6b746d;
-      --line: rgba(31, 77, 59, 0.14);
-      --accent: #1f4d3b;
-      --accent-2: #2f7a5d;
-      --shadow: 0 20px 50px rgba(20, 35, 28, 0.08);
-      --radius: 28px;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    * { box-sizing: border-box; }
+    :root {
+      --bg1: #07111f;
+      --bg2: #0b1d35;
+      --bg3: #10294d;
+      --bg4: #081020;
 
-    html { scroll-behavior: smooth; }
+      --text: #eaf4ff;
+      --text-strong: #f7fbff;
+      --muted: rgba(198, 225, 255, 0.62);
+      --muted-strong: rgba(205, 234, 255, 0.78);
 
+      --neon-blue: #4cc9ff;
+      --neon-cyan: #79f7ff;
+      --neon-violet: #8b7cff;
+      --neon-pink: #d77dff;
+      --neon-green: #7dffcf;
+
+      --glass: rgba(255, 255, 255, 0.07);
+      --glass-strong: rgba(255, 255, 255, 0.13);
+      --line: rgba(255, 255, 255, 0.14);
+      --line-strong: rgba(76, 201, 255, 0.48);
+
+      --shadow: rgba(0, 0, 0, 0.36);
+      --glow-blue: rgba(76, 201, 255, 0.28);
+      --glow-violet: rgba(139, 124, 255, 0.22);
+
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    html,
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+      width: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
       background:
-        linear-gradient(rgba(31,42,34,0.045) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(31,42,34,0.045) 1px, transparent 1px),
-        radial-gradient(circle at top right, rgba(47,122,93,0.08), transparent 24%),
-        var(--bg);
-      background-size: 28px 28px, 28px 28px, auto, auto;
+        radial-gradient(circle at 12% 12%, rgba(76, 201, 255, 0.16) 0 9%, transparent 28%),
+        radial-gradient(circle at 84% 18%, rgba(139, 124, 255, 0.18) 0 12%, transparent 32%),
+        radial-gradient(circle at 72% 84%, rgba(121, 247, 255, 0.10) 0 10%, transparent 28%),
+        radial-gradient(circle at 30% 92%, rgba(215, 125, 255, 0.08) 0 12%, transparent 34%),
+        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 34%, var(--bg3) 70%, var(--bg4) 100%);
     }
 
-    a { color: inherit; text-decoration: none; }
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-    .wrap {
-      width: min(1180px, calc(100% - 32px));
+    body::before {
+      width: 68vw;
+      height: 68vw;
+      right: -22vw;
+      bottom: -30vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(76, 201, 255, 0.12), transparent 62%);
+      filter: blur(10px);
+    }
+
+    body::after {
+      width: 58vw;
+      height: 58vw;
+      left: -28vw;
+      top: -28vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139, 124, 255, 0.14), transparent 62%);
+      filter: blur(10px);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    input {
+      color: inherit;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 1320px);
+      height: 100dvh;
       margin: 0 auto;
+      padding: calc(18px + var(--safe-top)) 18px calc(18px + var(--safe-bottom));
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 16px;
     }
 
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      backdrop-filter: blur(14px);
-      background: rgba(246, 247, 242, 0.72);
-      border-bottom: 1px solid rgba(31, 77, 59, 0.08);
-    }
-
-    .nav {
-      min-height: 72px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 20px;
-    }
-
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .brand-mark {
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      color: var(--accent);
-    }
-
-    .brand-name {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-
-    .nav-links a:hover,
-    .nav-links a.active {
-      background: rgba(31, 77, 59, 0.08);
-      color: var(--accent);
-    }
-
-    .hero {
-      padding: 72px 0 34px;
-      display: grid;
-      grid-template-columns: 1.25fr 0.85fr;
-      gap: 22px;
-      align-items: stretch;
-    }
-
-    .hero-card,
-    .hero-side,
-    .track,
-    .cta-box,
-    .info-card,
-    .footer-card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius);
-      backdrop-filter: blur(12px);
-    }
-
-    .hero-card {
-      padding: 34px;
-      min-height: 450px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      gap: 16px;
     }
 
     .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      width: fit-content;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.72);
+      color: rgba(140, 220, 255, 0.78);
       font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      color: var(--accent);
+      font-weight: 900;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
+      text-shadow: 0 0 14px rgba(76, 201, 255, 0.22);
     }
 
-    h1 {
-      margin: 18px 0 14px;
-      font-size: clamp(44px, 7vw, 88px);
-      line-height: 0.95;
+    .topbar h1 {
+      margin-top: 4px;
+      font-size: clamp(24px, 3vw, 40px);
+      line-height: 1;
       letter-spacing: -0.07em;
+      color: var(--text-strong);
+      text-shadow: 0 0 22px rgba(76, 201, 255, 0.16);
     }
 
-    .hero p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.78;
-      max-width: 700px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 28px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 48px;
-      padding: 0 18px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      font-size: 14px;
-      font-weight: 800;
-      transition: 0.2s ease;
-      cursor: pointer;
-      background: white;
-      color: var(--text);
-    }
-
-    .btn:hover { transform: translateY(-1px); }
-
-    .btn.primary {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
-
-    .hero-foot {
-      margin-top: 24px;
-      display: flex;
-      gap: 24px;
-      flex-wrap: wrap;
-      padding-top: 20px;
-      border-top: 1px solid var(--line);
-    }
-
-    .metric strong {
-      display: block;
-      font-size: 26px;
-      letter-spacing: -0.05em;
-    }
-
-    .metric span {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .hero-side {
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 18px;
-    }
-
-    .mini-grid {
+    .layout {
+      min-height: 0;
       display: grid;
-      gap: 12px;
+      grid-template-columns: minmax(340px, 440px) minmax(420px, 1fr) minmax(300px, 360px);
+      gap: 18px;
+      align-items: stretch;
     }
 
-    .mini-card {
+    .left-stack,
+    .center-stack,
+    .right-stack {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      gap: 14px;
+    }
+
+    .left-stack {
+      grid-template-rows: auto minmax(190px, 1fr);
+    }
+
+    .center-stack,
+    .right-stack {
+      grid-template-rows: minmax(0, 1fr);
+    }
+
+    .glass {
+      min-width: 0;
       border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 18px;
-      background: rgba(255,255,255,0.7);
+      border-radius: 34px;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)),
+        radial-gradient(circle at 12% 8%, rgba(76, 201, 255, 0.08), transparent 36%),
+        rgba(255, 255, 255, 0.05);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.13),
+        inset 0 0 0 1px rgba(255,255,255,.03),
+        0 16px 42px var(--shadow),
+        0 0 0 1px rgba(76, 201, 255, 0.05),
+        0 0 28px rgba(76, 201, 255, 0.08);
+      backdrop-filter: blur(26px) saturate(165%);
+      -webkit-backdrop-filter: blur(26px) saturate(165%);
     }
 
-    .mini-card strong {
-      display: block;
-      font-size: 15px;
+    .player-card {
+      padding: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .player-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(120deg, rgba(76, 201, 255, .16), transparent 32%, rgba(139, 124, 255, .12) 74%, transparent);
+      opacity: .32;
+      pointer-events: none;
+    }
+
+    .now,
+    .timeline,
+    .controls,
+    .player-modes {
+      position: relative;
+      z-index: 1;
+    }
+
+    .now {
+      display: grid;
+      grid-template-columns: 128px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+    }
+
+    .cover {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 26px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: var(--cover-bg, linear-gradient(145deg, #193a68, #6a63ff));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.14),
+        0 0 24px rgba(76, 201, 255, .14),
+        0 12px 28px rgba(0,0,0,.28);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cover::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 30% 22%, rgba(255,255,255,.22), transparent 24%),
+        linear-gradient(135deg, transparent 42%, rgba(255,255,255,.38) 45%, transparent 48%);
+      opacity: .95;
+    }
+
+    .label {
+      color: rgba(150, 217, 255, 0.74);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
       margin-bottom: 8px;
     }
 
-    .mini-card p {
-      font-size: 13px;
-      line-height: 1.68;
+    .song-title {
+      font-size: clamp(28px, 3.3vw, 40px);
+      line-height: 1.02;
+      letter-spacing: -0.075em;
+      color: var(--text-strong);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .section-head {
+    .artist {
+      margin-top: 8px;
+      color: var(--muted-strong);
+      font-size: 16px;
+      font-weight: 750;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .timeline {
+      margin-top: 24px;
+    }
+
+    .bar {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+      cursor: pointer;
+    }
+
+    .progress {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--neon-blue), var(--neon-cyan), var(--neon-violet));
+      box-shadow:
+        0 0 12px rgba(76, 201, 255, .42),
+        0 0 20px rgba(139, 124, 255, .18);
+    }
+
+    .thumb {
+      position: absolute;
+      left: 0%;
+      top: 50%;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ffffff, #b7f4ff 52%, #67d9ff 100%);
+      border: 1px solid rgba(255,255,255,.26);
+      transform: translate(-50%, -50%);
+      box-shadow:
+        0 0 16px rgba(76, 201, 255, .5),
+        0 0 28px rgba(76, 201, 255, .22);
+    }
+
+    .time-row {
       display: flex;
-      align-items: end;
       justify-content: space-between;
-      gap: 20px;
-      margin: 22px 0 16px;
+      margin-top: 11px;
+      color: rgba(190, 224, 255, .72);
+      font-size: 13px;
+      font-weight: 850;
     }
 
-    .section-head h2 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 42px);
-      letter-spacing: -0.05em;
-    }
-
-    .section-head p {
-      margin: 0;
-      color: var(--muted);
-      max-width: 560px;
-      line-height: 1.7;
-    }
-
-    .tracks {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-      margin-bottom: 40px;
-    }
-
-    .track {
-      padding: 22px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .track-top {
+    .controls {
       display: flex;
-      align-items: start;
+      justify-content: center;
+      align-items: center;
+      gap: 22px;
+      margin-top: 24px;
+    }
+
+    .round-btn,
+    .pill-btn,
+    .icon-btn,
+    .mode-icon {
+      display: inline-grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.14);
+      background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 10px 24px rgba(0,0,0,.18);
+      color: rgba(204, 232, 255, .86);
+      font-weight: 900;
+      transition:
+        transform .16s ease,
+        border-color .16s ease,
+        box-shadow .16s ease,
+        color .16s ease,
+        background .16s ease;
+    }
+
+    .round-btn:hover,
+    .pill-btn:hover,
+    .icon-btn:hover,
+    .mode-icon:hover {
+      border-color: rgba(76, 201, 255, .45);
+      color: #ffffff;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 0 16px rgba(76, 201, 255, .18),
+        0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .round-btn:active,
+    .pill-btn:active,
+    .icon-btn:active,
+    .mode-icon:active,
+    .row:active,
+    .mini-row:active,
+    .playlist-card:active {
+      transform: scale(.97);
+    }
+
+    .round-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      font-size: 19px;
+    }
+
+    .play-btn {
+      width: 76px;
+      height: 76px;
+      font-size: 26px;
+      color: white;
+      border-color: rgba(76, 201, 255, .42);
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,.18), transparent 28%),
+        linear-gradient(135deg, #24a8ff 0%, #3fbfff 45%, #8b7cff 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.18),
+        0 0 24px rgba(76, 201, 255, .32),
+        0 14px 28px rgba(0,0,0,.22);
+    }
+
+    .player-modes {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .mode-icon {
+      width: 40px;
+      height: 36px;
+      border-radius: 999px;
+      color: rgba(193, 226, 255, .72);
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .mode-icon.is-active {
+      color: white;
+      border-color: rgba(76, 201, 255, .55);
+      background: linear-gradient(135deg, rgba(76, 201, 255, .26), rgba(139, 124, 255, .22));
+      box-shadow:
+        0 0 18px rgba(76, 201, 255, .28),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .panel {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
     }
 
-    .track-no {
+    .panel-title {
+      min-width: 0;
+    }
+
+    .panel-title strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: -0.04em;
+      color: #eff7ff;
+    }
+
+    .panel-title span {
+      color: rgba(180, 220, 255, .62);
       font-size: 12px;
-      color: var(--accent);
-      font-weight: 800;
-      letter-spacing: 0.08em;
+      font-weight: 850;
     }
 
-    .track h3 {
-      margin: 8px 0 8px;
-      font-size: 28px;
-      line-height: 1.05;
-      letter-spacing: -0.05em;
+    .head-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
     }
 
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      min-height: 30px;
-      padding: 0 11px;
+    .pill-btn {
+      height: 34px;
+      padding: 0 13px;
       border-radius: 999px;
-      background: rgba(31, 77, 59, 0.08);
-      color: var(--accent);
       font-size: 12px;
-      font-weight: 700;
       white-space: nowrap;
     }
 
-    .track p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.72;
-      font-size: 14px;
-    }
-
-    .track ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 10px;
-    }
-
-    .track li {
-      position: relative;
-      padding-left: 18px;
-      font-size: 14px;
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    .track li::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: var(--accent-2);
-      position: absolute;
-      top: 8px;
-      left: 0;
-    }
-
-    audio {
-      width: 100%;
+    .search,
+    .name-field {
       height: 46px;
-      filter: saturate(0.92) contrast(1.02);
-    }
-
-    .track-actions {
-      display: flex;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
+      padding: 0 14px;
+      border: 1px solid rgba(255,255,255,.11);
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
     }
 
-    .info-grid {
+    .name-field {
+      border-radius: 18px;
+    }
+
+    .search span,
+    .name-field span {
+      color: rgba(150, 217, 255, 0.72);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .search input,
+    .name-field input {
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text-strong);
+      font-weight: 850;
+    }
+
+    .search input::placeholder {
+      color: rgba(190, 224, 255, .42);
+    }
+
+    .list,
+    .mini-list {
+      min-height: 0;
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-      margin: 10px 0 42px;
+      gap: 10px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-right: 3px;
+      scrollbar-width: thin;
     }
 
-    .info-card {
-      padding: 22px;
+    .list::-webkit-scrollbar,
+    .mini-list::-webkit-scrollbar {
+      width: 10px;
     }
 
-    .info-card strong {
-      display: block;
-      font-size: 17px;
-      margin-bottom: 10px;
+    .list::-webkit-scrollbar-track,
+    .mini-list::-webkit-scrollbar-track {
+      background: rgba(255,255,255,.04);
+      border-radius: 999px;
     }
 
-    .info-card p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.72;
-      font-size: 14px;
+    .list::-webkit-scrollbar-thumb,
+    .mini-list::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, rgba(76,201,255,.55), rgba(139,124,255,.55));
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
     }
 
-    .cta {
-      margin: 20px 0 56px;
-    }
-
-    .cta-box {
-      padding: 28px;
+    .row {
+      width: 100%;
+      min-height: 68px;
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 18px;
+      grid-template-columns: 48px minmax(0, 1fr) auto auto;
       align-items: center;
-    }
-
-    .cta-box h2 {
-      margin: 0 0 12px;
-      font-size: clamp(28px, 4vw, 44px);
-      line-height: 1.05;
-      letter-spacing: -0.05em;
-    }
-
-    .cta-box p {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.75;
-      font-size: 15px;
-      max-width: 620px;
-    }
-
-    .cta-actions {
-      display: flex;
-      justify-content: flex-end;
       gap: 12px;
-      flex-wrap: wrap;
+      padding: 10px;
+      text-align: left;
+      border-radius: 22px;
     }
 
-    .footer {
-      padding: 0 0 40px;
-    }
-
-    .footer-card {
-      padding: 18px 22px;
-      display: flex;
-      justify-content: space-between;
+    .mini-row {
+      width: 100%;
+      min-height: 54px;
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr) auto;
       align-items: center;
-      gap: 16px;
-      color: var(--muted);
+      gap: 10px;
+      padding: 8px;
+      text-align: left;
+      border-radius: 18px;
+    }
+
+    .row,
+    .mini-row,
+    .playlist-card {
+      border: 1px solid rgba(255,255,255,.10);
+      background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 8px 20px rgba(0,0,0,.16);
+      transition:
+        transform .16s ease,
+        border-color .16s ease,
+        box-shadow .16s ease,
+        background .16s ease;
+    }
+
+    .row:hover,
+    .mini-row:hover,
+    .playlist-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(76, 201, 255, .30);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 0 18px rgba(76, 201, 255, .10),
+        0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .row.is-active,
+    .mini-row.is-active {
+      border-color: rgba(76, 201, 255, .56);
+      background: linear-gradient(145deg, rgba(76, 201, 255, .12), rgba(139, 124, 255, .08));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.10),
+        0 0 22px rgba(76, 201, 255, .16),
+        0 10px 26px rgba(0,0,0,.20);
+    }
+
+    .small-cover,
+    .mini-cover {
+      aspect-ratio: 1 / 1;
+      border: 1px solid rgba(255,255,255,.14);
+      background: var(--cover-bg);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.08),
+        0 0 12px rgba(76, 201, 255, .08);
+    }
+
+    .small-cover {
+      width: 48px;
+      border-radius: 16px;
+    }
+
+    .mini-cover {
+      width: 38px;
+      border-radius: 13px;
+    }
+
+    .text-main {
+      min-width: 0;
+    }
+
+    .track-title,
+    .mini-title {
+      display: block;
+      color: var(--text-strong);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: -0.035em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mini-title {
       font-size: 13px;
     }
-	.track-thumb {
-	  width: 100%;
-	  height: 140px;
-	  object-fit: cover;
-	  border-radius: 16px;
-	  margin: 6px 0 6px;
-	  border: 1px solid var(--line);
-	}
-	
 
-    @media (max-width: 1024px) {
-      .hero,
-      .cta-box,
-      .tracks,
-      .info-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-card { min-height: auto; }
-      .cta-actions { justify-content: flex-start; }
+    .track-sub,
+    .mini-sub {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    @media (max-width: 680px) {
-      .wrap { width: min(100% - 20px, 1180px); }
-      .hero { padding-top: 34px; }
-      .hero-card,
-      .hero-side,
-      .track,
-      .cta-box,
-      .info-card,
-      .footer-card { border-radius: 22px; }
-      .hero-card,
-      .hero-side,
-      .track,
-      .cta-box,
-      .info-card { padding: 20px; }
-      .footer-card { padding: 16px 18px; flex-direction: column; align-items: flex-start; }
-      .nav { min-height: 66px; }
-      .nav-links { display: none; }
-      h1 { font-size: 54px; }
+    .mini-sub {
+      font-size: 11px;
+    }
+
+    .duration {
+      color: rgba(190,224,255,.68);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .icon-btn.is-added {
+      opacity: .42;
+    }
+
+    .playlist-panel {
+      grid-template-rows: auto auto minmax(0, 1fr);
+    }
+
+    .playlist-panel .mini-list {
+      align-content: start;
+    }
+
+    .playlist-card {
+      width: 100%;
+      height: 100px;
+      min-height: 100px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      text-align: left;
+      border-radius: 22px;
+    }
+
+    .playlist-card strong {
+      display: block;
+      color: var(--text-strong);
+      font-size: 15px;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .playlist-card span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .empty {
+      align-self: center;
+      color: rgba(198, 225, 255, 0.52);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 750;
+      padding: 18px;
+    }
+
+    @keyframes neonPulse {
+      0%, 100% {
+        box-shadow:
+          0 0 16px rgba(76, 201, 255, .16),
+          0 0 28px rgba(139, 124, 255, .08);
+      }
+      50% {
+        box-shadow:
+          0 0 24px rgba(76, 201, 255, .28),
+          0 0 36px rgba(139, 124, 255, .14);
+      }
+    }
+
+    .play-btn,
+    .mode-icon.is-active,
+    .row.is-active,
+    .mini-row.is-active {
+      animation: neonPulse 2.8s ease-in-out infinite;
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: minmax(320px, 420px) minmax(360px, 1fr);
+        grid-template-rows: minmax(0, 1fr) minmax(230px, 34vh);
+      }
+
+      .left-stack {
+        grid-row: 1 / 2;
+      }
+
+      .center-stack {
+        grid-row: 1 / 3;
+      }
+
+      .right-stack {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+      }
+    }
+
+    @media (max-width: 760px) {
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        height: auto;
+        min-height: 100dvh;
+        padding: calc(14px + var(--safe-top)) 12px calc(14px + var(--safe-bottom));
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+      }
+
+      .left-stack,
+      .center-stack,
+      .right-stack {
+        grid-column: auto;
+        grid-row: auto;
+        display: grid;
+      }
+
+      .left-stack {
+        grid-template-rows: auto auto;
+      }
+
+      .now {
+        grid-template-columns: clamp(86px, 28vw, 112px) minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      .player-card {
+        padding: 18px;
+        border-radius: 30px;
+      }
+
+      .song-title {
+        font-size: clamp(22px, 7vw, 30px);
+      }
+
+      .controls {
+        gap: 18px;
+      }
+
+      .round-btn {
+        width: 52px;
+        height: 52px;
+      }
+
+      .play-btn {
+        width: 68px;
+        height: 68px;
+      }
+
+      .panel {
+        max-height: 420px;
+      }
+
+      .library-panel {
+        max-height: 520px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .row {
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+      }
+
+      .duration {
+        display: none;
+      }
+
+      .small-cover {
+        width: 42px;
+      }
+
+      .head-actions {
+        gap: 6px;
+      }
+
+      .pill-btn {
+        padding: 0 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="wrap nav">
-      <div class="brand">
-        <div class="brand-mark">ELEVENLABS SHOWCASE</div>
-        <div class="brand-name">ELEVEN TRACKS</div>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">STANCE Music Player</p>
+        <h1>S T A N C E</h1>
       </div>
-      <nav class="nav-links">
-        <a class="active" href="#tracks">Tracks</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-      </nav>
-    </div>
-  </header>
+      <button class="pill-btn" id="quickShuffleButton" type="button">Mix</button>
+    </header>
 
-  <main class="wrap">
-    <section class="hero" id="about">
-      <article class="hero-card">
-        <div>
-          <div class="eyebrow">AI Music · Instrumental Showcase</div>
-          <h1>내 홈페이지에서<br />바로 듣는<br />ELEVENLABS TRACKS</h1>
-          <p>
-            직접 만든 AI 음원을 한 페이지에 정리하고, 바로 재생하고, 분위기를 설명하고,
-            필요하면 ElevenLabs 작업 흐름까지 자연스럽게 연결하는 구조다.
-            이 페이지는 단순한 플레이어가 아니라, 음원 아카이브이자 브랜드 쇼케이스다.
-          </p>
-          <div class="hero-actions">
-            <a class="btn primary" href="#tracks">트랙 듣기</a>
-            <a class="btn" href="https://elevenlabs.io" target="_blank" rel="noreferrer">ElevenLabs 보기</a>
+    <section class="layout">
+      <div class="left-stack">
+        <article class="glass player-card" aria-label="현재 재생 카드">
+          <div class="now">
+            <div class="cover" id="mainCover"></div>
+            <div class="text-main">
+              <p class="label">Now Playing</p>
+              <h2 class="song-title" id="songTitle">-</h2>
+              <p class="artist" id="artist">-</p>
+            </div>
           </div>
-        </div>
 
-        <div class="hero-foot">
-          <div class="metric">
-            <strong>30s</strong>
-            <span>짧고 강하게 설계한 데모 길이</span>
+          <div class="timeline">
+            <div class="bar" id="bar" aria-label="재생 진행 바">
+              <div class="progress" id="progress"></div>
+              <div class="thumb" id="thumb"></div>
+            </div>
+            <div class="time-row">
+              <span id="currentTime">0:00</span>
+              <span id="duration">0:00</span>
+            </div>
           </div>
-          <div class="metric">
-            <strong>EDM + Rock</strong>
-            <span>감정과 드롭을 섞은 핵심 톤</span>
-          </div>
-          <div class="metric">
-            <strong>Web Ready</strong>
-            <span>홈페이지에서 바로 재생 가능</span>
-          </div>
-        </div>
-      </article>
 
-      <aside class="hero-side">
-        <div class="mini-grid">
-          <div class="mini-card">
-            <strong>이 페이지의 역할</strong>
-            <p>내가 만든 음원을 모아두고, 방문자가 바로 플레이해보며 분위기를 이해할 수 있게 만든다.</p>
+          <div class="controls">
+            <button class="round-btn" id="prevButton" type="button" aria-label="이전 곡">⏮</button>
+            <button class="round-btn play-btn" id="playButton" type="button" aria-label="재생">▶</button>
+            <button class="round-btn" id="nextButton" type="button" aria-label="다음 곡">⏭</button>
           </div>
-          <div class="mini-card">
-            <strong>운영 방식</strong>
-            <p>MP3 또는 WAV 파일만 업로드하면 카드 하나씩 추가하는 정적 페이지 구조다.</p>
-          </div>
-          <div class="mini-card">
-            <strong>광고 효과</strong>
-            <p>음원 설명과 함께 ElevenLabs 링크를 배치해서 도구 자체의 인상도 자연스럽게 전달한다.</p>
-          </div>
-        </div>
-      </aside>
-    </section>
 
-    <section id="tracks">
-      <div class="section-head">
-        <div>
-          <h2>Featured Tracks</h2>
-        </div>
-        <p>
-          아래 오디오 영역은 실제 음원 파일 경로만 연결하면 바로 재생된다.
-          우선은 샘플 경로로 채워두었고, 나중에 네 파일명으로 교체하면 된다.
-        </p>
+          <div class="player-modes" aria-label="재생 모드">
+            <button class="mode-icon is-active" type="button" data-mode="repeat" aria-label="전체 반복">↻</button>
+            <button class="mode-icon" type="button" data-mode="shuffle" aria-label="셔플">⤨</button>
+            <button class="mode-icon" type="button" data-mode="single" aria-label="한 곡 반복">①</button>
+          </div>
+        </article>
+
+        <section class="glass panel" aria-label="현재 재생목록">
+          <div class="panel-head">
+            <div class="panel-title">
+              <strong>현재 재생목록</strong>
+              <span id="queueCount">0 tracks</span>
+            </div>
+            <div class="head-actions">
+              <button class="pill-btn" id="saveQueueButton" type="button">저장</button>
+              <button class="pill-btn" id="clearQueueButton" type="button">전체 제거</button>
+            </div>
+          </div>
+          <div class="mini-list" id="queueList"></div>
+          <p class="empty" id="queueEmpty">전체 곡 목록의 + 버튼으로 현재 재생목록에 곡을 추가하세요.</p>
+        </section>
       </div>
 
-      <div class="tracks">
-        <article class="track">
-          <div class="track-top">
-            <div>
-              <div class="track-no">TRACK 01</div>
-              <h3>Insert Coin</h3>
+      <div class="center-stack">
+        <section class="glass panel library-panel" aria-label="전체 곡 목록">
+          <div class="panel-head">
+            <div class="panel-title">
+              <strong>전체 곡 목록</strong>
+              <span id="libraryCount">0 songs</span>
             </div>
-            <span class="tag">EDM Rock</span>
           </div>
-          <p>빠르게 올라가서 바로 터지는 드롭 중심 트랙. 다시 한 번 기회를 달라는 감정선을 짧고 강하게 밀어붙이는 구조.</p>
-          <img class="track-thumb" src="../assets/img/muzix_thumb_insert_coin.png" alt="Insert Coin" />
-          <audio controls preload="none">
-            <source src="../assets/muz/InsertCoin.mp3" type="audio/mpeg" />
-          </audio>
-          <div class="track-actions">
-            <a class="btn" href="../assets/muz/InsertCoin.mp3" download>음원 다운로드</a>
-            <a class="btn" href="https://elevenlabs.io" target="_blank" rel="noreferrer">Tool 보기</a>
-          </div>
-        </article>
 
-        <article class="track">
-          <div class="track-top">
-            <div>
-              <div class="track-no">TRACK 02</div>
-              <h3>Inner Storm</h3>
-            </div>
-            <span class="tag">Dark Pulse</span>
-          </div>
-          <p>조금 더 어두운 결을 가진 전자 사운드 중심 트랙. 묵직한 저역과 펄스성 리듬을 전면에 두는 용도에 맞다.</p>
-          <img class="track-thumb" src="../assets/img/muzix_thumb_dark_night.png" alt="Insert Coin" />
-          <audio controls preload="none">
-            <source src="../assets/muz/OneMoreCoin.mp3" type="audio/mpeg" />
-          </audio>
-          <div class="track-actions">
-            <a class="btn" href="../assets/muz/OneMoreCoin.mp3" download>음원 다운로드</a>
-            <a class="btn" href="#contact">문의하기</a>
-          </div>
-        </article>
+          <label class="search">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="곡, 아티스트, 앨범 검색" autocomplete="off" />
+          </label>
 
-        <article class="track">
-          <div class="track-top">
-            <div>
-              <div class="track-no">TRACK 03</div>
-              <h3>Star Without Light</h3>
-            </div>
-            <span class="tag">Emotional Synth</span>
-          </div>
-          <p>감정선을 조금 더 길게 잡은 서정형 신스 트랙. 페이지 메인 배경이나 느린 소개 섹션에 잘 맞는다.</p>
-          <img class="track-thumb" src="../assets/img/muzix_thumb_heart_storm.png" alt="Insert Coin" />
-          <audio controls preload="none">
-            <source src="../assets/muz/AMomentofHope.mp3" type="audio/mpeg" />
-          </audio>
-          <div class="track-actions">
-            <a class="btn" href="../assets/muz/AMomentofHope.mp3" download>음원 다운로드</a>
-            <a class="btn" href="https://elevenlabs.io" target="_blank" rel="noreferrer">ElevenLabs</a>
-          </div>
-        </article>
-
-		 <article class="track">
-          <div class="track-top">
-            <div>
-              <div class="track-no">TRACK 04</div>
-              <h3>허지마는 스트로베리 모찌</h3>
-            </div>
-            <span class="tag">모찌</span>
-          </div>
-          <p>정신 놓자.</p>
-          <img class="track-thumb" src="../assets/img/3.png" alt="Strawberry" />
-          <audio controls preload="none">
-            <source src="../assets/muz/icegirl.mp3" type="audio/mpeg" />
-          </audio>
-          <div class="track-actions">
-            <a class="btn" href="../assets/muz/icegirl.mp3" download>음원 다운로드</a>
-          </div>
-        </article>
-		<article class="track">
-          <div class="track-top">
-            <div>
-              <div class="track-no">TRACK 05</div>
-              <h3>슈퍼크리피스 버거</h3>
-            </div>
-            <span class="tag">버거</span>
-          </div>
-          <p>정신 놓자.</p>
-          <img class="track-thumb" src="../assets/img/3.png" alt="Bugger" />
-          <audio controls preload="none">
-            <source src="../assets/muz/supercrys.mp3" type="audio/mpeg" />
-          </audio>
-          <div class="track-actions">
-            <a class="btn" href="../assets/muz/supercrys.mp3" download>음원 다운로드</a>
-          </div>
-        </article>
-		<article class="track">
-          <div class="track-top">
-            <div>
-              <div class="track-no">TRACK 06</div>
-              <h3>yople</h3>
-            </div>
-            <span class="tag">꼬모</span>
-          </div>
-          <p>정신 놓자.</p>
-          <img class="track-thumb" src="../assets/img/3.png" alt="Yo ple" />
-          <audio controls preload="none">
-            <source src="../assets/muz/yople.mp3" type="audio/mpeg" />
-          </audio>
-          <div class="track-actions">
-            <a class="btn" href="../assets/muz/yople.mp3" download>음원 다운로드</a>
-          </div>
-        </article>
-		  
-		  
-
+          <div class="list" id="libraryList"></div>
+          <p class="empty" id="libraryEmpty" hidden>검색 결과가 없습니다.</p>
+        </section>
       </div>
-    </section>
 
-    <section class="info-grid">
-      <article class="info-card">
-        <strong>어떻게 파일을 넣나</strong>
-        <p><code>audio</code> 폴더를 만들고 MP3 파일을 업로드한 뒤, 각 카드의 <code>src</code> 경로만 바꾸면 된다.</p>
-      </article>
-      <article class="info-card">
-        <strong>왜 이 구조가 좋은가</strong>
-        <p>가볍고 빠르며, 별도 서버 처리 없이도 즉시 배포 가능하다. 음원 몇 개만으로도 충분히 브랜드 인상을 만들 수 있다.</p>
-      </article>
-      <article class="info-card" id="contact">
-        <strong>어디로 연결할까</strong>
-        <p>나중에 문의 폼, Gumroad, 이메일, 또는 다른 프로젝트 페이지로 버튼 링크를 연결하면 바로 수익 동선이 생긴다.</p>
-      </article>
-    </section>
+      <div class="right-stack">
+        <section class="glass panel playlist-panel" aria-label="플레이리스트">
+          <div class="panel-head">
+            <div class="panel-title">
+              <strong>플레이리스트</strong>
+              <span id="playlistCount">0 lists</span>
+            </div>
+          </div>
 
-    <section class="cta">
-      <div class="cta-box">
-        <div>
-          <h2>이 페이지는<br />음원 광고판이자<br />포트폴리오다.</h2>
-          <p>
-            직접 만든 트랙을 재생하게 하면서, 동시에 어떤 도구로 만들었는지까지 보여줄 수 있다.
-            즉, 방문자는 음악을 듣고, 분위기를 기억하고, 필요하면 바로 ElevenLabs나 네 다른 상품 페이지로 이동한다.
-          </p>
-        </div>
-        <div class="cta-actions">
-          <a class="btn primary" href="https://elevenlabs.io" target="_blank" rel="noreferrer">ElevenLabs 방문</a>
-          <a class="btn" href="#tracks">트랙 다시 보기</a>
-        </div>
+          <label class="name-field">
+            <span>이름</span>
+            <input id="playlistName" type="text" value="My Glass Mix" maxlength="32" />
+          </label>
+
+          <div class="mini-list" id="playlistList"></div>
+          <p class="empty" id="playlistEmpty">현재 재생목록을 저장하면 여기에 플레이리스트가 추가됩니다.</p>
+        </section>
       </div>
     </section>
   </main>
 
-  <footer class="footer wrap">
-    <div class="footer-card">
-      <span>ELEVEN TRACKS · AI music showcase page</span>
-      <span>Built for homepage playback, archive, and simple promotion.</span>
-    </div>
-  </footer>
+  <script type="application/json" id="tracks-json">
+    [
+      { "id": "eternal-horizon", "title": "Eternal Horizon", "artist": "Luna Aurora", "album": "Serene Blue", "duration": 238, "coverGradient": "linear-gradient(145deg, #0f2f5f 0%, #4cc9ff 42%, #8b7cff 100%)", "audioUrl": "" },
+      { "id": "glass-river", "title": "Glass River", "artist": "Noah Vale", "album": "Soft Motion", "duration": 204, "coverGradient": "linear-gradient(145deg, #09253f 0%, #79f7ff 46%, #4cc9ff 100%)", "audioUrl": "" },
+      { "id": "night-orbit", "title": "Night Orbit", "artist": "Mira Sol", "album": "Low Light", "duration": 191, "coverGradient": "linear-gradient(145deg, #151b42 0%, #8b7cff 48%, #d77dff 100%)", "audioUrl": "" },
+      { "id": "silver-cloud", "title": "Silver Cloud", "artist": "Ari Blue", "album": "Morning Glass", "duration": 224, "coverGradient": "linear-gradient(145deg, #16314f 0%, #b7f4ff 42%, #7dffcf 100%)", "audioUrl": "" },
+      { "id": "quiet-signal", "title": "Quiet Signal", "artist": "Eon Lake", "album": "Transparent", "duration": 216, "coverGradient": "linear-gradient(145deg, #082436 0%, #4cc9ff 45%, #7dffcf 100%)", "audioUrl": "" },
+      { "id": "blue-noise", "title": "Blue Noise", "artist": "Kira Moon", "album": "Glass Room", "duration": 187, "coverGradient": "linear-gradient(145deg, #071a33 0%, #2c69ff 42%, #79f7ff 100%)", "audioUrl": "" },
+      { "id": "soft-array", "title": "Soft Array", "artist": "Iris Field", "album": "Future Calm", "duration": 201, "coverGradient": "linear-gradient(145deg, #0d1632 0%, #8b7cff 45%, #4cc9ff 100%)", "audioUrl": "" },
+      { "id": "neon-tide", "title": "Neon Tide", "artist": "Vera Flux", "album": "Afterimage", "duration": 212, "coverGradient": "linear-gradient(145deg, #081927 0%, #00d4ff 42%, #a76cff 100%)", "audioUrl": "" },
+      { "id": "crystal-pulse", "title": "Crystal Pulse", "artist": "Mio Vanta", "album": "Signal Bloom", "duration": 229, "coverGradient": "linear-gradient(145deg, #061d24 0%, #7dffcf 44%, #4cc9ff 100%)", "audioUrl": "" }
+    ]
+  </script>
+
+  <script>
+    const tracks = JSON.parse(document.querySelector('#tracks-json').textContent);
+
+    const els = {
+      mainCover: document.querySelector('#mainCover'),
+      songTitle: document.querySelector('#songTitle'),
+      artist: document.querySelector('#artist'),
+      currentTime: document.querySelector('#currentTime'),
+      duration: document.querySelector('#duration'),
+      progress: document.querySelector('#progress'),
+      thumb: document.querySelector('#thumb'),
+      bar: document.querySelector('#bar'),
+      playButton: document.querySelector('#playButton'),
+      prevButton: document.querySelector('#prevButton'),
+      nextButton: document.querySelector('#nextButton'),
+      quickShuffleButton: document.querySelector('#quickShuffleButton'),
+      searchInput: document.querySelector('#searchInput'),
+      libraryList: document.querySelector('#libraryList'),
+      libraryCount: document.querySelector('#libraryCount'),
+      libraryEmpty: document.querySelector('#libraryEmpty'),
+      playlistList: document.querySelector('#playlistList'),
+      playlistCount: document.querySelector('#playlistCount'),
+      playlistEmpty: document.querySelector('#playlistEmpty'),
+      playlistName: document.querySelector('#playlistName'),
+      queueList: document.querySelector('#queueList'),
+      queueCount: document.querySelector('#queueCount'),
+      queueEmpty: document.querySelector('#queueEmpty'),
+      clearQueueButton: document.querySelector('#clearQueueButton'),
+      saveQueueButton: document.querySelector('#saveQueueButton'),
+      modeButtons: document.querySelectorAll('[data-mode]')
+    };
+
+    let activeIndex = 0;
+    let currentSeconds = 0;
+    let isPlaying = false;
+    let timer = null;
+    let searchTerm = '';
+    let playMode = 'repeat';
+    let queue = [0, 1, 2];
+    let savedPlaylists = [];
+
+    function formatTime(seconds) {
+      const safe = Math.max(0, Math.floor(seconds || 0));
+      return `${Math.floor(safe / 60)}:${String(safe % 60).padStart(2, '0')}`;
+    }
+
+    function currentTrack() {
+      return tracks[activeIndex];
+    }
+
+    function setCover(element, track) {
+      element.style.setProperty('--cover-bg', track.coverGradient);
+    }
+
+    function renderPlayer(reset = false) {
+      const track = currentTrack();
+      if (!track) return;
+      if (reset) currentSeconds = 0;
+
+      els.songTitle.textContent = track.title;
+      els.artist.textContent = track.artist;
+      els.duration.textContent = formatTime(track.duration);
+      setCover(els.mainCover, track);
+      renderProgress();
+      highlightActive();
+    }
+
+    function renderProgress() {
+      const track = currentTrack();
+      const percent = track.duration ? Math.min(100, currentSeconds / track.duration * 100) : 0;
+      els.currentTime.textContent = formatTime(currentSeconds);
+      els.progress.style.width = `${percent}%`;
+      els.thumb.style.left = `${percent}%`;
+    }
+
+    function normalize(value) {
+      return String(value || '').trim().toLowerCase();
+    }
+
+    function filteredLibrary() {
+      const keyword = normalize(searchTerm);
+      return tracks
+        .map((track, index) => ({ track, index }))
+        .filter(({ track }) => !keyword || normalize(`${track.title} ${track.artist} ${track.album}`).includes(keyword));
+    }
+
+    function libraryRow({ track, index }) {
+      const added = queue.includes(index);
+      return `
+        <button class="row" data-index="${index}" type="button" aria-label="${track.title} 재생">
+          <span class="small-cover" style="--cover-bg:${track.coverGradient}"></span>
+          <span class="text-main">
+            <span class="track-title">${track.title}</span>
+            <span class="track-sub">${track.artist} · ${track.album}</span>
+          </span>
+          <span class="duration">${formatTime(track.duration)}</span>
+          <span class="icon-btn ${added ? 'is-added' : ''}" data-add="${index}" aria-label="현재 재생목록에 추가">+</span>
+        </button>
+      `;
+    }
+
+    function miniRow(trackIndex, source, itemIndex) {
+      const track = tracks[trackIndex];
+      return `
+        <button class="mini-row" data-index="${trackIndex}" type="button" aria-label="${track.title} 재생">
+          <span class="mini-cover" style="--cover-bg:${track.coverGradient}"></span>
+          <span class="text-main">
+            <span class="mini-title">${track.title}</span>
+            <span class="mini-sub">${track.artist}</span>
+          </span>
+          <span class="icon-btn" data-remove-${source}="${itemIndex}" aria-label="제거">−</span>
+        </button>
+      `;
+    }
+
+    function renderLibrary() {
+      const rows = filteredLibrary();
+      els.libraryCount.textContent = searchTerm ? `${rows.length} / ${tracks.length} songs` : `${tracks.length} songs`;
+      els.libraryEmpty.hidden = rows.length > 0;
+      els.libraryList.innerHTML = rows.map(libraryRow).join('');
+    }
+
+    function renderQueue() {
+      els.queueCount.textContent = `${queue.length} tracks`;
+      els.queueEmpty.hidden = queue.length > 0;
+      els.clearQueueButton.disabled = queue.length === 0;
+      els.saveQueueButton.disabled = queue.length === 0;
+      els.queueList.innerHTML = queue.map((trackIndex, index) => miniRow(trackIndex, 'queue', index)).join('');
+    }
+
+    function renderPlaylists() {
+      els.playlistCount.textContent = `${savedPlaylists.length} lists`;
+      els.playlistEmpty.hidden = savedPlaylists.length > 0;
+      els.playlistList.innerHTML = savedPlaylists.map((playlist, index) => `
+        <button class="playlist-card" data-playlist-load="${index}" type="button" aria-label="${playlist.name} 불러오기">
+          <span>
+            <strong>${playlist.name}</strong>
+            <span>${playlist.tracks.length} tracks</span>
+          </span>
+          <span class="icon-btn" data-remove-saved-playlist="${index}" aria-label="플레이리스트 삭제">−</span>
+        </button>
+      `).join('');
+    }
+
+    function renderAll() {
+      renderPlayer();
+      renderLibrary();
+      renderQueue();
+      renderPlaylists();
+      highlightActive();
+    }
+
+    function highlightActive() {
+      document.querySelectorAll('[data-index]').forEach((element) => {
+        element.classList.toggle('is-active', Number(element.dataset.index) === activeIndex);
+      });
+    }
+
+    function selectTrack(index, playNow = true) {
+      activeIndex = (index + tracks.length) % tracks.length;
+      renderPlayer(true);
+      if (playNow) play();
+    }
+
+    function play() {
+      isPlaying = true;
+      els.playButton.textContent = 'Ⅱ';
+      clearInterval(timer);
+      timer = setInterval(() => {
+        currentSeconds += 1;
+        if (currentSeconds >= currentTrack().duration) {
+          handleTrackEnd();
+          return;
+        }
+        renderProgress();
+      }, 1000);
+    }
+
+    function pause() {
+      isPlaying = false;
+      els.playButton.textContent = '▶';
+      clearInterval(timer);
+      timer = null;
+    }
+
+    function togglePlay() {
+      isPlaying ? pause() : play();
+    }
+
+    function queueNext(direction) {
+      if (!queue.length) return activeIndex + direction;
+      const currentQueueIndex = queue.indexOf(activeIndex);
+      if (currentQueueIndex === -1) return direction > 0 ? queue[0] : queue[queue.length - 1];
+      return queue[(currentQueueIndex + direction + queue.length) % queue.length];
+    }
+
+    function shuffleNext() {
+      const source = queue.length ? queue : tracks.map((_, index) => index);
+      if (source.length < 2) return activeIndex;
+      let next = activeIndex;
+      while (next === activeIndex) {
+        next = source[Math.floor(Math.random() * source.length)];
+      }
+      return next;
+    }
+
+    function next() {
+      if (playMode === 'single') {
+        selectTrack(activeIndex, isPlaying);
+        return;
+      }
+      selectTrack(playMode === 'shuffle' ? shuffleNext() : queueNext(1), isPlaying);
+    }
+
+    function prev() {
+      selectTrack(queueNext(-1), isPlaying);
+    }
+
+    function handleTrackEnd() {
+      if (playMode === 'single') {
+        currentSeconds = 0;
+        renderProgress();
+        return;
+      }
+      next();
+    }
+
+    function addToQueue(index) {
+      if (queue.includes(index)) return;
+      queue.push(index);
+      renderLibrary();
+      renderQueue();
+      highlightActive();
+    }
+
+    function removeFromQueue(index) {
+      queue.splice(index, 1);
+      renderLibrary();
+      renderQueue();
+      highlightActive();
+    }
+
+    function clearQueue() {
+      queue = [];
+      renderLibrary();
+      renderQueue();
+      highlightActive();
+    }
+
+    function saveQueueAsPlaylist() {
+      if (!queue.length) return;
+      const rawName = els.playlistName.value.trim();
+      const name = rawName || `Playlist ${savedPlaylists.length + 1}`;
+      savedPlaylists.push({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        name,
+        tracks: [...queue]
+      });
+      renderPlaylists();
+    }
+
+    function loadSavedPlaylist(index) {
+      const playlist = savedPlaylists[index];
+      if (!playlist) return;
+      queue = [...playlist.tracks];
+      renderLibrary();
+      renderQueue();
+      if (queue.length) selectTrack(queue[0], true);
+    }
+
+    function removeSavedPlaylist(index) {
+      savedPlaylists.splice(index, 1);
+      renderPlaylists();
+    }
+
+    function setMode(mode) {
+      playMode = mode;
+      els.modeButtons.forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.mode === mode);
+      });
+    }
+
+    els.playButton.addEventListener('click', togglePlay);
+    els.prevButton.addEventListener('click', prev);
+    els.nextButton.addEventListener('click', next);
+    els.quickShuffleButton.addEventListener('click', () => selectTrack(shuffleNext(), true));
+    els.clearQueueButton.addEventListener('click', clearQueue);
+    els.saveQueueButton.addEventListener('click', saveQueueAsPlaylist);
+
+    els.modeButtons.forEach((button) => {
+      button.addEventListener('click', () => setMode(button.dataset.mode));
+    });
+
+    els.searchInput.addEventListener('input', (event) => {
+      searchTerm = event.target.value;
+      renderLibrary();
+      highlightActive();
+    });
+
+    els.bar.addEventListener('pointerdown', (event) => {
+      const rect = els.bar.getBoundingClientRect();
+      const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+      currentSeconds = Math.round(currentTrack().duration * ratio);
+      renderProgress();
+    });
+
+    els.libraryList.addEventListener('click', (event) => {
+      const add = event.target.closest('[data-add]');
+      if (add) {
+        event.stopPropagation();
+        addToQueue(Number(add.dataset.add));
+        return;
+      }
+
+      const row = event.target.closest('[data-index]');
+      if (row) selectTrack(Number(row.dataset.index), true);
+    });
+
+    els.queueList.addEventListener('click', (event) => {
+      const remove = event.target.closest('[data-remove-queue]');
+      if (remove) {
+        event.stopPropagation();
+        removeFromQueue(Number(remove.dataset.removeQueue));
+        return;
+      }
+
+      const row = event.target.closest('[data-index]');
+      if (row) selectTrack(Number(row.dataset.index), true);
+    });
+
+    els.playlistList.addEventListener('click', (event) => {
+      const remove = event.target.closest('[data-remove-saved-playlist]');
+      if (remove) {
+        event.stopPropagation();
+        removeSavedPlaylist(Number(remove.dataset.removeSavedPlaylist));
+        return;
+      }
+
+      const card = event.target.closest('[data-playlist-load]');
+      if (card) loadSavedPlaylist(Number(card.dataset.playlistLoad));
+    });
+
+    renderAll();
+  </script>
 </body>
 </html>
