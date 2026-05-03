@@ -769,7 +769,7 @@ function expandAll(open) {
 }
 
 async function loadProjects() {
-    const res = await fetch(api('https://mrdindoin.ddns.net/jsonhub/api/projects'));
+    const res = await fetch('https://mrdindoin.ddns.net/jsonhub/api/projects');
     const data = await res.json();
 
     const list = document.getElementById('project-list');
@@ -790,7 +790,7 @@ async function loadList() {
         return;
     }
 
-    const res = await fetch(api('https://mrdindoin.ddns.net/jsonhub/api/list/' + encodeURIComponent(project)));
+    const res = await fetch('https://mrdindoin.ddns.net/jsonhub/api/list/' + encodeURIComponent(project));
     const data = await res.json();
 
     const select = document.getElementById('fileSelect');
@@ -823,7 +823,7 @@ async function loadJson() {
         return;
     }
 
-    const res = await fetch(api('https://mrdindoin.ddns.net/jsonhub/api/json/' + encodeURIComponent(project) + '/' + encodeURIComponent(name)));
+    const res = await fetch('https://mrdindoin.ddns.net/jsonhub/api/json/' + encodeURIComponent(project) + '/' + encodeURIComponent(name));
     const data = await res.json();
 
     if (!res.ok) {
@@ -861,7 +861,7 @@ async function saveJson() {
         }
     }
 
-    const res = await fetch(api('https://mrdindoin.ddns.net/jsonhub/api/json/' + encodeURIComponent(project) + '/' + encodeURIComponent(name)), {
+    const res = await fetch('https://mrdindoin.ddns.net/jsonhub/api/json/' + encodeURIComponent(project) + '/' + encodeURIComponent(name), {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(currentData)
