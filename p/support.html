@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>온라인 문서관리 고객센터</title>
+  <title>STANCE | 지원센터</title>
   <style>
     * {
       box-sizing: border-box;
@@ -512,11 +512,7 @@
         <h1>Support Board</h1>
         <p>
           질문&답변.
-        </p>
-        <div class="api-box">
-          <input id="apiBaseInput" placeholder="API 서버 주소" />
-          <button class="btn secondary small" onclick="saveApiBase()">API 주소 저장</button>
-        </div>
+        </p>        
       </div>
 
       <aside class="hero-side">
@@ -715,7 +711,7 @@
           return;
         }
 
-        await apiFetch(`https://localflow.ddns.net/support/api/posts/${currentPost.id}/answer`, {
+        await apiFetch(`/api/posts/${currentPost.id}/answer`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
@@ -745,7 +741,7 @@
 
     async function loadPosts() {
       try {
-        posts = await apiFetch("https://localflow.ddns.net/support/api/posts");
+        posts = await apiFetch("/api/posts");
         renderStats();
         renderPosts();
       } catch (error) {
@@ -801,7 +797,7 @@
 
     async function openDetail(postId) {
       try {
-        currentPost = await apiFetch(`https://localflow.ddns.net/support/api/posts/${postId}`);
+        currentPost = await apiFetch(`/api/posts/${postId}`);
 
         document.getElementById("detailTitle").textContent = currentPost.title;
         document.getElementById("detailMeta").textContent = `작성자 ${currentPost.name} · ${currentPost.created_at || ""}`;
@@ -852,7 +848,7 @@
       if (!ok) return;
 
       try {
-        await apiFetch(`https://localflow.ddns.net/support/api/posts/${currentPost.id}`, { method: "DELETE" });
+        await apiFetch(`/api/posts/${currentPost.id}`, { method: "DELETE" });
         closeModal("detailModal");
         showToast("삭제되었습니다.");
         await loadPosts();
