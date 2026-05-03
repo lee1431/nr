@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>JSON Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    :root {
+        --bg: #eef0f3;
+        --panel: #ffffff;
+        --panel-2: #f8f9fb;
+        --line: #d8dde5;
+        --text: #15181d;
+        --muted: #667085;
+        --accent: #1769e0;
+        --accent-soft: #e8f1ff;
+        --danger: #b42318;
+        --danger-soft: #fff0ee;
+        --ok: #067647;
+        --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, "Noto Sans KR", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+    }
+
+    .app {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 180px;
+    }
+
+    .mark {
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--line);
+        background: #101828;
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .brand-title {
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.1;
+    }
+
+    .brand-sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .layout {
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 16px;
+        padding: 16px;
+        max-width: 1480px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .sidebar,
+    .workspace {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+    }
+
+    .sidebar {
+        padding: 14px;
+        align-self: start;
+        position: sticky;
+        top: 78px;
+    }
+
+    .workspace {
+        min-width: 0;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+    }
+
+    .section-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin: 4px 0 8px;
+    }
+
+    .field-stack {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    label {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 700;
+    }
+
+    input,
+    select,
+    button,
+    textarea {
+        font: inherit;
+    }
+
+    input,
+    select {
+        width: 100%;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        padding: 9px 10px;
+        outline: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    button {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        padding: 9px 11px;
+        cursor: pointer;
+        font-weight: 700;
+    }
+
+    button:hover {
+        background: var(--panel-2);
+    }
+
+    .primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+    }
+
+    .primary:hover {
+        background: #1258bd;
+    }
+
+    .danger {
+        color: var(--danger);
+        border-color: #f0c1bb;
+        background: var(--danger-soft);
+    }
+
+    .button-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .editor-head {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel-2);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .editor-title {
+        min-width: 0;
+    }
+
+    .editor-title strong {
+        display: block;
+        font-size: 15px;
+    }
+
+    .editor-title span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+    .tool-strip {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search {
+        width: 240px;
+    }
+
+    #tree,
+    #raw {
+        min-height: 680px;
+        border: 0;
+        padding: 14px;
+        background: #fff;
+    }
+
+    #raw {
+        width: 100%;
+        display: none;
+        resize: vertical;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 14px;
+        line-height: 1.55;
+    }
+
+    .node {
+        margin: 4px 0;
+    }
+
+    details {
+        border-left: 2px solid transparent;
+    }
+
+    details[open] {
+        border-left-color: #e6eaf0;
+    }
+
+    summary {
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 0;
+        cursor: pointer;
+    }
+
+    summary::marker {
+        color: var(--accent);
+    }
+
+    .line {
+        display: grid;
+        grid-template-columns: minmax(140px, 220px) 120px minmax(180px, 1fr) auto;
+        gap: 8px;
+        align-items: center;
+        min-height: 38px;
+        border-bottom: 1px solid #edf0f4;
+        padding: 4px 0;
+    }
+
+    .children {
+        margin-left: 18px;
+        padding-left: 12px;
+    }
+
+    .key,
+    .array-key {
+        font-weight: 700;
+        color: #344054;
+        min-width: 0;
+        word-break: break-all;
+    }
+
+    .key input {
+        font-weight: 700;
+        padding: 7px 8px;
+    }
+
+    .array-key {
+        color: var(--muted);
+    }
+
+    .value {
+        min-width: 0;
+    }
+
+    .value input[type="text"],
+    .value input[type="number"] {
+        width: 100%;
+    }
+
+    .badge {
+        font-size: 12px;
+        line-height: 1;
+        color: #344054;
+        background: #eef2f6;
+        border: 1px solid #e1e6ee;
+        padding: 5px 7px;
+        font-weight: 700;
+    }
+
+    .matched {
+        background: #fff8db;
+    }
+
+    #status {
+        border-top: 1px solid var(--line);
+        background: #fbfcfe;
+        color: var(--muted);
+        min-height: 42px;
+        padding: 11px 14px;
+        white-space: pre-wrap;
+        font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+        .layout {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+            position: static;
+        }
+
+        .line {
+            grid-template-columns: 1fr;
+            align-items: stretch;
+            padding: 8px 0;
+        }
+
+        .search {
+            width: 100%;
+        }
+    }
+</style>
+
+</head>
+<body>
+<div class="app">
+    <header class="topbar">
+        <div class="brand">
+            <div class="mark">JSON</div>
+            <div>
+                <div class="brand-title">JSON Editor</div>
+                <div class="brand-sub">LocalFlow data manager</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="newJson()">새 JSON</button>
+            <button class="primary" onclick="saveJson()">저장</button>
+        </div>
+    </header>
+
+    <main class="layout">
+        <aside class="sidebar">
+            <div class="section-title">Project</div>
+
+            <div class="field-stack">
+                <label for="project">프로젝트</label>
+                <input id="project" placeholder="project" list="project-list">
+                <datalist id="project-list"></datalist>
+            </div>
+
+            <div class="button-row">
+                <button onclick="loadList()">목록</button>
+                <button onclick="loadProjects()">새로고침</button>
+            </div>
+
+            <div class="section-title">File</div>
+
+            <div class="field-stack">
+                <label for="fileSelect">파일 선택</label>
+                <select id="fileSelect" onchange="selectFile()">
+                    <option value="">파일 선택</option>
+                </select>
+            </div>
+
+            <div class="field-stack">
+                <label for="name">JSON 이름</label>
+                <input id="name" placeholder="json name">
+            </div>
+
+            <div class="button-row">
+                <button onclick="loadJson()">열기</button>
+                <button class="primary" onclick="saveJson()">저장</button>
+            </div>
+        </aside>
+
+        <section class="workspace">
+            <div class="editor-head">
+                <div class="editor-title">
+                    <strong>Tree View</strong>
+                    <span>object, array, string, number, boolean, null</span>
+                </div>
+
+                <div class="tool-strip">
+                    <input id="search" class="search" placeholder="검색" oninput="renderTree()">
+                    <button onclick="toggleRaw()">Tree / Raw</button>
+                    <button onclick="expandAll(true)">전체 펼침</button>
+                    <button onclick="expandAll(false)">전체 접기</button>
+                </div>
+            </div>
+
+            <div id="tree"></div>
+            <textarea id="raw" spellcheck="false"></textarea>
+            <div id="status"></div>
+        </section>
+    </main>
+</div>
+
+<script>
+let currentData = {};
+let rawMode = false;
+let dirty = false;
+
+function basePath() {
+    return window.location.pathname.replace(/\/json-editor\/?$/, '');
+}
+
+function api(path) {
+    return basePath() + path;
+}
+
+function setStatus(text) {
+    document.getElementById('status').textContent = text;
+}
+
+function markDirty() {
+    dirty = true;
+    setStatus('수정됨. 저장 필요.');
+}
+
+function typeOfValue(value) {
+    if (Array.isArray(value)) return 'array';
+    if (value === null) return 'null';
+    return typeof value;
+}
+
+function defaultValue(type) {
+    if (type === 'object') return {};
+    if (type === 'array') return [];
+    if (type === 'number') return 0;
+    if (type === 'boolean') return false;
+    if (type === 'null') return null;
+    return '';
+}
+
+function getProject() {
+    return document.getElementById('project').value.trim();
+}
+
+function getName() {
+    return document.getElementById('name').value.trim();
+}
+
+function getSearch() {
+    return document.getElementById('search').value.trim().toLowerCase();
+}
+
+function setValue(parent, key, value) {
+    if (parent === null) {
+        currentData = value;
+    } else {
+        parent[key] = value;
+    }
+
+    markDirty();
+    renderTree();
+}
+
+function deleteValue(parent, key) {
+    if (parent === null) {
+        currentData = {};
+    } else if (Array.isArray(parent)) {
+        parent.splice(key, 1);
+    } else {
+        delete parent[key];
+    }
+
+    markDirty();
+    renderTree();
+}
+
+function renameKey(parent, oldKey, newKey) {
+    newKey = newKey.trim();
+
+    if (!newKey || newKey === oldKey) {
+        renderTree();
+        return;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(parent, newKey)) {
+        alert('이미 존재하는 키입니다.');
+        renderTree();
+        return;
+    }
+
+    parent[newKey] = parent[oldKey];
+    delete parent[oldKey];
+
+    markDirty();
+    renderTree();
+}
+
+function matches(label, value) {
+    const q = getSearch();
+    if (!q) return false;
+
+    let text = String(label || '').toLowerCase();
+
+    if (typeof value !== 'object' || value === null) {
+        text += ' ' + String(value).toLowerCase();
+    }
+
+    return text.includes(q);
+}
+
+function renderPrimitive(parent, key, value, label, isObjectKey) {
+    const line = document.createElement('div');
+    line.className = 'line';
+
+    if (matches(label, value)) {
+        line.classList.add('matched');
+    }
+
+    const keyBox = document.createElement('div');
+    keyBox.className = isObjectKey ? 'key' : 'array-key';
+
+    if (isObjectKey) {
+        const keyInput = document.createElement('input');
+        keyInput.value = label;
+        keyInput.onchange = () => renameKey(parent, key, keyInput.value);
+        keyBox.appendChild(keyInput);
+    } else {
+        keyBox.textContent = label;
+    }
+
+    const typeSelect = document.createElement('select');
+    for (const t of ['string', 'number', 'boolean', 'null', 'object', 'array']) {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        if (t === typeOfValue(value)) opt.selected = true;
+        typeSelect.appendChild(opt);
+    }
+
+    typeSelect.onchange = () => setValue(parent, key, defaultValue(typeSelect.value));
+
+    const valueBox = document.createElement('div');
+    valueBox.className = 'value';
+
+    const t = typeOfValue(value);
+
+    if (t === 'string') {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = value;
+        input.oninput = () => {
+            parent === null ? currentData = input.value : parent[key] = input.value;
+            markDirty();
+        };
+        valueBox.appendChild(input);
+    } else if (t === 'number') {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.value = value;
+        input.oninput = () => {
+            const n = Number(input.value);
+            parent === null ? currentData = n : parent[key] = n;
+            markDirty();
+        };
+        valueBox.appendChild(input);
+    } else if (t === 'boolean') {
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = value;
+        input.onchange = () => {
+            parent === null ? currentData = input.checked : parent[key] = input.checked;
+            markDirty();
+        };
+        valueBox.appendChild(input);
+    } else {
+        valueBox.textContent = 'null';
+    }
+
+    const del = document.createElement('button');
+    del.textContent = '삭제';
+    del.className = 'danger';
+    del.onclick = () => deleteValue(parent, key);
+
+    line.appendChild(keyBox);
+    line.appendChild(typeSelect);
+    line.appendChild(valueBox);
+    line.appendChild(del);
+
+    return line;
+}
+
+function renderNode(parent, key, value, label, level) {
+    const t = typeOfValue(value);
+
+    if (t !== 'object' && t !== 'array') {
+        return renderPrimitive(parent, key, value, label, parent && !Array.isArray(parent));
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'node';
+
+    const details = document.createElement('details');
+    details.open = level < 2;
+
+    const summary = document.createElement('summary');
+
+    if (matches(label, value)) {
+        summary.classList.add('matched');
+    }
+
+    const title = document.createElement('span');
+    title.textContent = label + ' ';
+    title.style.fontWeight = 'bold';
+
+    const badge = document.createElement('span');
+    badge.className = 'badge';
+    badge.textContent = t + (t === 'array' ? ': ' + value.length : ': ' + Object.keys(value).length);
+
+    const typeSelect = document.createElement('select');
+    for (const kind of ['object', 'array', 'string', 'number', 'boolean', 'null']) {
+        const opt = document.createElement('option');
+        opt.value = kind;
+        opt.textContent = kind;
+        if (kind === t) opt.selected = true;
+        typeSelect.appendChild(opt);
+    }
+
+    typeSelect.onchange = (e) => {
+        e.stopPropagation();
+        setValue(parent, key, defaultValue(typeSelect.value));
+    };
+
+    const add = document.createElement('button');
+    add.textContent = t === 'array' ? '+ item' : '+ key';
+    add.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (t === 'array') {
+            value.push('');
+        } else {
+            const newKey = prompt('새 키 이름');
+            if (!newKey) return;
+            if (Object.prototype.hasOwnProperty.call(value, newKey)) {
+                alert('이미 존재하는 키입니다.');
+                return;
+            }
+            value[newKey] = '';
+        }
+
+        markDirty();
+        renderTree();
+    };
+
+    const del = document.createElement('button');
+    del.textContent = '삭제';
+    del.className = 'danger';
+    del.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        deleteValue(parent, key);
+    };
+
+    summary.appendChild(title);
+    summary.appendChild(badge);
+    summary.appendChild(document.createTextNode(' '));
+    summary.appendChild(typeSelect);
+    summary.appendChild(document.createTextNode(' '));
+    summary.appendChild(add);
+
+    if (parent !== null) {
+        summary.appendChild(document.createTextNode(' '));
+        summary.appendChild(del);
+    }
+
+    details.appendChild(summary);
+
+    const children = document.createElement('div');
+    children.className = 'children';
+
+    if (t === 'array') {
+        value.forEach((item, index) => {
+            children.appendChild(renderNode(value, index, item, '[' + index + ']', level + 1));
+        });
+    } else {
+        for (const childKey of Object.keys(value)) {
+            children.appendChild(renderNode(value, childKey, value[childKey], childKey, level + 1));
+        }
+    }
+
+    details.appendChild(children);
+    wrap.appendChild(details);
+
+    return wrap;
+}
+
+function renderTree() {
+    if (rawMode) return;
+
+    const tree = document.getElementById('tree');
+    tree.innerHTML = '';
+    tree.appendChild(renderNode(null, null, currentData, 'root', 0));
+}
+
+function toggleRaw() {
+    const tree = document.getElementById('tree');
+    const raw = document.getElementById('raw');
+
+    if (!rawMode) {
+        raw.value = JSON.stringify(currentData, null, 2);
+        tree.style.display = 'none';
+        raw.style.display = 'block';
+        rawMode = true;
+        return;
+    }
+
+    try {
+        currentData = JSON.parse(raw.value);
+    } catch (e) {
+        setStatus('JSON 문법 오류\n' + e.message);
+        return;
+    }
+
+    raw.style.display = 'none';
+    tree.style.display = 'block';
+    rawMode = false;
+    renderTree();
+}
+
+function expandAll(open) {
+    document.querySelectorAll('#tree details').forEach(d => d.open = open);
+}
+
+async function loadProjects() {
+    const res = await fetch(api('https://mrdindoin.ddns.net/jsonhub/api/projects'));
+    const data = await res.json();
+
+    const list = document.getElementById('project-list');
+    list.innerHTML = '';
+
+    for (const item of data.items || []) {
+        const option = document.createElement('option');
+        option.value = item;
+        list.appendChild(option);
+    }
+}
+
+async function loadList() {
+    const project = getProject();
+
+    if (!project) {
+        setStatus('project를 입력하시오.');
+        return;
+    }
+
+    const res = await fetch(api('https://mrdindoin.ddns.net/jsonhub/api/list/' + encodeURIComponent(project)));
+    const data = await res.json();
+
+    const select = document.getElementById('fileSelect');
+    select.innerHTML = '<option value="">파일 선택</option>';
+
+    for (const item of data.items || []) {
+        const option = document.createElement('option');
+        option.value = item.name;
+        option.textContent = item.name + ' (' + item.bytes + ' bytes, ' + item.mtime + ')';
+        select.appendChild(option);
+    }
+
+    setStatus('목록 로드 완료: ' + (data.items || []).length + '개');
+}
+
+function selectFile() {
+    const name = document.getElementById('fileSelect').value;
+    if (!name) return;
+
+    document.getElementById('name').value = name;
+    loadJson();
+}
+
+async function loadJson() {
+    const project = getProject();
+    const name = getName();
+
+    if (!project || !name) {
+        setStatus('project와 json name을 입력하시오.');
+        return;
+    }
+
+    const res = await fetch(api('https://mrdindoin.ddns.net/jsonhub/api/json/' + encodeURIComponent(project) + '/' + encodeURIComponent(name)));
+    const data = await res.json();
+
+    if (!res.ok) {
+        setStatus('열기 실패\n' + JSON.stringify(data, null, 2));
+        return;
+    }
+
+    currentData = data;
+    dirty = false;
+
+    if (rawMode) {
+        document.getElementById('raw').value = JSON.stringify(currentData, null, 2);
+    } else {
+        renderTree();
+    }
+
+    setStatus('열기 완료: ' + project + '/' + name);
+}
+
+async function saveJson() {
+    const project = getProject();
+    const name = getName();
+
+    if (!project || !name) {
+        setStatus('project와 json name을 입력하시오.');
+        return;
+    }
+
+    if (rawMode) {
+        try {
+            currentData = JSON.parse(document.getElementById('raw').value);
+        } catch (e) {
+            setStatus('JSON 문법 오류\n' + e.message);
+            return;
+        }
+    }
+
+    const res = await fetch(api('https://mrdindoin.ddns.net/jsonhub/api/json/' + encodeURIComponent(project) + '/' + encodeURIComponent(name)), {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(currentData)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        setStatus('저장 실패\n' + JSON.stringify(data, null, 2));
+        return;
+    }
+
+    dirty = false;
+    setStatus('저장 완료\n' + JSON.stringify(data, null, 2));
+    loadList();
+}
+
+function newJson() {
+    currentData = {};
+    dirty = false;
+    document.getElementById('name').value = '';
+
+    if (rawMode) {
+        document.getElementById('raw').value = JSON.stringify(currentData, null, 2);
+    } else {
+        renderTree();
+    }
+
+    setStatus('새 JSON 준비 완료. 이름을 입력하고 저장하시오.');
+}
+
+window.addEventListener('beforeunload', function(e) {
+    if (!dirty) return;
+    e.preventDefault();
+    e.returnValue = '';
+});
+
+loadProjects();
+renderTree();
+</script>
+</body>
+</html>
