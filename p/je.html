@@ -444,12 +444,11 @@ let currentData = {};
 let rawMode = false;
 let dirty = false;
 
-function basePath() {
-    return window.location.pathname.replace(/\/json-editor\/?$/, '');
-}
+
+const API_BASE = 'https://mrdindoind.ddns.net/jsonghub';
 
 function api(path) {
-    return basePath() + path;
+    return API_BASE.replace(/\/$/, '') + path;
 }
 
 function setStatus(text) {
