@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -17,27 +18,16 @@
       --bg2: #0b1d35;
       --bg3: #10294d;
       --bg4: #081020;
-
       --text: #eaf4ff;
       --text-strong: #f7fbff;
       --muted: rgba(198, 225, 255, 0.62);
       --muted-strong: rgba(205, 234, 255, 0.78);
-
       --neon-blue: #4cc9ff;
       --neon-cyan: #79f7ff;
       --neon-violet: #8b7cff;
-      --neon-pink: #d77dff;
       --neon-green: #7dffcf;
-
-      --glass: rgba(255, 255, 255, 0.07);
-      --glass-strong: rgba(255, 255, 255, 0.13);
       --line: rgba(255, 255, 255, 0.14);
-      --line-strong: rgba(76, 201, 255, 0.48);
-
       --shadow: rgba(0, 0, 0, 0.36);
-      --glow-blue: rgba(76, 201, 255, 0.28);
-      --glow-violet: rgba(139, 124, 255, 0.22);
-
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -942,22 +932,13 @@
     </section>
   </main>
 
-  <script type="application/json" id="tracks-json">
-    [
-      { "id": "eternal-horizon", "title": "Eternal Horizon", "artist": "Luna Aurora", "album": "Serene Blue", "duration": 238, "coverGradient": "linear-gradient(145deg, #0f2f5f 0%, #4cc9ff 42%, #8b7cff 100%)", "audioUrl": "" },
-      { "id": "glass-river", "title": "Glass River", "artist": "Noah Vale", "album": "Soft Motion", "duration": 204, "coverGradient": "linear-gradient(145deg, #09253f 0%, #79f7ff 46%, #4cc9ff 100%)", "audioUrl": "" },
-      { "id": "night-orbit", "title": "Night Orbit", "artist": "Mira Sol", "album": "Low Light", "duration": 191, "coverGradient": "linear-gradient(145deg, #151b42 0%, #8b7cff 48%, #d77dff 100%)", "audioUrl": "" },
-      { "id": "silver-cloud", "title": "Silver Cloud", "artist": "Ari Blue", "album": "Morning Glass", "duration": 224, "coverGradient": "linear-gradient(145deg, #16314f 0%, #b7f4ff 42%, #7dffcf 100%)", "audioUrl": "" },
-      { "id": "quiet-signal", "title": "Quiet Signal", "artist": "Eon Lake", "album": "Transparent", "duration": 216, "coverGradient": "linear-gradient(145deg, #082436 0%, #4cc9ff 45%, #7dffcf 100%)", "audioUrl": "" },
-      { "id": "blue-noise", "title": "Blue Noise", "artist": "Kira Moon", "album": "Glass Room", "duration": 187, "coverGradient": "linear-gradient(145deg, #071a33 0%, #2c69ff 42%, #79f7ff 100%)", "audioUrl": "" },
-      { "id": "soft-array", "title": "Soft Array", "artist": "Iris Field", "album": "Future Calm", "duration": 201, "coverGradient": "linear-gradient(145deg, #0d1632 0%, #8b7cff 45%, #4cc9ff 100%)", "audioUrl": "" },
-      { "id": "neon-tide", "title": "Neon Tide", "artist": "Vera Flux", "album": "Afterimage", "duration": 212, "coverGradient": "linear-gradient(145deg, #081927 0%, #00d4ff 42%, #a76cff 100%)", "audioUrl": "" },
-      { "id": "crystal-pulse", "title": "Crystal Pulse", "artist": "Mio Vanta", "album": "Signal Bloom", "duration": 229, "coverGradient": "linear-gradient(145deg, #061d24 0%, #7dffcf 44%, #4cc9ff 100%)", "audioUrl": "" }
-    ]
-  </script>
-
   <script>
-    const tracks = JSON.parse(document.querySelector('#tracks-json').textContent);
+    const TRACKS_JSON_URL = 'https://localflow.ddns.net/fu/static/data/tracks.json';
+    const FALLBACK_COVER_GRADIENT = 'linear-gradient(145deg, #0f2f5f 0%, #4cc9ff 42%, #8b7cff 100%)';
+
+    let tracks = [];
+    const audio = new Audio();
+    audio.preload = 'metadata';
 
     const els = {
       mainCover: document.querySelector('#mainCover'),
@@ -991,11 +972,20 @@
     let activeIndex = 0;
     let currentSeconds = 0;
     let isPlaying = false;
-    let timer = null;
     let searchTerm = '';
     let playMode = 'repeat';
-    let queue = [0, 1, 2];
+    let queue = [];
     let savedPlaylists = [];
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[char]);
+    }
 
     function formatTime(seconds) {
       const safe = Math.max(0, Math.floor(seconds || 0));
@@ -1003,29 +993,73 @@
     }
 
     function currentTrack() {
-      return tracks[activeIndex];
+      return tracks[activeIndex] || null;
+    }
+
+    function currentDuration() {
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        return audio.duration;
+      }
+
+      return Number(currentTrack()?.duration) || 0;
+    }
+
+    function coverBackground(track) {
+      return track?.coverGradient || FALLBACK_COVER_GRADIENT;
+    }
+
+    function trackSubtitle(track) {
+      return [track?.artist, track?.album].filter(Boolean).join(' · ') || 'Unknown Artist';
     }
 
     function setCover(element, track) {
-      element.style.setProperty('--cover-bg', track.coverGradient);
+      element.style.setProperty('--cover-bg', coverBackground(track));
+    }
+
+    function loadAudioForCurrentTrack(reset = false) {
+      const track = currentTrack();
+      if (!track?.audioUrl) return;
+
+      const nextSrc = new URL(track.audioUrl, window.location.href).href;
+      if (audio.src !== nextSrc) {
+        audio.src = nextSrc;
+        audio.load();
+      }
+
+      if (reset) {
+        try {
+          audio.currentTime = 0;
+        } catch (error) {
+          currentSeconds = 0;
+        }
+      }
     }
 
     function renderPlayer(reset = false) {
       const track = currentTrack();
-      if (!track) return;
-      if (reset) currentSeconds = 0;
 
-      els.songTitle.textContent = track.title;
-      els.artist.textContent = track.artist;
-      els.duration.textContent = formatTime(track.duration);
+      if (!track) {
+        currentSeconds = 0;
+        els.songTitle.textContent = 'No tracks';
+        els.artist.textContent = 'tracks.json을 확인하세요';
+        els.duration.textContent = '0:00';
+        setCover(els.mainCover, null);
+        renderProgress();
+        return;
+      }
+
+      if (reset) currentSeconds = 0;
+      els.songTitle.textContent = track.title || 'Untitled';
+      els.artist.textContent = trackSubtitle(track);
+      els.duration.textContent = formatTime(currentDuration());
       setCover(els.mainCover, track);
       renderProgress();
       highlightActive();
     }
 
     function renderProgress() {
-      const track = currentTrack();
-      const percent = track.duration ? Math.min(100, currentSeconds / track.duration * 100) : 0;
+      const duration = currentDuration();
+      const percent = duration ? Math.min(100, currentSeconds / duration * 100) : 0;
       els.currentTime.textContent = formatTime(currentSeconds);
       els.progress.style.width = `${percent}%`;
       els.thumb.style.left = `${percent}%`;
@@ -1044,12 +1078,15 @@
 
     function libraryRow({ track, index }) {
       const added = queue.includes(index);
+      const title = escapeHtml(track.title || 'Untitled');
+      const subtitle = escapeHtml(trackSubtitle(track));
+
       return `
-        <button class="row" data-index="${index}" type="button" aria-label="${track.title} 재생">
-          <span class="small-cover" style="--cover-bg:${track.coverGradient}"></span>
+        <button class="row" data-index="${index}" type="button" aria-label="${title} 재생">
+          <span class="small-cover" style="--cover-bg:${coverBackground(track)}"></span>
           <span class="text-main">
-            <span class="track-title">${track.title}</span>
-            <span class="track-sub">${track.artist} · ${track.album}</span>
+            <span class="track-title">${title}</span>
+            <span class="track-sub">${subtitle}</span>
           </span>
           <span class="duration">${formatTime(track.duration)}</span>
           <span class="icon-btn ${added ? 'is-added' : ''}" data-add="${index}" aria-label="현재 재생목록에 추가">+</span>
@@ -1059,12 +1096,15 @@
 
     function miniRow(trackIndex, source, itemIndex) {
       const track = tracks[trackIndex];
+      const title = escapeHtml(track?.title || 'Untitled');
+      const subtitle = escapeHtml(track?.artist || 'Unknown Artist');
+
       return `
-        <button class="mini-row" data-index="${trackIndex}" type="button" aria-label="${track.title} 재생">
-          <span class="mini-cover" style="--cover-bg:${track.coverGradient}"></span>
+        <button class="mini-row" data-index="${trackIndex}" type="button" aria-label="${title} 재생">
+          <span class="mini-cover" style="--cover-bg:${coverBackground(track)}"></span>
           <span class="text-main">
-            <span class="mini-title">${track.title}</span>
-            <span class="mini-sub">${track.artist}</span>
+            <span class="mini-title">${title}</span>
+            <span class="mini-sub">${subtitle}</span>
           </span>
           <span class="icon-btn" data-remove-${source}="${itemIndex}" aria-label="제거">−</span>
         </button>
@@ -1090,9 +1130,9 @@
       els.playlistCount.textContent = `${savedPlaylists.length} lists`;
       els.playlistEmpty.hidden = savedPlaylists.length > 0;
       els.playlistList.innerHTML = savedPlaylists.map((playlist, index) => `
-        <button class="playlist-card" data-playlist-load="${index}" type="button" aria-label="${playlist.name} 불러오기">
+        <button class="playlist-card" data-playlist-load="${index}" type="button" aria-label="${escapeHtml(playlist.name)} 불러오기">
           <span>
-            <strong>${playlist.name}</strong>
+            <strong>${escapeHtml(playlist.name)}</strong>
             <span>${playlist.tracks.length} tracks</span>
           </span>
           <span class="icon-btn" data-remove-saved-playlist="${index}" aria-label="플레이리스트 삭제">−</span>
@@ -1115,30 +1155,33 @@
     }
 
     function selectTrack(index, playNow = true) {
+      if (!tracks.length) return;
       activeIndex = (index + tracks.length) % tracks.length;
+      currentSeconds = 0;
+      loadAudioForCurrentTrack(true);
       renderPlayer(true);
       if (playNow) play();
     }
 
-    function play() {
+    async function play() {
+      if (!currentTrack()?.audioUrl) return;
+
+      loadAudioForCurrentTrack();
       isPlaying = true;
       els.playButton.textContent = 'Ⅱ';
-      clearInterval(timer);
-      timer = setInterval(() => {
-        currentSeconds += 1;
-        if (currentSeconds >= currentTrack().duration) {
-          handleTrackEnd();
-          return;
-        }
-        renderProgress();
-      }, 1000);
+
+      try {
+        await audio.play();
+      } catch (error) {
+        isPlaying = false;
+        els.playButton.textContent = '▶';
+      }
     }
 
     function pause() {
       isPlaying = false;
       els.playButton.textContent = '▶';
-      clearInterval(timer);
-      timer = null;
+      audio.pause();
     }
 
     function togglePlay() {
@@ -1146,6 +1189,7 @@
     }
 
     function queueNext(direction) {
+      if (!tracks.length) return 0;
       if (!queue.length) return activeIndex + direction;
       const currentQueueIndex = queue.indexOf(activeIndex);
       if (currentQueueIndex === -1) return direction > 0 ? queue[0] : queue[queue.length - 1];
@@ -1177,9 +1221,12 @@
     function handleTrackEnd() {
       if (playMode === 'single') {
         currentSeconds = 0;
+        audio.currentTime = 0;
         renderProgress();
+        if (isPlaying) play();
         return;
       }
+
       next();
     }
 
@@ -1238,6 +1285,43 @@
       });
     }
 
+    async function loadTracks() {
+      try {
+        const response = await fetch(TRACKS_JSON_URL, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`tracks.json ${response.status}`);
+
+        const data = await response.json();
+        tracks = (Array.isArray(data) ? data : data.tracks || []).filter((track) => track?.audioUrl);
+        queue = tracks.slice(0, Math.min(3, tracks.length)).map((_, index) => index);
+        activeIndex = 0;
+        currentSeconds = 0;
+        loadAudioForCurrentTrack(true);
+      } catch (error) {
+        tracks = [];
+        queue = [];
+        console.error(error);
+      }
+
+      renderAll();
+    }
+
+    audio.addEventListener('loadedmetadata', () => {
+      const track = currentTrack();
+      if (track && Number.isFinite(audio.duration) && audio.duration > 0) {
+        track.duration = Math.round(audio.duration);
+      }
+      renderPlayer();
+      renderLibrary();
+      renderQueue();
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      currentSeconds = audio.currentTime || 0;
+      renderProgress();
+    });
+
+    audio.addEventListener('ended', handleTrackEnd);
+
     els.playButton.addEventListener('click', togglePlay);
     els.prevButton.addEventListener('click', prev);
     els.nextButton.addEventListener('click', next);
@@ -1256,9 +1340,13 @@
     });
 
     els.bar.addEventListener('pointerdown', (event) => {
+      const duration = currentDuration();
+      if (!duration) return;
+
       const rect = els.bar.getBoundingClientRect();
       const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
-      currentSeconds = Math.round(currentTrack().duration * ratio);
+      currentSeconds = Math.round(duration * ratio);
+      audio.currentTime = currentSeconds;
       renderProgress();
     });
 
@@ -1298,7 +1386,7 @@
       if (card) loadSavedPlaylist(Number(card.dataset.playlistLoad));
     });
 
-    renderAll();
+    loadTracks();
   </script>
 </body>
 </html>
