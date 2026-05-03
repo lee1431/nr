@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>온라인 문서관리 고객센터</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f3f7fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #dbe5f1;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --soft-blue: #eaf3ff;
+      --green-bg: #ecfdf5;
+      --green-text: #047857;
+      --orange-bg: #fff7ed;
+      --orange-text: #c2410c;
+      --gray-bg: #f1f5f9;
+      --gray-text: #475569;
+      --danger: #dc2626;
+      --shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      background:
+        radial-gradient(circle at top left, #dbeafe 0, rgba(219, 234, 254, 0) 32%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 18px 60px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 22px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .hero-main,
+    .hero-side,
+    .panel,
+    .post-card,
+    .modal-card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-main {
+      padding: 36px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      right: -90px;
+      top: -90px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(96, 165, 250, 0.04));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--soft-blue);
+      color: var(--primary-dark);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.12;
+      letter-spacing: -0.06em;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.75;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-side {
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .stat-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 20px;
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      letter-spacing: -0.04em;
+      margin-bottom: 4px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin: 22px 0;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      width: min(360px, 100%);
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0 16px;
+      background: white;
+      outline: none;
+    }
+
+    .search:focus,
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 18px;
+      background: var(--primary);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      background: var(--primary-dark);
+    }
+
+    .btn.secondary {
+      background: #e5eefb;
+      color: var(--primary-dark);
+    }
+
+    .btn.ghost {
+      background: white;
+      color: var(--gray-text);
+      border: 1px solid var(--line);
+    }
+
+    .btn.danger {
+      background: #fee2e2;
+      color: var(--danger);
+    }
+
+    .btn.small {
+      min-height: 36px;
+      padding: 0 12px;
+      font-size: 13px;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .post-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .post-card {
+      padding: 22px;
+      transition: 0.18s ease;
+      cursor: pointer;
+    }
+
+    .post-card:hover {
+      transform: translateY(-2px);
+      border-color: #bfdbfe;
+    }
+
+    .post-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .post-title {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.4;
+      letter-spacing: -0.03em;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .preview {
+      margin: 12px 0 0;
+      color: #475569;
+      line-height: 1.65;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .badge.waiting {
+      background: var(--orange-bg);
+      color: var(--orange-text);
+    }
+
+    .badge.checking {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .badge.answered {
+      background: var(--green-bg);
+      color: var(--green-text);
+    }
+
+    .badge.closed {
+      background: var(--gray-bg);
+      color: var(--gray-text);
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 56px 16px;
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--text);
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.42);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 50;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(760px, 100%);
+      max-height: 88vh;
+      overflow: auto;
+      padding: 28px;
+      animation: pop 0.18s ease-out;
+    }
+
+    @keyframes pop {
+      from { transform: translateY(8px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      font-size: 26px;
+      letter-spacing: -0.04em;
+      line-height: 1.35;
+    }
+
+    .close {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: white;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: white;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .content-box {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 18px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      margin-top: 16px;
+    }
+
+    .answer-box {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid #bfdbfe;
+      background: #eff6ff;
+    }
+
+    .answer-box strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: #111827;
+      color: white;
+      padding: 14px 16px;
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+      display: none;
+      z-index: 80;
+      font-weight: 800;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .api-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .api-box input {
+      min-width: 260px;
+      flex: 1;
+      margin: 0;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-main,
+      .hero-side,
+      .modal-card {
+        border-radius: 22px;
+        padding: 24px;
+      }
+
+      .toolbar {
+        align-items: stretch;
+      }
+
+      .toolbar-left,
+      .search,
+      .btn {
+        width: 100%;
+      }
+
+      .post-top {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="hero">
+      <div class="hero-main">
+        <div class="eyebrow">STANCE 지원센터</div>
+        <h1>Support Board</h1>
+        <p>
+          질문&답변.
+        </p>
+        <div class="api-box">
+          <input id="apiBaseInput" placeholder="API 서버 주소" />
+          <button class="btn secondary small" onclick="saveApiBase()">API 주소 저장</button>
+        </div>
+      </div>
+
+      <aside class="hero-side">
+        <div class="stat-grid">
+          <div class="stat">
+            <strong id="totalCount">0건</strong>
+            <span>전체 문의</span>
+          </div>
+          <div class="stat">
+            <strong id="waitingCount">0건</strong>
+            <span>답변 대기</span>
+          </div>
+          <div class="stat">
+            <strong id="answeredCount">0건</strong>
+            <span>답변 완료</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="toolbar">
+      <div class="toolbar-left">
+        <input class="search" id="searchInput" placeholder="제목, 작성자 검색" oninput="renderPosts()" />
+        <select id="statusFilter" onchange="renderPosts()">
+          <option value="all">전체 상태</option>
+          <option value="waiting">답변대기</option>
+          <option value="checking">확인중</option>
+          <option value="answered">답변완료</option>
+          <option value="closed">종료</option>
+        </select>
+      </div>
+      <button class="btn" onclick="openWriteModal()">문의 작성</button>
+    </section>
+
+    <section class="panel">
+      <div id="postList" class="post-list"></div>
+    </section>
+  </main>
+
+  <div id="writeModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h2>문의 작성</h2>
+          <div class="meta">문서 상태와 필요한 작업을 최대한 구체적으로 적어주세요.</div>
+        </div>
+        <button class="close" onclick="closeModal('writeModal')">×</button>
+      </div>
+
+      <form id="writeForm" class="form-grid">
+        <div>
+          <label for="name">작성자</label>
+          <input id="name" name="name" placeholder="회사명 또는 성함" required />
+        </div>
+        <div>
+          <label for="title">제목</label>
+          <input id="title" name="title" placeholder="예: 작업표준서 수정 요청" required />
+        </div>
+        <div>
+          <label for="content">문의 내용</label>
+          <textarea id="content" name="content" placeholder="현재 문서 상태, 필요한 작업, 희망 일정 등을 적어주세요." required></textarea>
+        </div>
+        <div>
+          <label for="password">비밀번호 선택 입력</label>
+          <input id="password" name="password" type="password" placeholder="추후 수정/확인용으로 사용할 수 있습니다." />
+        </div>
+        <div class="actions">
+          <button type="button" class="btn ghost" onclick="closeModal('writeModal')">취소</button>
+          <button type="submit" class="btn">등록하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="detailModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h2 id="detailTitle"></h2>
+          <div class="meta" id="detailMeta"></div>
+        </div>
+        <button class="close" onclick="closeModal('detailModal')">×</button>
+      </div>
+
+      <span id="detailStatus" class="badge waiting">답변대기</span>
+      <div id="detailContent" class="content-box"></div>
+      <div id="detailAnswerWrap"></div>
+
+      <div class="actions">
+        <button class="btn ghost" onclick="openAdminModalFromDetail()">관리자 답변</button>
+        <button class="btn danger" onclick="deleteCurrentPost()">삭제</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h2>관리자 답변</h2>
+          <div class="meta" id="adminTargetTitle"></div>
+        </div>
+        <button class="close" onclick="closeModal('adminModal')">×</button>
+      </div>
+
+      <form id="answerForm" class="form-grid">
+        <div>
+          <label for="answerStatus">상태</label>
+          <select id="answerStatus">
+            <option value="checking">확인중</option>
+            <option value="answered">답변완료</option>
+            <option value="closed">종료</option>
+          </select>
+        </div>
+        <div>
+          <label for="answerText">답변 내용</label>
+          <textarea id="answerText" placeholder="답변 내용을 입력하세요." required></textarea>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn ghost" onclick="closeModal('adminModal')">취소</button>
+          <button type="submit" class="btn">답변 저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const DEFAULT_API_BASE_URL = "https://localflow.ddns.net/support";
+
+    let API_BASE_URL = localStorage.getItem("customerCenterApiBase") || DEFAULT_API_BASE_URL;
+    let posts = [];
+    let currentPost = null;
+
+    const statusLabel = {
+      waiting: "답변대기",
+      checking: "확인중",
+      answered: "답변완료",
+      closed: "종료"
+    };
+
+    const statusClass = {
+      waiting: "waiting",
+      checking: "checking",
+      answered: "answered",
+      closed: "closed"
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("apiBaseInput").value = API_BASE_URL;
+      bindForms();
+      loadPosts();
+    });
+
+    function bindForms() {
+      document.getElementById("writeForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const payload = {
+          name: document.getElementById("name").value.trim(),
+          title: document.getElementById("title").value.trim(),
+          content: document.getElementById("content").value.trim(),
+          password: document.getElementById("password").value.trim()
+        };
+
+        if (!payload.name || !payload.title || !payload.content) {
+          showToast("작성자, 제목, 내용을 입력해주세요.");
+          return;
+        }
+
+        await apiFetch("https://localflow.ddns.net/support/api/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById("writeForm").reset();
+        closeModal("writeModal");
+        showToast("문의가 등록되었습니다.");
+        await loadPosts();
+      });
+
+      document.getElementById("answerForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!currentPost) return;
+
+        const payload = {
+          answer: document.getElementById("answerText").value.trim(),
+          status: document.getElementById("answerStatus").value
+        };
+
+        if (!payload.answer) {
+          showToast("답변 내용을 입력해주세요.");
+          return;
+        }
+
+        await apiFetch(`https://localflow.ddns.net/support/api/posts/${currentPost.id}/answer`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        closeModal("adminModal");
+        closeModal("detailModal");
+        showToast("답변이 저장되었습니다.");
+        await loadPosts();
+      });
+    }
+
+    async function apiFetch(path, options = {}) {
+      const response = await fetch(`${API_BASE_URL}${path}`, options);
+
+      if (!response.ok) {
+        let message = "요청 처리 중 오류가 발생했습니다.";
+        try {
+          const data = await response.json();
+          message = data.error || message;
+        } catch (error) {}
+        throw new Error(message);
+      }
+
+      return response.json();
+    }
+
+    async function loadPosts() {
+      try {
+        posts = await apiFetch("https://localflow.ddns.net/support/api/posts");
+        renderStats();
+        renderPosts();
+      } catch (error) {
+        posts = [];
+        renderStats();
+        renderPosts();
+        showToast(`API 연결 실패: ${error.message}`);
+      }
+    }
+
+    function renderStats() {
+      document.getElementById("totalCount").textContent = `${posts.length}건`;
+      document.getElementById("waitingCount").textContent = `${posts.filter(post => post.status === "waiting").length}건`;
+      document.getElementById("answeredCount").textContent = `${posts.filter(post => post.status === "answered").length}건`;
+    }
+
+    function renderPosts() {
+      const list = document.getElementById("postList");
+      const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+      const filter = document.getElementById("statusFilter").value;
+
+      const filtered = posts.filter((post) => {
+        const matchesKeyword = !keyword ||
+          post.title.toLowerCase().includes(keyword) ||
+          post.name.toLowerCase().includes(keyword);
+        const matchesStatus = filter === "all" || post.status === filter;
+        return matchesKeyword && matchesStatus;
+      });
+
+      if (!filtered.length) {
+        list.innerHTML = `
+          <div class="empty">
+            <strong>등록된 문의가 없습니다.</strong>
+            <span>문의 작성 버튼을 눌러 첫 문의를 남겨보세요.</span>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = filtered.map((post) => `
+        <article class="post-card" onclick="openDetail('${post.id}')">
+          <div class="post-top">
+            <div>
+              <h3 class="post-title">${escapeHtml(post.title)}</h3>
+              <div class="meta">작성자 ${escapeHtml(post.name)} · ${escapeHtml(post.created_at || "")}</div>
+            </div>
+            <span class="badge ${statusClass[post.status] || "waiting"}">${statusLabel[post.status] || "답변대기"}</span>
+          </div>
+          <p class="preview">${post.has_answer ? "답변이 등록되었습니다. 상세 내용을 확인해보세요." : "아직 답변이 등록되지 않았습니다."}</p>
+        </article>
+      `).join("");
+    }
+
+    async function openDetail(postId) {
+      try {
+        currentPost = await apiFetch(`https://localflow.ddns.net/support/api/posts/${postId}`);
+
+        document.getElementById("detailTitle").textContent = currentPost.title;
+        document.getElementById("detailMeta").textContent = `작성자 ${currentPost.name} · ${currentPost.created_at || ""}`;
+        document.getElementById("detailContent").textContent = currentPost.content;
+
+        const badge = document.getElementById("detailStatus");
+        badge.className = `badge ${statusClass[currentPost.status] || "waiting"}`;
+        badge.textContent = statusLabel[currentPost.status] || "답변대기";
+
+        const answerWrap = document.getElementById("detailAnswerWrap");
+        if (currentPost.answer) {
+          answerWrap.innerHTML = `
+            <div class="answer-box">
+              <strong>답변</strong>
+              <div class="meta">${escapeHtml(currentPost.answered_at || "")}</div>
+              <div class="content-box">${escapeHtml(currentPost.answer)}</div>
+            </div>
+          `;
+        } else {
+          answerWrap.innerHTML = `
+            <div class="answer-box">
+              <strong>아직 답변이 등록되지 않았습니다.</strong>
+            </div>
+          `;
+        }
+
+        openModal("detailModal");
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    function openWriteModal() {
+      openModal("writeModal");
+    }
+
+    function openAdminModalFromDetail() {
+      if (!currentPost) return;
+      document.getElementById("adminTargetTitle").textContent = currentPost.title;
+      document.getElementById("answerText").value = currentPost.answer || "";
+      document.getElementById("answerStatus").value = currentPost.status === "waiting" ? "answered" : currentPost.status;
+      openModal("adminModal");
+    }
+
+    async function deleteCurrentPost() {
+      if (!currentPost) return;
+      const ok = confirm("정말 이 문의를 삭제하시겠습니까?");
+      if (!ok) return;
+
+      try {
+        await apiFetch(`https://localflow.ddns.net/support/api/posts/${currentPost.id}`, { method: "DELETE" });
+        closeModal("detailModal");
+        showToast("삭제되었습니다.");
+        await loadPosts();
+      } catch (error) {
+        showToast(error.message);
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add("open");
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("open");
+    }
+
+    function saveApiBase() {
+      const value = document.getElementById("apiBaseInput").value.trim().replace(/\/$/, "");
+      API_BASE_URL = value || DEFAULT_API_BASE_URL;
+      localStorage.setItem("customerCenterApiBase", API_BASE_URL);
+      showToast("API 주소가 저장되었습니다.");
+      loadPosts();
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    document.querySelectorAll(".modal").forEach((modal) => {
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          modal.classList.remove("open");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
