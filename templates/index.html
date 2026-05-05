@@ -586,14 +586,17 @@
   </div>
 
   <script>
-    const templates = [
-      { id: "archive-grid", title: "Archive Grid", category: "Archive", price: "STATIC", visual: "gridish", purpose: "프로젝트 모음 / 링크 허브", best: "개인 프로젝트, 실험실, 데모 링크 모음", desc: "작은 정사각형 썸네일을 촘촘하게 배치하는 STANCE 아카이브형 템플릿. 프로젝트가 많을수록 밀도가 살아납니다.", tags: ["archive", "grid", "project", "link"] },
-      { id: "support-board", title: "Support Board", category: "Board", price: "API READY", visual: "blue", purpose: "문의 접수 / 상태 관리", best: "지원센터, 작업 요청, 고객 문의", desc: "문의글, 상태 필터, 상세 모달을 중심으로 구성한 보드형 템플릿. 추후 API 연결형으로 확장하기 좋습니다.", tags: ["support", "board", "qna", "status"] },
-      { id: "brand-landing", title: "Brand Landing", category: "Landing", price: "HERO", visual: "dark", purpose: "브랜드 소개 / 서비스 런칭", best: "신규 서비스, 브랜드 캠페인, MVP 소개", desc: "강한 히어로 타이포그래피와 CTA 중심의 랜딩 템플릿. 첫 화면에서 메시지를 크게 때리는 구조입니다.", tags: ["landing", "brand", "hero", "cta"] },
-      { id: "image-journal", title: "Image Journal", category: "Gallery", price: "FEED", visual: "pink", purpose: "이미지 피드 / 제품 저널", best: "뷰티, 제품 아카이브, 비주얼 로그", desc: "세로 타임라인과 이미지 카드를 결합한 저널형 템플릿. 검색 가능한 제품 피드로 쓰기 좋습니다.", tags: ["image", "feed", "beauty", "journal"] },
-      { id: "tool-directory", title: "Tool Directory", category: "Utility", price: "INDEX", visual: "warm", purpose: "도구 모음 / 내부 링크 센터", best: "사내 도구, 개인 유틸리티, 빠른 실행 페이지", desc: "자주 쓰는 도구와 페이지를 카드형으로 묶는 디렉터리 템플릿. 검색과 카테고리 분류가 핵심입니다.", tags: ["tool", "directory", "utility", "index"] },
-      { id: "portfolio-case", title: "Portfolio Case", category: "Portfolio", price: "CASE", visual: "", purpose: "작업 사례 / 케이스 스터디", best: "디자인 작업물, 개발 포트폴리오, 프로젝트 설명", desc: "문제, 접근, 결과를 한 장에 정리하는 케이스 스터디형 템플릿. 프로젝트 설득력이 필요할 때 적합합니다.", tags: ["portfolio", "case", "work", "study"] }
-    ];
+    let templates = [];
+
+	async function loadTemplates() {
+	  const res = await fetch("https://mrdindoin.ddns.net/jsonhub/api/json/localflow/templates/templates.json");
+	  const data = await res.json();
+
+	  templates = data.templates;
+
+	  renderFilters();
+	  renderCards();
+	}
 
     const state = { query: "", category: "All" };
     const grid = document.getElementById("templateGrid");
@@ -675,8 +678,7 @@
       if (e.key === "Escape") closeModal();
     });
 
-    renderFilters();
-    renderCards();
+    loadTemplates();
   </script>
 </body>
 </html>
