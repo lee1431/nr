@@ -1,348 +1,539 @@
+const WORLD_WIDTH = 2400;
+const WORLD_HEIGHT = 1400;
+
+let game;
+let player = null;
+let targetMarker = null;
+let targetPos = null;
+let monsters = [];
+
 const config = {
   type: Phaser.AUTO,
-  width: 1280,
-  height: 720,
   parent: "game-container",
+  width: window.innerWidth,
+  height: window.innerHeight,
   backgroundColor: "#1b1b1b",
   scene: {
-    preload,
-    create,
-    update,
-  },
+    preload: preload,
+    create: create,
+    update: update
+  }
 };
 
-const game = new Phaser.Game(config);
-
-let player;
-let cursors;
-let monsters;
-let playerName;
-let hpText;
-let coordText;
-let effectCircle;
-let uiLayer;
+game = new Phaser.Game(config);
 
 function preload() {
-  // 이번 예제는 외부 이미지 없이 Graphics로만 구현
+  // 지금 버전은 외부 이미지 리소스 없이 도형으로만 구현합니다.
 }
 
 function create() {
   const scene = this;
 
-  // 월드 크기
-  this.worldWidth = 2200;
-  this.worldHeight = 1400;
+  monsters = [];
 
-  // 배경 생성
-  drawFieldBackground(this);
+  drawWorld(scene);
+  createPlayer(scene, 1200, 700);
+  createMonsters(scene);
 
-  // 오브젝트들
-  drawTrees(this);
-  drawRocks(this);
+  targetMarker = scene.add
+    .circle(0, 0, 10, 0xffef75, 0.6)
+    .setVisible(false)
+    .setDepth(50);
 
-  // 플레이어
-  player = this.add.container(500, 400);
+  scene.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+  scene.cameras.main.startFollow(player.container, true, 0.08, 0.08);
+  scene.cameras.main.setZoom(1);
 
-  const playerShadow = this.add.ellipse(0, 18, 28, 14, 0x000000, 0.35);
-  const playerBody = this.add.rectangle(0, 0, 26, 36, 0x4ea5ff);
-  const playerCape = this.add.rectangle(0, 10, 22, 10, 0x224488);
-  const playerHead = this.add.circle(0, -26, 10, 0xffd4a3);
+  scene.input.on("pointerdown", function (pointer) {
+    const worldPoint = pointer.positionToCamera(scene.cameras.main);
 
-  player.add([playerShadow, playerBody, playerCape, playerHead]);
+    targetPos = {
+      x: worldPoint.x,
+      y: worldPoint.y
+    };
 
-  playerName = this.add.text(0, -55, "Lv.1 Adventurer", {
-    fontSize: "14px",
-    color: "#ffffff",
-    stroke: "#000000",
-    strokeThickness: 4,
-  }).setOrigin(0.5);
+    targetMarker.setPosition(targetPos.x, targetPos.y);
+    targetMarker.setScale(0.3);
+    targetMarker.setAlpha(0.8);
+    targetMarker.setVisible(true);
 
-  player.add(playerName);
-
-  // 플레이어 hitbox용 zone
-  const playerZone = this.add.zone(0, 0, 26, 36);
-  this.physics.add.existing(playerZone);
-  player.add(playerZone);
-
-  // 몬스터 그룹
-  monsters = this.add.group();
-
-  createMonster(this, 780, 500, "Forest Wolf", 0x8b5a2b);
-  createMonster(this, 920, 650, "Goblin", 0x5aa35a);
-  createMonster(this, 640, 760, "Red Slime", 0xcc4444);
-  createMonster(this, 1100, 460, "Skeleton", 0xd9d9d9);
-
-  // 카메라
-  this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
-  this.cameras.main.startFollow(player, true, 0.08, 0.08);
-  this.cameras.main.setZoom(1);
-
-  // 입력
-  cursors = this.input.keyboard.createCursorKeys();
-
-  // 마우스 클릭 이펙트
-  effectCircle = this.add.circle(0, 0, 12, 0xffff66, 0.5).setVisible(false);
-
-  this.input.on("pointerdown", (pointer) => {
-    const worldPoint = pointer.positionToCamera(this.cameras.main);
-
-    effectCircle.setPosition(worldPoint.x, worldPoint.y);
-    effectCircle.setScale(0.4);
-    effectCircle.setAlpha(0.8);
-    effectCircle.setVisible(true);
-
-    this.tweens.add({
-      targets: effectCircle,
-      scale: 2.2,
+    scene.tweens.add({
+      targets: targetMarker,
+      scale: 2.4,
       alpha: 0,
-      duration: 250,
-      onComplete: () => {
-        effectCircle.setVisible(false);
-      },
+      duration: 260,
+      onComplete: function () {
+        targetMarker.setVisible(false);
+      }
     });
   });
 
-  // UI 레이어
-  uiLayer = this.add.container(0, 0).setScrollFactor(0);
-
-  drawUI(this);
-
-  // 좌표 표시
-  coordText = this.add.text(20, 20, "", {
-    fontSize: "16px",
-    color: "#ffffff",
-    stroke: "#000000",
-    strokeThickness: 3,
-  }).setScrollFactor(0);
-
-  // 상태 텍스트
-  hpText = this.add.text(30, 610, "HP 100 / 100", {
-    fontSize: "18px",
-    color: "#ffffff",
-    stroke: "#000000",
-    strokeThickness: 3,
-  }).setScrollFactor(0);
-
-  uiLayer.add([coordText, hpText]);
-}
-
-function update() {
-  const speed = 3.2;
-  let vx = 0;
-  let vy = 0;
-
-  if (cursors.left.isDown) vx = -speed;
-  else if (cursors.right.isDown) vx = speed;
-
-  if (cursors.up.isDown) vy = -speed;
-  else if (cursors.down.isDown) vy = speed;
-
-  player.x += vx;
-  player.y += vy;
-
-  // 월드 경계
-  player.x = Phaser.Math.Clamp(player.x, 20, this.worldWidth - 20);
-  player.y = Phaser.Math.Clamp(player.y, 20, this.worldHeight - 20);
-
-  // 간단한 걷기 연출
-  const moving = vx !== 0 || vy !== 0;
-  player.list[1].y = moving ? Math.sin(this.time.now * 0.015) * 2 : 0; // body
-  player.list[2].y = 10 + (moving ? Math.cos(this.time.now * 0.015) * 2 : 0); // cape
-
-  coordText.setText(`X: ${Math.floor(player.x)}  Y: ${Math.floor(player.y)}`);
-
-  // 몬스터 살짝 둥둥
-  monsters.getChildren().forEach((m) => {
-    m.yBase ??= m.y;
-    m.y = m.yBase + Math.sin((this.time.now * 0.002) + m.floatOffset) * 3;
-
-    const dist = Phaser.Math.Distance.Between(player.x, player.y, m.x, m.y);
-
-    if (dist < 80) {
-      m.nameText.setColor("#ffcc66");
-      m.hpBarFill.width = 36;
-    } else {
-      m.nameText.setColor("#ffffff");
-      m.hpBarFill.width = 52;
+  window.addEventListener("resize", function () {
+    if (game && game.scale) {
+      game.scale.resize(window.innerWidth, window.innerHeight);
     }
   });
 }
 
-function drawFieldBackground(scene) {
+function update(time, delta) {
+  updatePlayer(delta);
+  updateMonsters(time);
+  updateMinimap();
+  updateUI();
+}
+
+/* =========================
+   WORLD
+========================= */
+
+function drawWorld(scene) {
   const g = scene.add.graphics();
 
-  // 기본 바닥
-  g.fillStyle(0x3f6b2f, 1);
-  g.fillRect(0, 0, scene.worldWidth, scene.worldHeight);
+  g.fillStyle(0x4b7a37, 1);
+  g.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-  // 타일 느낌 격자
-  for (let x = 0; x < scene.worldWidth; x += 64) {
-    for (let y = 0; y < scene.worldHeight; y += 64) {
-      const c = Phaser.Math.Between(0, 100) > 50 ? 0x4b7a37 : 0x446f33;
-      g.fillStyle(c, 0.35);
+  // 잔디 타일 느낌
+  for (let x = 0; x < WORLD_WIDTH; x += 64) {
+    for (let y = 0; y < WORLD_HEIGHT; y += 64) {
+      const color = Phaser.Math.Between(0, 100) > 50 ? 0x578a41 : 0x436f32;
+      g.fillStyle(color, 0.35);
       g.fillRect(x, y, 62, 62);
     }
   }
 
-  // 흙길
-  g.fillStyle(0x8a6a42, 1);
-  g.fillRoundedRect(180, 250, 1600, 120, 20);
-  g.fillRoundedRect(900, 120, 120, 900, 20);
+  // 가로 흙길
+  g.fillStyle(0x9b7b4a, 1);
+  g.fillRoundedRect(250, 520, 1850, 160, 40);
 
-  // 길 텍스처 느낌
-  for (let i = 0; i < 200; i++) {
-    const rx = Phaser.Math.Between(180, 1780);
-    const ry = Phaser.Math.Between(250, 370);
-    g.fillStyle(0x6f5334, 0.35);
-    g.fillCircle(rx, ry, Phaser.Math.Between(2, 5));
+  // 세로 흙길
+  g.fillRoundedRect(1120, 140, 170, 1100, 50);
+
+  // 길 디테일
+  for (let i = 0; i < 700; i++) {
+    const rx = Phaser.Math.Between(250, 2100);
+    const ry = Phaser.Math.Between(520, 680);
+    g.fillStyle(0x755532, 0.28);
+    g.fillCircle(rx, ry, Phaser.Math.Between(1, 4));
   }
 
-  for (let i = 0; i < 120; i++) {
-    const rx = Phaser.Math.Between(900, 1020);
-    const ry = Phaser.Math.Between(120, 1020);
-    g.fillStyle(0x6f5334, 0.35);
-    g.fillCircle(rx, ry, Phaser.Math.Between(2, 5));
+  for (let i = 0; i < 380; i++) {
+    const rx = Phaser.Math.Between(1120, 1290);
+    const ry = Phaser.Math.Between(140, 1240);
+    g.fillStyle(0x755532, 0.28);
+    g.fillCircle(rx, ry, Phaser.Math.Between(1, 4));
   }
+
+  drawTrees(scene);
+  drawRocks(scene);
+  drawFence(scene);
+  drawFlowers(scene);
 }
 
 function drawTrees(scene) {
   const positions = [
-    [240, 180], [320, 160], [1460, 180], [1560, 220],
-    [1800, 360], [260, 1040], [420, 1120], [1700, 980],
-    [1880, 1080], [1200, 1180], [1400, 1260]
+    [170, 330],
+    [300, 240],
+    [460, 200],
+    [2080, 310],
+    [2220, 950],
+    [2040, 1160],
+    [340, 1100],
+    [520, 1220],
+    [1800, 180],
+    [1940, 1080]
   ];
 
-  positions.forEach(([x, y]) => {
-    const shadow = scene.add.ellipse(x, y + 28, 42, 18, 0x000000, 0.25);
-    const trunk = scene.add.rectangle(x, y + 10, 14, 36, 0x6b4423);
-    const leaves1 = scene.add.circle(x, y - 20, 28, 0x2f7d32);
-    const leaves2 = scene.add.circle(x - 18, y - 5, 22, 0x3d9140);
-    const leaves3 = scene.add.circle(x + 18, y - 5, 22, 0x2b6e2e);
-    scene.add.container(0, 0, [shadow, trunk, leaves1, leaves2, leaves3]);
+  positions.forEach(function (pos, index) {
+    const x = pos[0];
+    const y = pos[1];
+
+    const container = scene.add.container(x, y);
+
+    const shadow = scene.add.ellipse(0, 28, 70, 22, 0x000000, 0.2);
+    const trunk = scene.add.rectangle(0, 12, 18, 58, 0x70451f);
+    const crown1 = scene.add.circle(
+      0,
+      -30,
+      46,
+      index % 2 === 0 ? 0x376d2f : 0x2f6228
+    );
+    const crown2 = scene.add.circle(-26, -8, 30, 0x47843c);
+    const crown3 = scene.add.circle(28, -6, 32, 0x3a7331);
+
+    container.add([shadow, trunk, crown1, crown2, crown3]);
   });
 }
 
 function drawRocks(scene) {
   const rocks = [
-    [600, 240], [1180, 300], [820, 980], [1530, 870], [300, 700]
+    [930, 1140],
+    [1060, 1170],
+    [990, 1240],
+    [1580, 390],
+    [1660, 350],
+    [1730, 300],
+    [1800, 1020],
+    [1450, 1000],
+    [120, 820]
   ];
 
-  rocks.forEach(([x, y]) => {
-    const shadow = scene.add.ellipse(x, y + 10, 28, 10, 0x000000, 0.2);
-    const rock = scene.add.ellipse(x, y, 30, 20, 0x888888, 1);
-    const shine = scene.add.ellipse(x - 6, y - 4, 10, 6, 0xaaaaaa, 0.8);
-    scene.add.container(0, 0, [shadow, rock, shine]);
+  rocks.forEach(function (pos) {
+    const x = pos[0];
+    const y = pos[1];
+
+    const container = scene.add.container(x, y);
+
+    const shadow = scene.add.ellipse(0, 12, 46, 16, 0x000000, 0.22);
+    const body = scene.add.ellipse(0, 0, 44, 34, 0x8b8b8b);
+    const highlight = scene.add.ellipse(-10, -8, 14, 8, 0xb6b6b6, 0.8);
+
+    container.add([shadow, body, highlight]);
   });
 }
 
-function createMonster(scene, x, y, name, color) {
-  const c = scene.add.container(x, y);
+function drawFence(scene) {
+  const g = scene.add.graphics();
 
-  const shadow = scene.add.ellipse(0, 16, 26, 12, 0x000000, 0.3);
-  const body = scene.add.ellipse(0, 0, 28, 24, color, 1);
-  const eye1 = scene.add.circle(-6, -2, 2, 0x111111);
-  const eye2 = scene.add.circle(6, -2, 2, 0x111111);
+  g.lineStyle(6, 0x73512b, 1);
 
-  const hpBarBg = scene.add.rectangle(0, -28, 54, 6, 0x222222).setOrigin(0.5);
-  const hpBarFill = scene.add.rectangle(-26, -28, 52, 4, 0xcc3333).setOrigin(0, 0.5);
+  const posts = [
+    [90, 930],
+    [130, 880],
+    [180, 910],
+    [240, 860],
+    [290, 900],
+    [350, 850]
+  ];
 
-  const nameText = scene.add.text(0, -48, name, {
-    fontSize: "12px",
-    color: "#ffffff",
-    stroke: "#000000",
-    strokeThickness: 3,
-  }).setOrigin(0.5);
+  posts.forEach(function (pos) {
+    const x = pos[0];
+    const y = pos[1];
+    g.strokeLineShape(new Phaser.Geom.Line(x, y, x, y + 70));
+  });
 
-  c.add([shadow, body, eye1, eye2, hpBarBg, hpBarFill, nameText]);
+  g.strokeLineShape(new Phaser.Geom.Line(90, 950, 180, 900));
+  g.strokeLineShape(new Phaser.Geom.Line(180, 920, 290, 880));
+  g.strokeLineShape(new Phaser.Geom.Line(130, 895, 240, 845));
+  g.strokeLineShape(new Phaser.Geom.Line(240, 870, 350, 830));
 
-  c.floatOffset = Math.random() * Math.PI * 2;
-  c.nameText = nameText;
-  c.hpBarFill = hpBarFill;
+  // 표지판
+  g.strokeLineShape(new Phaser.Geom.Line(390, 830, 390, 910));
 
-  monsters.add(c);
+  g.lineStyle(10, 0x8a6236, 1);
+  g.strokeLineShape(new Phaser.Geom.Line(390, 840, 460, 820));
+  g.strokeLineShape(new Phaser.Geom.Line(390, 870, 445, 860));
 }
 
-function drawUI(scene) {
-  const g = scene.add.graphics().setScrollFactor(0);
+function drawFlowers(scene) {
+  const g = scene.add.graphics();
 
-  // 하단 메인 UI
-  g.fillStyle(0x1a1a1a, 0.92);
-  g.fillRoundedRect(180, 560, 920, 140, 18);
+  const colors = [0xffffff, 0xffe24f, 0xd48cff];
 
-  g.lineStyle(3, 0x8b7b5a, 1);
-  g.strokeRoundedRect(180, 560, 920, 140, 18);
+  for (let i = 0; i < 160; i++) {
+    const x = Phaser.Math.Between(60, WORLD_WIDTH - 60);
+    const y = Phaser.Math.Between(60, WORLD_HEIGHT - 60);
+    const color = colors[Phaser.Math.Between(0, colors.length - 1)];
 
-  // 좌측 상태창
-  g.fillStyle(0x262626, 1);
-  g.fillRoundedRect(20, 560, 140, 140, 14);
-  g.strokeRoundedRect(20, 560, 140, 140, 14);
-
-  // 우측 미니맵 느낌
-  g.fillStyle(0x262626, 1);
-  g.fillRoundedRect(1120, 20, 140, 140, 14);
-  g.strokeRoundedRect(1120, 20, 140, 140, 14);
-
-  // HP/MP 바
-  g.fillStyle(0x3a3a3a, 1);
-  g.fillRoundedRect(30, 580, 120, 18, 8);
-  g.fillRoundedRect(30, 605, 120, 18, 8);
-
-  g.fillStyle(0xcc3333, 1);
-  g.fillRoundedRect(30, 580, 108, 18, 8);
-
-  g.fillStyle(0x3377cc, 1);
-  g.fillRoundedRect(30, 605, 85, 18, 8);
-
-  // 스킬 슬롯
-  const startX = 360;
-  const y = 610;
-  const size = 54;
-  const gap = 10;
-
-  for (let i = 0; i < 8; i++) {
-    const x = startX + i * (size + gap);
-
-    g.fillStyle(0x2c2c2c, 1);
-    g.fillRoundedRect(x, y, size, size, 10);
-    g.lineStyle(2, 0xa38f68, 1);
-    g.strokeRoundedRect(x, y, size, size, 10);
+    g.fillStyle(color, 0.85);
+    g.fillCircle(x, y, 2);
+    g.fillCircle(x + 3, y + 2, 2);
+    g.fillCircle(x - 2, y + 2, 2);
   }
+}
 
-  // 스킬 텍스트
-  for (let i = 0; i < 8; i++) {
-    const label = scene.add.text(387 + i * 64, 639, String(i + 1), {
+/* =========================
+   PLAYER
+========================= */
+
+function createPlayer(scene, x, y) {
+  const container = scene.add.container(x, y).setDepth(20);
+
+  const shadow = scene.add.ellipse(0, 30, 36, 16, 0x000000, 0.28);
+
+  const sword = scene.add.rectangle(-18, 14, 4, 34, 0xd0d7df);
+  sword.setRotation(0.9);
+
+  const legs = scene.add.rectangle(0, 18, 16, 26, 0x3b2b1d);
+  const body = scene.add.rectangle(0, -2, 26, 34, 0x6b4b2c);
+  const armor = scene.add.rectangle(0, -4, 18, 20, 0x8e7750);
+  const head = scene.add.circle(0, -28, 11, 0xf0c39a);
+  const hair = scene.add.ellipse(0, -33, 21, 10, 0x4d2c16);
+
+  const name = scene.add
+    .text(0, -58, "Lv. 1 Adventurer", {
       fontSize: "18px",
-      color: "#d8c9a5",
+      color: "#ffffff",
       stroke: "#000000",
-      strokeThickness: 3,
-    }).setOrigin(0.5).setScrollFactor(0);
+      strokeThickness: 4
+    })
+    .setOrigin(0.5);
 
-    uiLayer?.add(label);
+  const hpBg = scene.add.rectangle(0, -36, 92, 10, 0x222222).setOrigin(0.5);
+  const hpFill = scene.add
+    .rectangle(-46, -36, 90, 8, 0x32cc4b)
+    .setOrigin(0, 0.5);
+
+  container.add([
+    shadow,
+    sword,
+    legs,
+    body,
+    armor,
+    head,
+    hair,
+    name,
+    hpBg,
+    hpFill
+  ]);
+
+  player = {
+    container: container,
+    legs: legs,
+    sword: sword,
+    hpFill: hpFill,
+    speed: 220
+  };
+}
+
+function updatePlayer(delta) {
+  if (!player || !targetPos) {
+    return;
   }
 
-  // 상태 텍스트들
-  const title = scene.add.text(32, 645, "Adventurer", {
-    fontSize: "18px",
-    color: "#f2e6c9",
-    stroke: "#000000",
-    strokeThickness: 3,
-  }).setScrollFactor(0);
+  const dt = delta / 1000;
+  const dx = targetPos.x - player.container.x;
+  const dy = targetPos.y - player.container.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
 
-  const mpLabel = scene.add.text(30, 628, "MP 70 / 100", {
-    fontSize: "16px",
-    color: "#ffffff",
-    stroke: "#000000",
-    strokeThickness: 3,
-  }).setScrollFactor(0);
+  if (dist < 4) {
+    targetPos = null;
+    player.legs.y = 18;
+    player.sword.rotation = 0.9;
+    return;
+  }
 
-  const miniMapText = scene.add.text(1190, 85, "MINIMAP", {
-    fontSize: "16px",
-    color: "#d8c9a5",
-    stroke: "#000000",
-    strokeThickness: 3,
-  }).setOrigin(0.5).setScrollFactor(0);
+  const vx = (dx / dist) * player.speed;
+  const vy = (dy / dist) * player.speed;
 
-  if (uiLayer) {
-    uiLayer.add([g, title, mpLabel, miniMapText]);
+  player.container.x += vx * dt;
+  player.container.y += vy * dt;
+
+  player.container.x = Phaser.Math.Clamp(player.container.x, 20, WORLD_WIDTH - 20);
+  player.container.y = Phaser.Math.Clamp(player.container.y, 20, WORLD_HEIGHT - 20);
+
+  const bob = Math.sin(performance.now() * 0.02) * 2;
+  player.legs.y = 18 + bob;
+  player.sword.rotation = 0.9 + Math.sin(performance.now() * 0.02) * 0.1;
+}
+
+/* =========================
+   MONSTERS
+========================= */
+
+function createMonsters(scene) {
+  monsters.push(makeSlime(scene, 760, 520));
+  monsters.push(makeWolf(scene, 1580, 420));
+  monsters.push(makeSpore(scene, 1720, 830));
+}
+
+function makeSlime(scene, x, y) {
+  const container = scene.add.container(x, y).setDepth(15);
+
+  const shadow = scene.add.ellipse(0, 20, 46, 16, 0x000000, 0.25);
+  const body = scene.add.ellipse(0, 0, 54, 42, 0x6ed74f);
+  const shine = scene.add.circle(-10, -10, 7, 0xb8ffad, 0.7);
+  const eye1 = scene.add.circle(-10, 0, 3, 0x222222);
+  const eye2 = scene.add.circle(10, 0, 3, 0x222222);
+
+  // Phaser arc 대신 작은 입 모양 도형으로 처리
+  const mouth = scene.add.rectangle(0, 10, 18, 3, 0x2b6b24);
+  mouth.setScale(1, 0.7);
+
+  const name = scene.add
+    .text(0, -52, "Lv. 1 Green Slime", {
+      fontSize: "18px",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 4
+    })
+    .setOrigin(0.5);
+
+  const hpBg = scene.add.rectangle(0, -30, 104, 10, 0x222222).setOrigin(0.5);
+  const hpFill = scene.add
+    .rectangle(-52, -30, 102, 8, 0xcc2d2d)
+    .setOrigin(0, 0.5);
+
+  container.add([
+    shadow,
+    body,
+    shine,
+    eye1,
+    eye2,
+    mouth,
+    name,
+    hpBg,
+    hpFill
+  ]);
+
+  return {
+    container: container,
+    type: "slime",
+    baseY: y,
+    floatOffset: Math.random() * Math.PI * 2
+  };
+}
+
+function makeWolf(scene, x, y) {
+  const container = scene.add.container(x, y).setDepth(15);
+
+  const shadow = scene.add.ellipse(0, 24, 62, 16, 0x000000, 0.25);
+  const body = scene.add.ellipse(0, 0, 76, 34, 0x696969);
+  const head = scene.add.ellipse(34, -8, 24, 18, 0x636363);
+
+  const ear1 = scene.add.triangle(42, -22, 0, 0, 8, -14, 16, 0, 0x565656);
+  const ear2 = scene.add.triangle(28, -20, 0, 0, 8, -14, 16, 0, 0x565656);
+
+  const leg1 = scene.add.rectangle(-18, 18, 7, 22, 0x4a4a4a);
+  const leg2 = scene.add.rectangle(4, 18, 7, 22, 0x4a4a4a);
+
+  const tail = scene.add.rectangle(-38, -10, 6, 24, 0x5a5a5a);
+  tail.setRotation(-0.9);
+
+  const eye = scene.add.circle(40, -10, 2, 0xffe1a1);
+
+  const name = scene.add
+    .text(0, -58, "Lv. 2 Gray Wolf", {
+      fontSize: "18px",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 4
+    })
+    .setOrigin(0.5);
+
+  const hpBg = scene.add.rectangle(0, -36, 104, 10, 0x222222).setOrigin(0.5);
+  const hpFill = scene.add
+    .rectangle(-52, -36, 102, 8, 0xcc2d2d)
+    .setOrigin(0, 0.5);
+
+  container.add([
+    shadow,
+    tail,
+    leg1,
+    leg2,
+    body,
+    head,
+    ear1,
+    ear2,
+    eye,
+    name,
+    hpBg,
+    hpFill
+  ]);
+
+  return {
+    container: container,
+    type: "wolf",
+    baseY: y,
+    floatOffset: Math.random() * Math.PI * 2
+  };
+}
+
+function makeSpore(scene, x, y) {
+  const container = scene.add.container(x, y).setDepth(15);
+
+  const shadow = scene.add.ellipse(0, 22, 44, 16, 0x000000, 0.25);
+  const cap = scene.add.ellipse(0, -6, 64, 34, 0xb56a28);
+
+  const capDot1 = scene.add.circle(-14, -10, 4, 0xf5d1a1);
+  const capDot2 = scene.add.circle(10, -4, 4, 0xf5d1a1);
+  const capDot3 = scene.add.circle(20, -14, 3, 0xf5d1a1);
+
+  const body = scene.add.ellipse(0, 18, 34, 28, 0xd9c08c);
+  const eye1 = scene.add.circle(-6, 16, 2, 0x222222);
+  const eye2 = scene.add.circle(6, 16, 2, 0x222222);
+
+  const leg1 = scene.add.rectangle(-10, 32, 4, 12, 0xc7a773);
+  const leg2 = scene.add.rectangle(10, 32, 4, 12, 0xc7a773);
+
+  const name = scene.add
+    .text(0, -54, "Lv. 1 Sporeling", {
+      fontSize: "18px",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 4
+    })
+    .setOrigin(0.5);
+
+  const hpBg = scene.add.rectangle(0, -32, 104, 10, 0x222222).setOrigin(0.5);
+  const hpFill = scene.add
+    .rectangle(-52, -32, 102, 8, 0xcc2d2d)
+    .setOrigin(0, 0.5);
+
+  container.add([
+    shadow,
+    cap,
+    capDot1,
+    capDot2,
+    capDot3,
+    body,
+    eye1,
+    eye2,
+    leg1,
+    leg2,
+    name,
+    hpBg,
+    hpFill
+  ]);
+
+  return {
+    container: container,
+    type: "spore",
+    baseY: y,
+    floatOffset: Math.random() * Math.PI * 2
+  };
+}
+
+function updateMonsters(time) {
+  monsters.forEach(function (monster) {
+    monster.container.y =
+      monster.baseY + Math.sin(time * 0.002 + monster.floatOffset) * 2.5;
+  });
+}
+
+/* =========================
+   HTML UI SYNC
+========================= */
+
+function updateMinimap() {
+  if (!player) {
+    return;
+  }
+
+  const miniPlayer = document.getElementById("mini-player");
+
+  if (!miniPlayer) {
+    return;
+  }
+
+  const px = (player.container.x / WORLD_WIDTH) * 100;
+  const py = (player.container.y / WORLD_HEIGHT) * 100;
+
+  miniPlayer.style.left = px + "%";
+  miniPlayer.style.top = py + "%";
+}
+
+function updateUI() {
+  if (!player) {
+    return;
+  }
+
+  const coordLine = document.getElementById("coord-line");
+
+  if (coordLine) {
+    coordLine.textContent =
+      "X: " +
+      Math.floor(player.container.x) +
+      " / Y: " +
+      Math.floor(player.container.y);
   }
 }
