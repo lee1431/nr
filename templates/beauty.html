@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>KR Beauty - Premium Archive</title>
+    <style>
+      :root {
+        --ink: #171a19;
+        --muted: #69716e;
+        --paper: #fff8f0;
+        --paper-soft: #fffdf9;
+        --line: rgba(23, 26, 25, 0.08);
+        --rose: #c96570;
+        --rose-soft: rgba(201, 101, 112, 0.12);
+        --green: #1f4a3f;
+        --shadow: 0 20px 50px rgba(23, 26, 25, 0.08);
+        --radius-lg: clamp(20px, 3vw, 32px);
+        --radius-md: 20px;
+        --radius-pill: 999px;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-right: env(safe-area-inset-right, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --safe-left: env(safe-area-inset-left, 0px);
+        --header-h: 73px;
+      }
+
+      * { box-sizing: border-box; }
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: var(--paper-soft); }
+      ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: linear-gradient(180deg, var(--paper-soft), #fff9f2 100%);
+        color: var(--ink);
+        font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+        overflow-x: hidden;
+        word-break: keep-all;
+      }
+
+      img, svg, video, canvas { max-width: 100%; height: auto; }
+      button, input { font: inherit; }
+      button { -webkit-tap-highlight-color: transparent; }
+
+      .container {
+        width: min(1120px, 100%);
+        margin: 0 auto;
+        padding-left: max(24px, var(--safe-left));
+        padding-right: max(24px, var(--safe-right));
+      }
+
+      .header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 253, 249, 0.88);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        padding-top: var(--safe-top);
+      }
+
+      .nav-content {
+        min-height: var(--header-h);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        font-weight: 900;
+        font-size: clamp(18px, 2.4vw, 22px);
+        text-decoration: none;
+        color: inherit;
+        letter-spacing: -0.05em;
+        white-space: nowrap;
+      }
+
+      .brand-dot {
+        flex: 0 0 auto;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--rose);
+        box-shadow: 0 0 0 6px var(--rose-soft);
+      }
+
+      .archive-label {
+        flex: 0 0 auto;
+        font-size: clamp(12px, 1.5vw, 14px);
+        font-weight: 700;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .hero {
+        padding: clamp(48px, 9vw, 96px) 0 clamp(28px, 5vw, 48px);
+        text-align: center;
+      }
+
+      .hero h1 {
+        max-width: 920px;
+        margin: 0 auto;
+        font-size: clamp(38px, 8.5vw, 96px);
+        line-height: 0.92;
+        letter-spacing: -0.065em;
+        text-wrap: balance;
+      }
+
+      .hero p {
+        margin: clamp(18px, 3vw, 28px) auto 0;
+        color: var(--muted);
+        font-size: clamp(15px, 2vw, 20px);
+        font-weight: 500;
+      }
+
+      .toolbar {
+        position: sticky;
+        top: calc(var(--header-h) + var(--safe-top) + 12px);
+        z-index: 90;
+        margin: clamp(24px, 5vw, 40px) 0;
+        padding: clamp(14px, 2.4vw, 20px);
+        border: 1px solid var(--line);
+        border-radius: clamp(22px, 4vw, 32px);
+        background: rgba(255, 253, 249, 0.92);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: var(--shadow);
+      }
+
+      .search-bar {
+        width: 100%;
+        min-height: 52px;
+        padding: 15px 20px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-size: max(16px, 1rem);
+        outline: none;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      .search-bar:focus {
+        border-color: var(--rose);
+        box-shadow: 0 0 0 5px var(--rose-soft);
+      }
+
+      .categories {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        padding: 14px 0 4px;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
+      }
+
+      .categories::-webkit-scrollbar { display: none; }
+
+      .cat-btn {
+        flex: 0 0 auto;
+        min-height: 44px;
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        background: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+        scroll-snap-align: start;
+      }
+
+      .cat-btn:hover { transform: translateY(-1px); }
+      .cat-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+      .feed {
+        position: relative;
+        padding: clamp(40px, 7vw, 72px) 0;
+      }
+
+      .feed::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: var(--line);
+        z-index: 0;
+      }
+
+      .feed-item {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: clamp(36px, 8vw, 88px);
+        margin-bottom: clamp(72px, 10vw, 128px);
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+      }
+
+      .feed-item.visible { opacity: 1; transform: translateY(0); }
+      .feed-item:nth-child(even) { flex-direction: row-reverse; }
+
+      .feed-image-box {
+        width: min(46%, 500px);
+        aspect-ratio: 1;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        transition: transform 0.35s cubic-bezier(0.2, 1, 0.3, 1);
+        background: #fff;
+      }
+
+      .feed-image-box:hover { transform: scale(1.02) translateY(-8px); }
+
+      .feed-image-box img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .timeline-dot {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 18px;
+        height: 18px;
+        background: #fff;
+        border: 4px solid var(--rose);
+        border-radius: 50%;
+        z-index: 10;
+      }
+
+      .feed-content {
+        width: min(44%, 470px);
+      }
+
+      .brand-name {
+        color: var(--rose);
+        font-weight: 800;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+
+      .feed-content h3 {
+        margin: 12px 0;
+        font-size: clamp(26px, 4vw, 42px);
+        letter-spacing: -0.045em;
+        line-height: 1.08;
+        text-wrap: balance;
+      }
+
+      .feed-content p {
+        margin: 0;
+        color: var(--muted);
+        font-size: clamp(15px, 1.7vw, 18px);
+      }
+
+      .empty-state {
+        padding: 48px 20px;
+        text-align: center;
+        color: var(--muted);
+        border: 1px dashed var(--line);
+        border-radius: var(--radius-lg);
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      .modal {
+        width: min(720px, calc(100% - 32px));
+        max-height: min(86vh, 860px);
+        border: none;
+        border-radius: clamp(22px, 4vw, 32px);
+        padding: 0;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+        overflow: auto;
+        background: #fff;
+      }
+
+      .modal::backdrop {
+        background: rgba(23, 26, 25, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+
+      .modal-close {
+        position: sticky;
+        top: 16px;
+        float: right;
+        margin: 16px 16px -56px 0;
+        z-index: 10;
+        width: 44px;
+        height: 44px;
+        border: none;
+        border-radius: 50%;
+        background: #fff;
+        cursor: pointer;
+        font-size: 24px;
+        line-height: 1;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      }
+
+      .modal-img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+      }
+
+      .modal-body { padding: clamp(24px, 5vw, 40px); }
+      .modal-body h2 {
+        margin: 15px 0;
+        font-size: clamp(30px, 6vw, 44px);
+        line-height: 1.1;
+        letter-spacing: -0.045em;
+      }
+
+      .modal-body p {
+        margin: 0;
+        font-size: clamp(16px, 2vw, 18px);
+        line-height: 1.8;
+      }
+
+      .modal-action {
+        min-height: 44px;
+        margin-top: 30px;
+        padding: 12px 30px;
+        border-radius: 15px;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      footer {
+        text-align: center;
+        padding: clamp(72px, 10vw, 120px) 24px calc(clamp(72px, 10vw, 120px) + var(--safe-bottom));
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      /* 태블릿: 가독성 강화 */
+      @media (max-width: 1024px) {
+        .container { width: min(920px, 100%); }
+        .feed-item { gap: 56px; }
+        .feed-image-box { width: 45%; }
+        .feed-content { width: 45%; }
+      }
+
+      /* 모바일/소형 태블릿: 타임라인 좌측, 카드 1열 */
+      @media (max-width: 768px) {
+        :root { --header-h: 64px; }
+        .container {
+          padding-left: max(18px, var(--safe-left));
+          padding-right: max(18px, var(--safe-right));
+        }
+        .nav-content { min-height: var(--header-h); }
+        .archive-label { font-size: 12px; }
+        .hero { text-align: left; }
+        .hero h1 { margin: 0; }
+        .hero p { margin-left: 0; }
+        .toolbar { top: calc(var(--header-h) + var(--safe-top) + 8px); }
+        .feed::before { left: 14px; }
+        .feed-item,
+        .feed-item:nth-child(even) {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 20px;
+          padding-left: 36px;
+          margin-bottom: 72px;
+        }
+        .timeline-dot {
+          left: 14px;
+          top: clamp(130px, 43vw, 220px);
+          width: 16px;
+          height: 16px;
+        }
+        .feed-image-box,
+        .feed-content {
+          width: 100%;
+          max-width: none;
+        }
+        .feed-image-box { aspect-ratio: 4 / 3; }
+        .feed-image-box:hover { transform: none; }
+      }
+
+      /* 스마트폰: 상단 고정 영역 과밀 방지 */
+      @media (max-width: 480px) {
+        .container {
+          padding-left: max(16px, var(--safe-left));
+          padding-right: max(16px, var(--safe-right));
+        }
+        .brand { gap: 10px; }
+        .brand-dot {
+          width: 12px;
+          height: 12px;
+          box-shadow: 0 0 0 5px var(--rose-soft);
+        }
+        .archive-label { display: none; }
+        .toolbar {
+          margin: 22px 0;
+          padding: 12px;
+          border-radius: 22px;
+        }
+        .search-bar {
+          min-height: 50px;
+          padding: 13px 16px;
+          border-radius: 16px;
+        }
+        .cat-btn {
+          min-height: 42px;
+          padding: 9px 16px;
+          font-size: 13px;
+        }
+        .feed { padding-top: 34px; }
+        .feed::before { left: 10px; }
+        .feed-item,
+        .feed-item:nth-child(even) {
+          padding-left: 28px;
+          margin-bottom: 60px;
+        }
+        .timeline-dot {
+          left: 10px;
+          top: clamp(112px, 45vw, 180px);
+        }
+        .feed-image-box { aspect-ratio: 1 / 1; }
+        .modal {
+          width: calc(100% - 20px);
+          max-height: 90dvh;
+          border-radius: 22px;
+        }
+        .modal-img { aspect-ratio: 4 / 3; }
+      }
+
+      /* 극소형 기기 */
+      @media (max-width: 360px) {
+        .hero h1 { font-size: 34px; }
+        .feed-item,
+        .feed-item:nth-child(even) { padding-left: 24px; }
+        .feed-content h3 { font-size: 24px; }
+      }
+
+      /* TV / 초대형 디스플레이 */
+      @media (min-width: 1440px) {
+        .container { width: min(1280px, 100%); }
+        .hero h1 { font-size: clamp(88px, 6vw, 128px); }
+        .feed-content p { font-size: 19px; }
+      }
+
+      @media (min-width: 1920px) {
+        .container { width: min(1480px, 100%); }
+        .feed-image-box { width: 520px; }
+        .feed-content { width: 560px; }
+      }
+
+      /* 터치 기기에서는 hover 의존 최소화 */
+      @media (hover: none) and (pointer: coarse) {
+        .cat-btn:hover,
+        .feed-image-box:hover { transform: none; }
+        .cat-btn,
+        .modal-action,
+        .modal-close { cursor: default; }
+      }
+
+      /* 접근성: 모션 감소 설정 존중 */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+        .feed-item { opacity: 1; transform: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <div class="container nav-content">
+        <a href="#" class="brand"><span class="brand-dot" aria-hidden="true"></span> K R. Beauty</a>
+        <div class="archive-label">ARCHIVE 26</div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h1>Curated Beauty Journal</h1>
+        <p>감각적인 브랜드와 텍스처의 기록</p>
+      </section>
+
+      <section class="toolbar" aria-label="검색 및 카테고리 필터">
+        <input type="search" id="searchInput" class="search-bar" placeholder="제품, 브랜드, 카테고리를 검색하세요..." autocomplete="off" />
+        <div class="categories" id="categoryTabs" role="tablist" aria-label="카테고리"></div>
+      </section>
+
+      <div class="feed" id="verticalFeed"></div>
+    </main>
+
+    <dialog id="itemModal" class="modal" aria-labelledby="modalTitle">
+      <button class="modal-close" type="button" aria-label="닫기">&times;</button>
+      <div id="modalContent"></div>
+    </dialog>
+
+    <footer>
+      &copy; 2026 K R Beauty. 한 땀 한 땀 장인 정신으로.
+    </footer>
+
+    <script>
+      const posts = [
+        { id: 1, title: "Morning Dew Serum", brand: "Seoul Bloom", category: "Skincare", desc: "새벽 이슬의 청초함을 담은 고농축 수분 에센스", fullDesc: "피부 깊숙이 수분을 전달하며 끈적임 없는 마무리를 선사합니다. 모든 피부 타입에 적합한 저자극 포뮬러입니다.", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=1200&auto=format&fit=crop" },
+        { id: 2, title: "Urban Barrier Cream", brand: "Hannam Lab", category: "Barrier", desc: "도시 환경으로부터 피부 장벽을 보호하는 쉴드 크림", fullDesc: "세라마이드 성분이 함유되어 무너진 피부 장벽을 탄탄하게 재건합니다. 미세먼지 차단 효과가 검증된 제품입니다.", image: "https://images.unsplash.com/photo-1611080626919-7cf5a9dc9fd9?q=80&w=1200&auto=format&fit=crop" },
+        { id: 3, title: "Sun Protection Cushion", brand: "Jeju Tone", category: "Suncare", desc: "자연스러운 톤업과 자외선 차단을 동시에", fullDesc: "제주 녹차 추출물이 함유되어 자극받은 피부를 진정시키며, 번들거림 없는 화사한 광채를 유지해줍니다.", image: "https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?q=80&w=1200&auto=format&fit=crop" },
+        { id: 4, title: "Calming Tea Tree Pad", brand: "Pure Leaf", category: "Routine", desc: "지친 피부를 진정시키는 티트리 추출물 패드", fullDesc: "데일리로 사용하기 좋은 저자극 패드입니다. 울긋불긋해진 피부를 빠르게 진정시키고 수분을 충전해줍니다.", image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?q=80&w=1200&auto=format&fit=crop" },
+        { id: 5, title: "Velvet Muted Lip Tint", brand: "Mood Archive", category: "Makeup", desc: "부드럽게 밀착되는 뮤트 컬러의 벨벳 립", fullDesc: "각질 부각 없이 매끈하게 발리는 고발색 틴트입니다. 오랫동안 지속되는 무드 있는 컬러감을 경험하세요.", image: "https://images.unsplash.com/photo-1596704017254-9b121068fb31?q=80&w=1200&auto=format&fit=crop" }
+      ];
+
+      let activeCategory = "All";
+      let searchQuery = "";
+      let observer;
+
+      const categoryTabs = document.getElementById("categoryTabs");
+      const verticalFeed = document.getElementById("verticalFeed");
+      const searchInput = document.getElementById("searchInput");
+      const modal = document.getElementById("itemModal");
+      const modalContent = document.getElementById("modalContent");
+      const modalClose = document.querySelector(".modal-close");
+
+      function escapeText(value) {
+        return String(value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function renderTabs() {
+        const categories = ["All", ...new Set(posts.map(post => post.category))];
+        categoryTabs.innerHTML = categories.map(cat => `
+          <button
+            class="cat-btn ${activeCategory === cat ? "active" : ""}"
+            type="button"
+            role="tab"
+            aria-selected="${activeCategory === cat}"
+            data-category="${escapeText(cat)}"
+          >${escapeText(cat)}</button>
+        `).join("");
+      }
+
+      function getFilteredPosts() {
+        const query = searchQuery.trim().toLowerCase();
+        return posts.filter(post => {
+          const matchesCat = activeCategory === "All" || post.category === activeCategory;
+          const target = `${post.title} ${post.brand} ${post.category} ${post.desc}`.toLowerCase();
+          const matchesSearch = !query || target.includes(query);
+          return matchesCat && matchesSearch;
+        });
+      }
+
+      function renderFeed() {
+        const filtered = getFilteredPosts();
+
+        if (!filtered.length) {
+          verticalFeed.innerHTML = `<div class="empty-state">검색 결과가 없습니다.</div>`;
+          return;
+        }
+
+        verticalFeed.innerHTML = filtered.map(post => `
+          <article class="feed-item">
+            <button class="feed-image-box" type="button" data-id="${post.id}" aria-label="${escapeText(post.title)} 상세 보기">
+              <img src="${post.image}" alt="${escapeText(post.title)}" loading="lazy" decoding="async" />
+            </button>
+            <div class="timeline-dot" aria-hidden="true"></div>
+            <div class="feed-content">
+              <span class="brand-name">${escapeText(post.brand)}</span>
+              <h3>${escapeText(post.title)}</h3>
+              <p>${escapeText(post.desc)}</p>
+            </div>
+          </article>
+        `).join("");
+
+        if (observer) observer.disconnect();
+
+        observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: "0px 0px -6% 0px" });
+
+        document.querySelectorAll(".feed-item").forEach(item => observer.observe(item));
+      }
+
+      function filterCategory(cat) {
+        activeCategory = cat;
+        renderTabs();
+        renderFeed();
+      }
+
+      function openModal(id) {
+        const post = posts.find(item => item.id === Number(id));
+        if (!post) return;
+
+        modalContent.innerHTML = `
+          <img src="${post.image}" class="modal-img" alt="${escapeText(post.title)}" />
+          <div class="modal-body">
+            <span class="brand-name">${escapeText(post.brand)} / ${escapeText(post.category)}</span>
+            <h2 id="modalTitle">${escapeText(post.title)}</h2>
+            <p>${escapeText(post.fullDesc)}</p>
+            <button class="modal-action" type="button">닫기</button>
+          </div>
+        `;
+
+        if (typeof modal.showModal === "function") modal.showModal();
+        else modal.setAttribute("open", "");
+      }
+
+      categoryTabs.addEventListener("click", (event) => {
+        const button = event.target.closest(".cat-btn");
+        if (!button) return;
+        filterCategory(button.dataset.category);
+      });
+
+      verticalFeed.addEventListener("click", (event) => {
+        const button = event.target.closest(".feed-image-box");
+        if (!button) return;
+        openModal(button.dataset.id);
+      });
+
+      searchInput.addEventListener("input", (event) => {
+        searchQuery = event.target.value;
+        renderFeed();
+      });
+
+      modalClose.addEventListener("click", () => modal.close());
+      modalContent.addEventListener("click", (event) => {
+        if (event.target.closest(".modal-action")) modal.close();
+      });
+
+      modal.addEventListener("click", (event) => {
+        const rect = modal.getBoundingClientRect();
+        const isBackdropClick = event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+        if (isBackdropClick) modal.close();
+      });
+
+      renderTabs();
+      renderFeed();
+    </script>
+  </body>
+</html>
