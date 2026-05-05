@@ -589,7 +589,7 @@
     let templates = [];
 
 	async function loadTemplates() {
-	  const res = await fetch("https://mrdindoin.ddns.net/jsonhub/api/json/localflow/templates/templates.json");
+	  const res = await fetch("https://mrdindoin.ddns.net/jsonhub/api/json/localflow/templates");
 	  const data = await res.json();
 
 	  templates = data.templates;
