@@ -586,99 +586,343 @@
   </div>
 
   <script>
-    let templates = [];
+	  let templates = [];
 
-	async function loadTemplates() {
-	  const res = await fetch("https://mrdindoin.ddns.net/jsonhub/api/json/localflow/templates");
-	  const data = await res.json();
+	  const TEMPLATE_JSON_URL = "https://mrdindoin.ddns.net/jsonhub/api/json/localflow/templates";
 
-	  templates = data.templates;
+	  const state = {
+		query: "",
+		category: "All"
+	  };
 
-	  renderFilters();
-	  renderCards();
-	}
+	  const grid = document.getElementById("templateGrid");
+	  const filters = document.getElementById("filters");
+	  const searchInput = document.getElementById("searchInput");
+	  const modal = document.getElementById("modal");
 
-    const state = { query: "", category: "All" };
-    const grid = document.getElementById("templateGrid");
-    const filters = document.getElementById("filters");
-    const searchInput = document.getElementById("searchInput");
+	  function normalize(val) {
+		return String(val || "").trim().toLowerCase();
+	  }
 
-    function normalize(val) { return String(val || "").trim().toLowerCase(); }
-    
-    function setCategory(cat) {
-      state.category = cat;
-      renderFilters();
-      renderCards();
-    }
+	  function escapeHtml(value) {
+		return String(value ?? "")
+		  .replace(/&/g, "&amp;")
+		  .replace(/</g, "&lt;")
+		  .replace(/>/g, "&gt;")
+		  .replace(/"/g, "&quot;")
+		  .replace(/'/g, "&#039;");
+	  }
 
-    function renderFilters() {
-      const cats = ["All", ...new Set(templates.map(t => t.category))];
-      filters.innerHTML = cats.map(cat => `
-        <button type="button" class="chip ${cat === state.category ? "active" : ""}" onclick="setCategory('${cat}')">${cat}</button>
-      `).join("");
-    }
+	  function getTemplateImage(t, type = "thumbnail") {
+		if (!t || !t.paths) return "";
 
-    function renderCards() {
-      const query = normalize(state.query);
-      const list = templates.filter(t => {
-        const text = normalize(`${t.title} ${t.category} ${t.purpose} ${t.desc} ${t.tags.join(" ")}`);
-        return (!query || text.includes(query)) && (state.category === "All" || t.category === state.category);
-      });
+		if (type === "desktop") {
+		  return t.paths.previewDesktop || t.paths.thumbnail || "";
+		}
 
-      document.getElementById("resultCount").textContent = list.length;
-      document.getElementById("totalTemplates").textContent = String(templates.length).padStart(2, "0");
+		if (type === "mobile") {
+		  return t.paths.previewMobile || t.paths.thumbnail || "";
+		}
 
-      if (!list.length) {
-        grid.innerHTML = `<div class="empty visible"><strong>검색 결과가 없습니다.</strong>다른 키워드나 카테고리를 선택해보세요.</div>`;
-        return;
-      }
+		return t.paths.thumbnail || t.paths.previewDesktop || "";
+	  }
 
-      // Add dynamic animation delay for the staggering effect
-      grid.innerHTML = list.map((t, index) => `
-        <article class="template-card" style="animation-delay: ${index * 0.05}s" onclick="openTemplate('${t.id}')">
-          <div class="shot ${t.visual}"></div>
-          <div class="card-body">
-            <div class="card-top">
-              <div><span class="tag">${t.category}</span><h3>${t.title}</h3></div>
-              <span class="price">${t.price}</span>
-            </div>
-            <p>${t.desc}</p>
-            <div class="card-actions">
-              <span class="price" style="color: var(--muted); font-size: 11px;">${t.purpose}</span>
-              <button class="small-btn" type="button">Preview</button>
-            </div>
-          </div>
-        </article>
-      `).join("");
-    }
+	  function getTemplatePage(t) {
+		return t?.paths?.page || t?.paths?.html || "#";
+	  }
 
-    function openTemplate(id) {
-      const t = templates.find(item => item.id === id);
-      if (!t) return;
-      document.getElementById("modalShot").className = `modal-shot shot ${t.visual}`;
-      document.getElementById("modalTag").textContent = t.category;
-      document.getElementById("modalTitle").textContent = t.title;
-      document.getElementById("modalDesc").textContent = t.desc;
-      document.getElementById("modalPurpose").textContent = t.purpose;
-      document.getElementById("modalBest").textContent = t.best;
-      document.getElementById("modal").classList.add("open");
-    }
+	  function injectPreviewImageCss() {
+		const styleId = "template-json-preview-style";
+		if (document.getElementById(styleId)) return;
 
-    function closeModal() { document.getElementById("modal").classList.remove("open"); }
+		const style = document.createElement("style");
+		style.id = styleId;
+		style.textContent = `
+		  .shot.image-shot::before,
+		  .shot.image-shot::after,
+		  .modal-shot.image-shot::before,
+		  .modal-shot.image-shot::after {
+			display: none !important;
+		  }
 
-    searchInput.addEventListener("input", e => {
-      state.query = e.target.value;
-      renderCards();
-    });
+		  .shot.image-shot,
+		  .modal-shot.image-shot {
+			background: #fff;
+		  }
 
-    document.getElementById("modal").addEventListener("click", e => {
-      if (e.target.id === "modal") closeModal();
-    });
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape") closeModal();
-    });
+		  .template-thumb,
+		  .modal-preview-img {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		  }
 
-    loadTemplates();
-  </script>
+		  .modal-preview-img {
+			min-height: 360px;
+		  }
+
+		  .modal-actions {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+			margin-top: 24px;
+			padding: 0 8px;
+		  }
+
+		  .modal-open-link {
+			min-height: 44px;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0 18px;
+			border-radius: 14px;
+			background: var(--accent);
+			color: var(--accent-2);
+			font-size: 13px;
+			font-weight: 900;
+		  }
+
+		  @media (max-width: 768px) {
+			.modal-preview-img {
+			  min-height: 240px;
+			}
+		  }
+		`;
+
+		document.head.appendChild(style);
+	  }
+
+	  async function loadTemplates() {
+		try {
+		  injectPreviewImageCss();
+
+		  const res = await fetch(TEMPLATE_JSON_URL, {
+			cache: "no-store"
+		  });
+
+		  if (!res.ok) {
+			throw new Error(`templates.json load failed: ${res.status}`);
+		  }
+
+		  const data = await res.json();
+
+		  templates = Array.isArray(data.templates) ? data.templates : [];
+
+		  // 운영에서는 published만 노출하고 싶으면 아래 주석 해제
+		  // templates = templates.filter(t => t.status === "published");
+
+		  renderFilters();
+		  renderCards();
+		} catch (error) {
+		  console.error(error);
+
+		  document.getElementById("resultCount").textContent = "0";
+		  document.getElementById("totalTemplates").textContent = "00";
+
+		  grid.innerHTML = `
+			<div class="empty visible">
+			  <strong>템플릿 데이터를 불러오지 못했습니다.</strong>
+			  JSON 경로 또는 CORS 설정을 확인해주세요.
+			</div>
+		  `;
+		}
+	  }
+
+	  function setCategory(cat) {
+		state.category = cat;
+		renderFilters();
+		renderCards();
+	  }
+
+	  function renderFilters() {
+		const cats = ["All", ...new Set(templates.map(t => t.category).filter(Boolean))];
+
+		filters.innerHTML = cats.map(cat => `
+		  <button
+			type="button"
+			class="chip ${cat === state.category ? "active" : ""}"
+			data-category="${escapeHtml(cat)}"
+		  >
+			${escapeHtml(cat)}
+		  </button>
+		`).join("");
+	  }
+
+	  function renderCards() {
+		const query = normalize(state.query);
+
+		const list = templates.filter(t => {
+		  const tagText = Array.isArray(t.tags) ? t.tags.join(" ") : "";
+		  const stackText = Array.isArray(t.stack) ? t.stack.join(" ") : "";
+		  const featureText = Array.isArray(t.features) ? t.features.join(" ") : "";
+
+		  const text = normalize(`
+			${t.title}
+			${t.category}
+			${t.purpose}
+			${t.best}
+			${t.desc}
+			${tagText}
+			${stackText}
+			${featureText}
+		  `);
+
+		  const matchesQuery = !query || text.includes(query);
+		  const matchesCategory = state.category === "All" || t.category === state.category;
+
+		  return matchesQuery && matchesCategory;
+		});
+
+		document.getElementById("resultCount").textContent = list.length;
+		document.getElementById("totalTemplates").textContent = String(templates.length).padStart(2, "0");
+
+		if (!list.length) {
+		  grid.innerHTML = `
+			<div class="empty visible">
+			  <strong>검색 결과가 없습니다.</strong>
+			  다른 키워드나 카테고리를 선택해보세요.
+			</div>
+		  `;
+		  return;
+		}
+
+		grid.innerHTML = list.map((t, index) => {
+		  const thumbnail = getTemplateImage(t, "thumbnail");
+		  const title = escapeHtml(t.title);
+		  const category = escapeHtml(t.category);
+		  const price = escapeHtml(t.price || t.status || "TEMPLATE");
+		  const desc = escapeHtml(t.desc);
+		  const purpose = escapeHtml(t.purpose);
+		  const visual = escapeHtml(t.visual || "default");
+
+		  const shotHtml = thumbnail
+			? `
+			  <div class="shot image-shot">
+				<img
+				  class="template-thumb"
+				  src="${escapeHtml(thumbnail)}"
+				  alt="${title} 썸네일"
+				  loading="lazy"
+				  decoding="async"
+				  onerror="this.closest('.shot').classList.remove('image-shot'); this.remove();"
+				>
+			  </div>
+			`
+			: `<div class="shot ${visual}"></div>`;
+
+		  return `
+			<article
+			  class="template-card"
+			  style="animation-delay: ${index * 0.05}s"
+			  data-template-id="${escapeHtml(t.id)}"
+			>
+			  ${shotHtml}
+
+			  <div class="card-body">
+				<div class="card-top">
+				  <div>
+					<span class="tag">${category}</span>
+					<h3>${title}</h3>
+				  </div>
+				  <span class="price">${price}</span>
+				</div>
+
+				<p>${desc}</p>
+
+				<div class="card-actions">
+				  <span class="price" style="color: var(--muted); font-size: 11px;">${purpose}</span>
+				  <button class="small-btn" type="button">Preview</button>
+				</div>
+			  </div>
+			</article>
+		  `;
+		}).join("");
+	  }
+
+	  function openTemplate(id) {
+		const t = templates.find(item => item.id === id);
+		if (!t) return;
+
+		const previewDesktop = getTemplateImage(t, "desktop");
+		const pageUrl = getTemplatePage(t);
+
+		const modalShot = document.getElementById("modalShot");
+		const modalTag = document.getElementById("modalTag");
+		const modalTitle = document.getElementById("modalTitle");
+		const modalDesc = document.getElementById("modalDesc");
+		const modalPurpose = document.getElementById("modalPurpose");
+		const modalBest = document.getElementById("modalBest");
+
+		modalShot.className = previewDesktop
+		  ? "modal-shot shot image-shot"
+		  : `modal-shot shot ${t.visual || ""}`;
+
+		modalShot.innerHTML = previewDesktop
+		  ? `
+			<img
+			  class="modal-preview-img"
+			  src="${escapeHtml(previewDesktop)}"
+			  alt="${escapeHtml(t.title)} 상세 미리보기"
+			  onerror="this.closest('.modal-shot').classList.remove('image-shot'); this.remove();"
+			>
+		  `
+		  : "";
+
+		modalTag.textContent = t.category || "Template";
+		modalTitle.textContent = t.title || "Template";
+		modalDesc.textContent = t.desc || "";
+		modalPurpose.textContent = t.purpose || "-";
+		modalBest.textContent = t.best || "-";
+
+		const oldActions = document.querySelector(".modal-actions");
+		if (oldActions) oldActions.remove();
+
+		const actions = document.createElement("div");
+		actions.className = "modal-actions";
+		actions.innerHTML = `
+		  <a class="modal-open-link" href="${escapeHtml(pageUrl)}" target="_blank" rel="noopener">
+			Open Template
+		  </a>
+		`;
+
+		document.querySelector(".modal-card").appendChild(actions);
+
+		modal.classList.add("open");
+	  }
+
+	  function closeModal() {
+		modal.classList.remove("open");
+	  }
+
+	  filters.addEventListener("click", e => {
+		const button = e.target.closest(".chip");
+		if (!button) return;
+
+		setCategory(button.dataset.category);
+	  });
+
+	  grid.addEventListener("click", e => {
+		const card = e.target.closest(".template-card");
+		if (!card) return;
+
+		openTemplate(card.dataset.templateId);
+	  });
+
+	  searchInput.addEventListener("input", e => {
+		state.query = e.target.value;
+		renderCards();
+	  });
+
+	  modal.addEventListener("click", e => {
+		if (e.target.id === "modal") closeModal();
+	  });
+
+	  document.addEventListener("keydown", e => {
+		if (e.key === "Escape") closeModal();
+	  });
+
+	  loadTemplates();
+	</script>
 </body>
 </html>
