@@ -841,33 +841,33 @@
 	  }
 
 	  function openTemplate(id) {
-		const t = templates.find(item => item.id === id);
-		if (!t) return;
-
-		const previewDesktop = getTemplateImage(t, "desktop");
-		const pageUrl = getTemplatePage(t);
-
-		const modalShot = document.getElementById("modalShot");
-		const modalTag = document.getElementById("modalTag");
-		const modalTitle = document.getElementById("modalTitle");
-		const modalDesc = document.getElementById("modalDesc");
-		const modalPurpose = document.getElementById("modalPurpose");
-		const modalBest = document.getElementById("modalBest");
-
-		modalShot.className = previewDesktop
-		  ? "modal-shot shot image-shot"
-		  : `modal-shot shot ${t.visual || ""}`;
-
-		modalShot.innerHTML = previewDesktop
-		  ? `
-			<img
-			  class="modal-preview-img"
-			  src="${escapeHtml(previewDesktop)}"
-			  alt="${escapeHtml(t.title)} 상세 미리보기"
-			  onerror="this.closest('.modal-shot').classList.remove('image-shot'); this.remove();"
-			>
-		  `
-		  : "";
+		  const t = templates.find(item => item.id === id);
+		  if (!t) return;
+		
+		  // 1. 현재 화면 너비가 768px 이하인지 확인
+		  const isMobileView = window.innerWidth <= 768;
+		
+		  // 2. 너비에 따라 'mobile' 또는 'desktop' 타입을 동적으로 결정
+		  const previewImg = getTemplateImage(t, isMobileView ? "mobile" : "desktop");
+		
+		  const modalShot = document.getElementById("modalShot");
+		  // ... 중략 ...
+		
+		  // 3. 변수명을 previewDesktop에서 previewImg로 통일하여 적용
+		  modalShot.className = previewImg
+		    ? "modal-shot shot image-shot"
+		    : `modal-shot shot ${t.visual || ""}`;
+		
+		  modalShot.innerHTML = previewImg
+		    ? `
+		      <img
+		        class="modal-preview-img"
+		        src="${escapeHtml(previewImg)}"
+		        alt="${escapeHtml(t.title)} 상세 미리보기"
+		        onerror="this.closest('.modal-shot').classList.remove('image-shot'); this.remove();"
+		      >
+		    `
+		    : "";
 
 		modalTag.textContent = t.category || "Template";
 		modalTitle.textContent = t.title || "Template";
