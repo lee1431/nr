@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura Feed — Personal Journal</title>
+  <!-- 나눔고딕 및 Playfair Display(영문 포인트) 로드 -->
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f2f4f7;
+      --panel: rgba(255, 255, 255, 0.8);
+      --ink: #1a1c1e;
+      --muted: #6c767e;
+      --accent: #3e505b;
+      --highlight: #8ba895;
+      --border: rgba(0, 0, 0, 0.05);
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+      --radius: 24px;
+      --font-serif: "Playfair Display", serif;
+      --font-sans: "Nanum Gothic", sans-serif; /* 나눔고딕 설정 */
+    }
+
+    .night {
+      --bg: #0f1113;
+      --panel: rgba(30, 33, 37, 0.7);
+      --ink: #e2e4e7;
+      --muted: #9ba3af;
+      --accent: #8ba895;
+      --highlight: #5a7d66;
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      transition: background 0.5s ease, color 0.5s ease;
+      line-height: 1.7;
+      word-break: keep-all; /* 한글 줄바꿈 최적화 */
+    }
+
+    /* 배경 장식 */
+    .blob {
+      position: fixed;
+      width: 40vw;
+      height: 40vw;
+      background: var(--highlight);
+      filter: blur(80px);
+      opacity: 0.12;
+      z-index: -1;
+      border-radius: 50%;
+    }
+
+    .shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* 네비게이션 */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s;
+    }
+
+    .btn:active { transform: scale(0.95); }
+
+    /* 헤더 섹션 */
+    .header-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 60px;
+    }
+
+    .headline h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(32px, 8vw, 64px);
+      line-height: 1.1;
+      margin: 0 0 16px 0;
+      font-weight: 400;
+    }
+
+    .headline p {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0;
+    }
+
+    .date-display {
+      font-family: var(--font-serif);
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      margin-top: 10px;
+    }
+
+    .date-display .day { font-size: 60px; line-height: 1; display: block; }
+    .date-display .month { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+
+    /* 피드 컨트롤 */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .tabs { 
+      display: flex; 
+      gap: 8px; 
+      overflow-x: auto; 
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .search-bar {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      border-radius: 100px;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-bar input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--ink);
+      font-family: var(--font-sans);
+      margin-left: 8px;
+      width: 100%;
+    }
+
+    /* 메인 레이아웃 */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .feed {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* 카드 디자인 */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      animation: fadeInUp 0.6s ease both;
+    }
+
+    .card.featured {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .card-meta {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .featured .card-meta { color: rgba(255,255,255,0.6); }
+
+    .card h2 {
+      font-size: 22px;
+      margin: 0 0 12px 0;
+      line-height: 1.4;
+      font-weight: 700;
+    }
+
+    .card p {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .featured p { color: rgba(255,255,255,0.8); }
+
+    .card-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag { font-size: 11px; opacity: 0.6; font-weight: 700; }
+
+    /* 작성바 */
+    .composer {
+      background: var(--ink);
+      color: var(--bg);
+      padding: 28px;
+      border-radius: var(--radius);
+    }
+
+    .composer h3 { font-family: var(--font-serif); font-size: 22px; margin-top: 0; font-weight: 400; }
+    
+    .input-group { margin-bottom: 12px; }
+    .input-group input, .input-group textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 14px;
+      border-radius: 14px;
+      color: white;
+      font-family: var(--font-sans);
+      font-size: 14px;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      background: var(--highlight);
+      color: var(--ink);
+      font-weight: 700;
+      font-family: var(--font-sans);
+      cursor: pointer;
+    }
+
+    /* 데스크탑 최적화 */
+    @media (min-width: 1024px) {
+      .shell { padding: 60px 40px; }
+      .header-grid { flex-direction: row; align-items: flex-end; justify-content: space-between; margin-bottom: 100px; }
+      .date-display { text-align: right; border: none; padding: 0; }
+      .date-display .day { font-size: 100px; }
+      .main-grid { grid-template-columns: 1fr 320px; align-items: start; }
+      .controls { flex-direction: row; justify-content: space-between; align-items: center; }
+      .search-bar { width: 300px; }
+      .composer { position: sticky; top: 40px; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="blob" style="top: -5%; left: -5%;"></div>
+  <div class="blob" style="bottom: 10%; right: -5%; background: var(--accent);"></div>
+
+  <main class="shell">
+    <nav class="nav">
+      <div class="logo">Aura Feed.</div>
+      <div class="nav-btns">
+        <button class="btn" id="themeBtn">Mood</button>
+      </div>
+    </nav>
+
+    <header class="header-grid">
+      <div class="headline">
+        <h1>나의 사유,<br>나눔의 미학.</h1>
+        <p>나눔고딕의 정갈함으로 담아내는 당신의 하루. 모바일에서도 변함없는 가독성을 경험하세요.</p>
+      </div>
+      <div class="date-display">
+        <span class="month" id="mText">MAY 2026</span>
+        <span class="day" id="dText">06</span>
+      </div>
+    </header>
+
+    <section class="controls">
+      <div class="tabs" id="tabContainer"></div>
+      <div class="search-bar">
+        <span>⚲</span>
+        <input type="text" id="searchInput" placeholder="기록 검색...">
+      </div>
+    </section>
+
+    <div class="main-grid">
+      <section class="feed" id="feedGrid"></section>
+
+      <aside>
+        <div class="composer">
+          <h3>New Entry</h3>
+          <form id="entryForm">
+            <div class="input-group"><input type="text" id="titleIn" placeholder="제목" required></div>
+            <div class="input-group"><input type="text" id="moodIn" placeholder="현재 기분"></div>
+            <div class="input-group"><textarea id="textIn" rows="4" placeholder="무슨 생각을 하고 있나요?" required></textarea></div>
+            <div class="input-group"><input type="text" id="tagIn" placeholder="태그 (쉼표 구분)"></div>
+            <button type="submit" class="submit-btn">기록하기</button>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      activeTag: "All",
+      entries: [
+        { id: 1, date: "2026.05.06", mood: "평온", title: "나눔고딕으로 맞이하는 아침", text: "글꼴 하나가 바뀌었을 뿐인데 기록의 무게감이 달라진다. 정갈하게 정렬된 문장들을 보니 마음도 함께 차분해지는 기분이다.", tags: ["Font", "Morning"], featured: true },
+        { id: 2, date: "2026.05.05", mood: "몰입", title: "반응형 디자인의 중요성", text: "언제 어디서든 내 생각을 꺼내 볼 수 있다는 것. 작은 화면에서도 무너지지 않는 레이아웃이 주는 안정감이 있다.", tags: ["Tech", "Design"], featured: false }
+      ]
+    };
+
+    const feedGrid = document.getElementById('feedGrid');
+    const tabContainer = document.getElementById('tabContainer');
+    const searchInput = document.getElementById('searchInput');
+
+    function render() {
+      const allTags = ["All", ...new Set(state.entries.flatMap(e => e.tags))];
+      tabContainer.innerHTML = allTags.map(tag => 
+        `<div class="tab ${state.activeTag === tag ? 'active' : ''}" onclick="filterTag('${tag}')">${tag}</div>`
+      ).join('');
+
+      const filtered = state.entries.filter(e => {
+        const matchesTag = state.activeTag === "All" || e.tags.includes(state.activeTag);
+        const matchesSearch = e.title.includes(searchInput.value) || e.text.includes(searchInput.value);
+        return matchesTag && matchesSearch;
+      });
+
+      feedGrid.innerHTML = filtered.map((e, idx) => `
+        <article class="card ${e.featured ? 'featured' : ''}" style="animation-delay: ${idx * 0.1}s">
+          <div class="card-meta"><span>${e.date}</span><span>${e.mood}</span></div>
+          <h2>${e.title}</h2>
+          <p>${e.text}</p>
+          <div class="card-tags">${e.tags.map(t => `<span class="tag">#${t}</span>`).join('')}</div>
+        </article>
+      `).join('');
+    }
+
+    window.filterTag = (tag) => { state.activeTag = tag; render(); };
+    searchInput.addEventListener('input', render);
+
+    document.getElementById('entryForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newEntry = {
+        id: Date.now(),
+        date: new Date().toLocaleDateString('ko-KR').slice(0, -1),
+        title: document.getElementById('titleIn').value,
+        mood: document.getElementById('moodIn').value || "보통",
+        text: document.getElementById('textIn').value,
+        tags: document.getElementById('tagIn').value.split(',').map(t => t.trim()).filter(t => t),
+        featured: false
+      };
+      state.entries.unshift(newEntry);
+      e.target.reset();
+      render();
+    });
+
+    document.getElementById('themeBtn').addEventListener('click', () => document.body.classList.toggle('night'));
+    
+    // 날짜 업데이트
+    const now = new Date();
+    document.getElementById('mText').innerText = now.toLocaleDateString('en-US', {month: 'short', year: 'numeric'}).toUpperCase();
+    document.getElementById('dText').innerText = String(now.getDate()).padStart(2, '0');
+
+    render();
+  </script>
+</body>
+</html>
