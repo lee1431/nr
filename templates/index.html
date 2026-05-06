@@ -844,16 +844,21 @@
 		  const t = templates.find(item => item.id === id);
 		  if (!t) return;
 		
-		  // 1. 현재 화면 너비가 768px 이하인지 확인
-		  const isMobileView = window.innerWidth <= 768;
-		
-		  // 2. 너비에 따라 'mobile' 또는 'desktop' 타입을 동적으로 결정
-		  const previewImg = getTemplateImage(t, isMobileView ? "mobile" : "desktop");
+		  // 1. 현재 화면 너비를 확인하여 모바일 여부 판단 (CSS 미디어 쿼리와 동일하게 768px 기준)
+		  const isMobile = window.innerWidth <= 768;
+		  
+		  // 2. 모바일이면 "mobile", 아니면 "desktop" 인자를 전달하여 이미지를 가져옴
+		  const previewImg = getTemplateImage(t, isMobile ? "mobile" : "desktop");
+		  const pageUrl = getTemplatePage(t);
 		
 		  const modalShot = document.getElementById("modalShot");
-		  // ... 중략 ...
+		  const modalTag = document.getElementById("modalTag");
+		  const modalTitle = document.getElementById("modalTitle");
+		  const modalDesc = document.getElementById("modalDesc");
+		  const modalPurpose = document.getElementById("modalPurpose");
+		  const modalBest = document.getElementById("modalBest");
 		
-		  // 3. 변수명을 previewDesktop에서 previewImg로 통일하여 적용
+		  // 3. 변수명을 previewImg로 통일하여 적용
 		  modalShot.className = previewImg
 		    ? "modal-shot shot image-shot"
 		    : `modal-shot shot ${t.visual || ""}`;
@@ -868,28 +873,28 @@
 		      >
 		    `
 		    : "";
-
-		modalTag.textContent = t.category || "Template";
-		modalTitle.textContent = t.title || "Template";
-		modalDesc.textContent = t.desc || "";
-		modalPurpose.textContent = t.purpose || "-";
-		modalBest.textContent = t.best || "-";
-
-		const oldActions = document.querySelector(".modal-actions");
-		if (oldActions) oldActions.remove();
-
-		const actions = document.createElement("div");
-		actions.className = "modal-actions";
-		actions.innerHTML = `
-		  <a class="modal-open-link" href="${escapeHtml(pageUrl)}" target="_blank" rel="noopener">
-			Open Template
-		  </a>
-		`;
-
-		document.querySelector(".modal-card").appendChild(actions);
-
-		modal.classList.add("open");
-	  }
+		
+		  modalTag.textContent = t.category || "Template";
+		  modalTitle.textContent = t.title || "Template";
+		  modalDesc.textContent = t.desc || "";
+		  modalPurpose.textContent = t.purpose || "-";
+		  modalBest.textContent = t.best || "-";
+		
+		  const oldActions = document.querySelector(".modal-actions");
+		  if (oldActions) oldActions.remove();
+		
+		  const actions = document.createElement("div");
+		  actions.className = "modal-actions";
+		  actions.innerHTML = `
+		    <a class="modal-open-link" href="${escapeHtml(pageUrl)}" target="_blank" rel="noopener">
+		      Open Template
+		    </a>
+		  `;
+		
+		  document.querySelector(".modal-card").appendChild(actions);
+		
+		  modal.classList.add("open");
+		}
 
 	  function closeModal() {
 		modal.classList.remove("open");
