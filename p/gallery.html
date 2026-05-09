@@ -6,150 +6,35 @@
     <title>Stream Gallery</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --bg-color: #0b0f1a;
-            --card-bg: #161e2d;
-            --accent: #3b82f6;
-            --modal-bg: rgba(0, 0, 0, 0.95);
-        }
-
-        body {
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: #ffffff;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        html { scroll-behavior: smooth; }
-
-        .gallery-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4px;
-            padding: 4px;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-
-        @media (min-width: 768px) {
-            .gallery-container {
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                gap: 16px;
-                padding: 16px;
-            }
-        }
-
-        .img-card {
-            position: relative;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            aspect-ratio: 1 / 1;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.7s cubic-bezier(0.2, 1, 0.3, 1);
-            cursor: pointer;
-            will-change: transform, opacity;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        @media (min-width: 768px) { .img-card { border-radius: 16px; } }
-
-        .img-card.loaded {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .img-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-        }
-
-        .img-card:active img { transform: scale(1.08); }
-
-        #modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--modal-bg);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000; opacity: 0; visibility: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(15px);
-            padding: 16px;
-        }
-
-        #modal.active { opacity: 1; visibility: visible; }
-
-        #modal img {
-            max-width: 100%;
-            max-height: 92vh;
-            border-radius: 12px;
-            transform: scale(0.9);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-        }
-
-        #modal.active img { transform: scale(1); }
-
-        .loader {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 80px 0;
-            min-height: 150px;
-        }
-
-        .spinner {
-            width: 30px; height: 30px;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        /* 종료 메시지 스타일 */
-        .end-msg {
-            display: none;
-            color: #4b5563;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            opacity: 0.6;
-        }
-
+        :root { --bg: #0b0f1a; --card: #161e2d; --accent: #3b82f6; }
+        body { background: var(--bg); color: white; margin: 0; font-family: sans-serif; overflow-x: hidden; }
+        .gallery-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 4px; max-width: 1600px; margin: 0 auto; }
+        @media (min-width: 768px) { .gallery-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 16px; } }
+        .img-card { background: var(--card); border-radius: 8px; overflow: hidden; aspect-ratio: 1/1; opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
+        .img-card.loaded { opacity: 1; transform: translateY(0); }
+        .img-card img { width: 100%; height: 100%; object-fit: cover; }
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(10px); }
+        #modal.active { display: flex; }
+        .loader { display: flex; flex-direction: column; align-items: center; padding: 60px 0; min-height: 100px; }
+        .spinner { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        .end-msg { display: none; color: #4b5563; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .touch-action-none { touch-action: pan-y; }
-        body.modal-open { overflow: hidden; }
-        header { transition: transform 0.4s ease; }
     </style>
 </head>
-<body class="touch-action-none">
-
-    <header id="main-header" class="sticky top-0 z-50 bg-[#0b0f1a]/60 backdrop-blur-xl border-b border-white/5 px-6 py-4">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-white text-lg font-bold tracking-widest uppercase">Stream Feed</h1>
-            <div id="status" class="text-[10px] text-blue-400 font-mono bg-blue-400/10 px-2 py-1 rounded">LIVE</div>
-        </div>
+<body>
+    <header class="sticky top-0 z-50 bg-[#0b0f1a]/80 backdrop-blur-md border-b border-white/5 px-6 py-4">
+        <h1 class="text-center text-lg font-bold tracking-widest">GALLERY FEED</h1>
     </header>
 
     <main id="gallery" class="gallery-container"></main>
 
-    <!-- 상태 표시 영역 -->
     <div id="sentinel" class="loader">
         <div id="spinner" class="spinner"></div>
-        <div id="end-msg" class="end-msg">End of Gallery</div>
+        <div id="end-msg" class="end-msg">End of Content</div>
     </div>
 
-    <div id="modal" aria-hidden="true">
-        <img id="modal-img" src="" alt="View">
+    <div id="modal" onclick="closeModal()">
+        <img id="modal-img" class="max-w-[95%] max-h-[90vh] rounded-lg shadow-2xl" src="">
     </div>
 
     <script>
@@ -158,118 +43,88 @@
         const limit = 16;
         let isLoading = false;
         let hasMore = true;
-        
+
         const gallery = document.getElementById('gallery');
         const sentinel = document.getElementById('sentinel');
         const spinner = document.getElementById('spinner');
         const endMsg = document.getElementById('end-msg');
-        const modal = document.getElementById('modal');
-        const modalImg = document.getElementById('modal-img');
-        
-        // 인피니티 스크롤 옵저버 선언
-        const observer = new IntersectionObserver(async (entries) => {
-            if (entries[0].isIntersecting && !isLoading && hasMore) {
-                const data = await loadImages(currentPage);
-                if (data && data.length > 0) {
-                    render(data);
-                    currentPage++;
-                }
-            }
-        }, { rootMargin: '800px' });
-        
-        async function loadImages(page) {
-            if (isLoading || !hasMore) return null;
+
+        // [중요] 화면에 로딩바가 보이는지 확인하는 함수
+        function isSentinelInView() {
+            const rect = sentinel.getBoundingClientRect();
+            return rect.top < window.innerHeight;
+        }
+
+        async function loadNextPage() {
+            if (isLoading || !hasMore) return;
             isLoading = true;
-        
+            console.log(`불러오는 중... 페이지: ${currentPage}`);
+
             try {
-                const response = await fetch(`${BASE_URL}/api/images?page=${page}&limit=${limit}`);
-                if (!response.ok) throw new Error('Server Error');
-                
-                const items = await response.json();
-        
-                // [강력 조치] 데이터가 없거나 limit보다 적으면 아예 감시를 종료함
-                if (!items || items.length === 0 || items.length < limit) {
-                    hasMore = false;
-                    stopInfiniteScroll(); // 감시 중단 함수 실행
+                const res = await fetch(`${BASE_URL}/api/images?page=${currentPage}&limit=${limit}`);
+                const items = await res.json();
+
+                if (!items || items.length === 0) {
+                    stopInfiniteScroll();
+                } else {
+                    render(items);
+                    if (items.length < limit) {
+                        stopInfiniteScroll();
+                    } else {
+                        currentPage++;
+                        // 만약 이미지를 불러왔는데도 여전히 로딩바가 화면에 보이면 (화면을 다 못 채웠으면)
+                        // 다음 페이지를 즉시 다시 호출함
+                        if (isSentinelInView()) {
+                            isLoading = false; // 플래그 해제 후 재호출
+                            loadNextPage();
+                        }
+                    }
                 }
-                
-                return items;
             } catch (err) {
-                console.error("Fetch failed:", err);
-                stopInfiniteScroll(); // 에러 발생 시에도 일단 멈춤
-                return null;
+                console.error("실패:", err);
+                stopInfiniteScroll();
             } finally {
                 isLoading = false;
             }
         }
-        
-        // 무한 스크롤을 완전히 종료시키는 함수
+
         function stopInfiniteScroll() {
             hasMore = false;
-            observer.unobserve(sentinel); // 더 이상 감시 안 함
-            spinner.style.display = 'none'; // 스피너 강제 숨김
-            endMsg.style.display = 'block'; // 종료 메시지 표시
-            
-            // 혹시 모르니 sentinel의 높이도 줄여버림
-            sentinel.style.minHeight = 'auto';
-            sentinel.style.padding = '40px 0';
+            observer.unobserve(sentinel);
+            spinner.style.display = 'none';
+            endMsg.style.display = 'block';
         }
-        
+
         function render(items) {
-            if (!items) return;
-            const fragment = document.createDocumentFragment();
-            
-            items.forEach((item, idx) => {
+            items.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'img-card';
-                card.style.transitionDelay = `${(idx % 4) * 0.05}s`;
-                
                 const img = document.createElement('img');
-                img.loading = 'lazy';
                 img.src = item.url;
-                img.alt = item.id;
-                
                 img.onload = () => card.classList.add('loaded');
-                
-                card.onclick = () => {
-                    modalImg.src = item.url;
-                    modal.classList.add('active');
-                    document.body.classList.add('modal-open');
+                card.onclick = (e) => {
+                    e.stopPropagation();
+                    document.getElementById('modal-img').src = item.url;
+                    document.getElementById('modal').classList.add('active');
+                    document.body.style.overflow = 'hidden';
                 };
-                
                 card.appendChild(img);
-                fragment.appendChild(card);
+                gallery.appendChild(card);
             });
-            
-            gallery.appendChild(fragment);
         }
-        
-        // 모달 닫기 로직은 동일...
-        modal.onclick = () => {
-            modal.classList.remove('active');
-            document.body.classList.remove('modal-open');
-            setTimeout(() => { if(!modal.classList.contains('active')) modalImg.src = ''; }, 300);
-        };
-        
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) loadNextPage();
+        }, { rootMargin: '400px' });
+
         window.onload = () => {
             observer.observe(sentinel);
-            document.addEventListener('touchstart', () => {}, {passive: true});
         };
-        
-        // 헤더 제어 로직은 동일...
-        let lastPos = window.scrollY;
-        window.addEventListener('scroll', () => {
-            if (document.body.classList.contains('modal-open')) return;
-            const header = document.getElementById('main-header');
-            const currentPos = window.scrollY;
-            if (currentPos > lastPos && currentPos > 120) {
-                header.style.transform = 'translateY(-100%)';
-            } else {
-                header.style.transform = 'translateY(0)';
-            }
-            lastPos = currentPos;
-        }, { passive: true });
-
     </script>
 </body>
 </html>
