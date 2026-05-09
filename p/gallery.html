@@ -1,0 +1,286 @@
+
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stream Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-color: #0b0f1a;
+            --card-bg: #161e2d;
+            --accent: #3b82f6;
+            --modal-bg: rgba(0, 0, 0, 0.95);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #ffffff;
+            /* iOS 스크롤 탄력성 */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 스무스 스크롤 */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* 갤러리 그리드 - 모바일 2열, 고해상도 반응형 */
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 4px;
+            padding: 4px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+            .gallery-container {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+                padding: 16px;
+            }
+        }
+
+        /* 이미지 카드 모션 디자인 */
+        .img-card {
+            position: relative;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 1 / 1;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.7s cubic-bezier(0.2, 1, 0.3, 1);
+            cursor: pointer;
+            will-change: transform, opacity;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (min-width: 768px) {
+            .img-card { border-radius: 16px; }
+        }
+
+        .img-card.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .img-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        /* 모바일 터치 피드백 */
+        .img-card:active img {
+            transform: scale(1.08);
+        }
+
+        /* 모달 시스템 */
+        #modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--modal-bg);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(15px);
+            padding: 16px;
+        }
+
+        #modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #modal img {
+            max-width: 100%;
+            max-height: 92vh;
+            border-radius: 12px;
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+        }
+
+        #modal.active img {
+            transform: scale(1);
+        }
+
+        /* 무한 로더 */
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 0;
+        }
+
+        .spinner {
+            width: 30px; height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 터치 조작 유틸리티 */
+        .touch-action-none { touch-action: pan-y; }
+        body.modal-open { overflow: hidden; }
+
+        header { transition: transform 0.4s ease; }
+    </style>
+</head>
+<body class="touch-action-none">
+
+    <!-- 상단 헤더 -->
+    <header id="main-header" class="sticky top-0 z-50 bg-[#0b0f1a]/60 backdrop-blur-xl border-b border-white/5 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-white text-lg font-bold tracking-widest uppercase">Stream Feed</h1>
+            <div id="status" class="text-[10px] text-blue-400 font-mono bg-blue-400/10 px-2 py-1 rounded">LIVE</div>
+        </div>
+    </header>
+
+    <!-- 갤러리 메인 -->
+    <main id="gallery" class="gallery-container">
+        <!-- JS 렌더링 영역 -->
+    </main>
+
+    <!-- 트리거 포인트 -->
+    <div id="sentinel" class="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- 풀스크린 모달 -->
+    <div id="modal" aria-hidden="true">
+        <img id="modal-img" src="" alt="View">
+    </div>
+
+    <script>
+        /**
+         * 연동 설정
+         */
+        const BASE_URL = "https://localflow.ddns.net/fu";
+        let currentPage = 1;
+        const limit = 16;
+        let isLoading = false;
+        let hasMore = true;
+
+        const gallery = document.getElementById('gallery');
+        const sentinel = document.getElementById('sentinel');
+        const modal = document.getElementById('modal');
+        const modalImg = document.getElementById('modal-img');
+
+        /**
+         * 백엔드 API 데이터 호출
+         */
+        async function loadImages(page) {
+            if (isLoading || !hasMore) return;
+            isLoading = true;
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/images?page=${page}&limit=${limit}`);
+                if (!response.ok) throw new Error('Server Error');
+                
+                const items = await response.json();
+
+                if (items.length < limit) {
+                    hasMore = false;
+                    sentinel.style.display = 'none';
+                }
+                
+                return items;
+            } catch (err) {
+                console.error("Fetch failed:", err);
+                return [];
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        /**
+         * DOM 생성 및 렌더링
+         */
+        function render(items) {
+            const fragment = document.createDocumentFragment();
+            
+            items.forEach((item, idx) => {
+                const card = document.createElement('div');
+                card.className = 'img-card';
+                // 순차적 등장 효과
+                card.style.transitionDelay = `${(idx % 4) * 0.05}s`;
+                
+                const img = document.createElement('img');
+                img.loading = 'lazy';
+                img.src = item.url;
+                img.alt = item.id;
+                
+                img.onload = () => card.classList.add('loaded');
+                
+                card.onclick = () => {
+                    modalImg.src = item.url;
+                    modal.classList.add('active');
+                    document.body.classList.add('modal-open');
+                };
+                
+                card.appendChild(img);
+                fragment.appendChild(card);
+            });
+            
+            gallery.appendChild(fragment);
+        }
+
+        /**
+         * 모달 닫기
+         */
+        modal.onclick = () => {
+            modal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+            setTimeout(() => { if(!modal.classList.contains('active')) modalImg.src = ''; }, 300);
+        };
+
+        /**
+         * 인피니티 스크롤 옵저버
+         */
+        const observer = new IntersectionObserver(async (entries) => {
+            if (entries[0].isIntersecting && !isLoading && hasMore) {
+                const data = await loadImages(currentPage);
+                if (data && data.length > 0) {
+                    render(data);
+                    currentPage++;
+                }
+            }
+        }, { rootMargin: '800px' }); // 사용자 경험을 위해 미리 로드
+
+        // 초기화
+        window.onload = () => {
+            observer.observe(sentinel);
+            // 모바일 터치 이벤트 최적화
+            document.addEventListener('touchstart', () => {}, {passive: true});
+        };
+
+        // 헤더 자동 숨김 제어
+        let lastPos = window.scrollY;
+        window.addEventListener('scroll', () => {
+            if (document.body.classList.contains('modal-open')) return;
+            const header = document.getElementById('main-header');
+            const currentPos = window.scrollY;
+            
+            if (currentPos > lastPos && currentPos > 120) {
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            lastPos = currentPos;
+        }, { passive: true });
+
+    </script>
+</body>
+</html>
