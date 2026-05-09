@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalFlow Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #f0f2f5;
+      --col-bg: #e2e4e9;
+      --card-bg: #ffffff;
+      --text-main: #1a1d23;
+      --text-muted: #65676b;
+      --accent: #2196f3;
+      --completed-op: 0.45;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .header-area {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .sync-status {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* 보드 레이아웃 */
+    .board {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding-bottom: 20px;
+      width: 100%;
+      max-width: 1200px;
+      overflow-x: auto;
+    }
+
+    .column {
+      background-color: var(--col-bg);
+      border-radius: 12px;
+      min-width: 300px;
+      width: 300px;
+      padding: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .column-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 4px 16px;
+      font-weight: 700;
+    }
+
+    .sort-select {
+      background: transparent;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      padding: 2px;
+    }
+
+    /* 태스크 리스트 */
+    .task-list {
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      cursor: grab;
+      border-left: 5px solid var(--accent);
+      transition: opacity 0.2s;
+    }
+
+    .task.completed {
+      opacity: var(--completed-op);
+      filter: grayscale(0.8);
+      border-left-color: #bdc3c7;
+    }
+
+    .task.completed .task-title {
+      text-decoration: line-through;
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .task-title { font-weight: 600; font-size: 1rem; }
+
+    .task-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .add-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 8px;
+      background: none;
+      border: 1px dashed #999;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .add-btn:hover { background: rgba(255,255,255,0.5); color: var(--text-main); }
+
+    .drag-over { background-color: rgba(33, 150, 243, 0.1); border-radius: 8px; }
+  </style>
+  <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
+</head>
+<body>
+
+  <div class="header-area">
+    <h1>🚀 LocalFlow Dash</h1>
+    <div id="syncStatus" class="sync-status">서버 연결 중...</div>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <script>
+    const API_URL = "https://mrdindoin.ddns.net/jsonhub/api/json/localflow/dashboard";
+    
+    let state = {
+      columns: [
+        { id: "todo", title: "📝 할 일", sort: "date", tasks: [] },
+        { id: "doing", title: "⚡ 진행 중", sort: "date", tasks: [] },
+        { id: "done", title: "✅ 완료", sort: "date", tasks: [] }
+      ]
+    };
+
+    let draggedTaskId = null;
+    let draggedFromColId = null;
+
+    // 1. 서버에서 데이터 로드 (초기화)
+    async function loadData() {
+      try {
+        const res = await fetch(API_URL);
+        if (res.ok) {
+          const data = await res.json();
+          // 백엔드에서 주는 _meta 정보 제외하고 columns 상태만 동기화
+          if (data.columns) state.columns = data.columns;
+          document.getElementById('syncStatus').innerText = `최근 동기화: ${data._meta?.updated_at || '방금'}`;
+        } else if (res.status === 404) {
+          console.log("기존 데이터 없음. 새 대시보드를 시작합니다.");
+          document.getElementById('syncStatus').innerText = "새 프로젝트 시작";
+        }
+      } catch (err) {
+        console.error("데이터 로드 실패:", err);
+        document.getElementById('syncStatus').innerText = "서버 연결 오류";
+      }
+      render();
+    }
+
+    // 2. 서버에 데이터 저장 (POST)
+    async function syncToServer() {
+      document.getElementById('syncStatus').innerText = "저장 중...";
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state)
+        });
+        const result = await res.json();
+        if (result.ok) {
+          // 서버에서 자동으로 붙여준 updated_at 표시
+          const now = new Date().toLocaleTimeString();
+          document.getElementById('syncStatus').innerText = `저장 완료 (${now})`;
+        }
+      } catch (err) {
+        console.error("저장 실패:", err);
+        document.getElementById('syncStatus').innerText = "저장 실패 (오프라인)";
+      }
+    }
+
+    // 3. 화면 렌더링
+    function render() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+
+      state.columns.forEach(col => {
+        let sortedTasks = [...col.tasks];
+        if (col.sort === 'importance') sortedTasks.sort((a, b) => b.importance - a.importance);
+        else if (col.sort === 'date') sortedTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const colEl = document.createElement('div');
+        colEl.className = 'column';
+        colEl.innerHTML = `
+          <div class="column-header">
+            <span>${col.title}</span>
+            <select class="sort-select" onchange="changeSort('${col.id}', this.value)">
+              <option value="date" ${col.sort === 'date' ? 'selected' : ''}>날짜순</option>
+              <option value="importance" ${col.sort === 'importance' ? 'selected' : ''}>중요도순</option>
+            </select>
+          </div>
+          <div class="task-list" data-id="${col.id}"></div>
+          <button class="add-btn" onclick="addTask('${col.id}')">+ 추가</button>
+        `;
+
+        const taskList = colEl.querySelector('.task-list');
+        
+        // 드래그 앤 드롭 이벤트
+        taskList.ondragover = e => { e.preventDefault(); taskList.classList.add('drag-over'); };
+        taskList.ondragleave = () => taskList.classList.remove('drag-over');
+        taskList.ondrop = e => handleDrop(e, col.id);
+
+        sortedTasks.forEach(task => {
+          const taskEl = document.createElement('div');
+          taskEl.className = `task ${task.completed ? 'completed' : ''}`;
+          taskEl.draggable = true;
+          taskEl.innerHTML = `
+            <div class="task-header">
+              <span class="task-title">${task.content}</span>
+              <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleComplete('${col.id}', '${task.id}')">
+            </div>
+            <div class="task-meta">
+              <span>${task.importance === 3 ? '🔥' : (task.importance === 2 ? '🔔' : '💤')}</span>
+              <span>${task.date}</span>
+            </div>
+          `;
+
+          taskEl.ondragstart = () => { draggedTaskId = task.id; draggedFromColId = col.id; };
+          taskList.appendChild(taskEl);
+        });
+
+        board.appendChild(colEl);
+      });
+    }
+
+    // 4. 로직 함수들
+    function addTask(colId) {
+      const content = prompt("할 일을 입력하세요");
+      if (!content) return;
+      const col = state.columns.find(c => c.id === colId);
+      col.tasks.push({
+        id: 't-' + Date.now(),
+        content,
+        importance: 2,
+        date: new Date().toISOString().split('T')[0],
+        completed: false
+      });
+      render();
+      syncToServer();
+    }
+
+    function toggleComplete(colId, taskId) {
+      const col = state.columns.find(c => c.id === colId);
+      const task = col.tasks.find(t => t.id === taskId);
+      task.completed = !task.completed;
+      render();
+      syncToServer();
+    }
+
+    function changeSort(colId, sortVal) {
+      const col = state.columns.find(c => c.id === colId);
+      col.sort = sortVal;
+      render();
+      syncToServer();
+    }
+
+    function handleDrop(e, targetColId) {
+      e.preventDefault();
+      if (draggedFromColId === targetColId) return;
+
+      const sourceCol = state.columns.find(c => c.id === draggedFromColId);
+      const targetCol = state.columns.find(c => c.id === targetColId);
+      const taskIdx = sourceCol.tasks.findIndex(t => t.id === draggedTaskId);
+      const [task] = sourceCol.tasks.splice(taskIdx, 1);
+      
+      targetCol.tasks.push(task);
+      render();
+      syncToServer();
+    }
+
+    // 초기 실행
+    loadData();
+  </script>
+</body>
+</html>
