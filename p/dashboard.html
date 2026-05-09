@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>STANCE Dashboard</title>
+  <title>LocalFlow Dashboard</title>
   <style>
     :root {
       --bg-color: #f6f7fb;
@@ -438,6 +438,22 @@
       white-space: nowrap;
     }
 
+    .priority-badge {
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+    }
+
+    .priority-badge:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    }
+
+    .priority-badge:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
     .date-badge {
       max-width: 100%;
       overflow: hidden;
@@ -445,19 +461,22 @@
     }
 
     .priority-high {
-      color: #dc2626;
-      background: rgba(239, 68, 68, 0.08);
-      border-color: rgba(239, 68, 68, 0.16);
+      color: #b91c1c;
+      background: linear-gradient(180deg, rgba(254, 226, 226, 0.95), rgba(254, 202, 202, 0.72));
+      border-color: rgba(239, 68, 68, 0.34);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.10);
     }
 
     .priority-mid {
-      color: #d97706;
-      background: rgba(245, 158, 11, 0.10);
-      border-color: rgba(245, 158, 11, 0.18);
+      color: #475569;
+      background: #f8fafc;
+      border-color: rgba(226, 232, 240, 0.95);
     }
 
     .priority-low {
-      color: #64748b;
+      color: #0369a1;
+      background: rgba(224, 242, 254, 0.78);
+      border-color: rgba(14, 165, 233, 0.20);
     }
 
     .add-btn {
@@ -653,8 +672,8 @@
   <main class="app-shell">
     <div class="header-area">
       <div class="title-wrap">
-        <span class="eyebrow">STANCE Workspace</span>
-        <h1>🚀 STANCE Dash</h1>
+        <span class="eyebrow">LocalFlow Workspace</span>
+        <h1>🚀 LocalFlow Dash</h1>
         <p class="subtitle">오늘 처리할 업무를 정리하고, 진행 상태를 한눈에 관리하세요.</p>
       </div>
       <div class="sync-card">
@@ -698,9 +717,9 @@
     }
 
     function getPriority(task) {
-      if (task.importance === 3) return { label: "높음", icon: "🔥", className: "priority-high" };
-      if (task.importance === 2) return { label: "보통", icon: "🔔", className: "priority-mid" };
-      return { label: "낮음", icon: "💤", className: "priority-low" };
+      if (task.importance === 3) return { label: "높음", icon: "🔥", className: "priority-high", nextLabel: "낮음" };
+      if (task.importance === 2) return { label: "보통", icon: "●", className: "priority-mid", nextLabel: "높음" };
+      return { label: "낮음", icon: "🌿", className: "priority-low", nextLabel: "보통" };
     }
 
     // 1. 서버에서 데이터 로드 (초기화)
@@ -797,7 +816,7 @@
               <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleComplete('${col.id}', '${task.id}')" aria-label="작업 완료 처리">
             </div>
             <div class="task-meta">
-              <span class="priority-badge ${priority.className}">${priority.icon} ${priority.label}</span>
+              <button class="priority-badge ${priority.className}" onclick="cycleImportance('${col.id}', '${task.id}')" title="클릭해서 중요도 변경: 다음은 ${priority.nextLabel}" aria-label="현재 중요도 ${priority.label}. 클릭하면 ${priority.nextLabel}으로 변경됩니다." type="button">${priority.icon} ${priority.label}</button>
               <span class="date-badge">📅 ${task.date}</span>
             </div>
           `;
@@ -837,6 +856,19 @@
     function changeSort(colId, sortVal) {
       const col = state.columns.find(c => c.id === colId);
       col.sort = sortVal;
+      render();
+      syncToServer();
+    }
+
+    function cycleImportance(colId, taskId) {
+      const col = state.columns.find(c => c.id === colId);
+      const task = col.tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      if (task.importance === 1) task.importance = 2;
+      else if (task.importance === 2) task.importance = 3;
+      else task.importance = 1;
+
       render();
       syncToServer();
     }
