@@ -158,42 +158,63 @@
         const limit = 16;
         let isLoading = false;
         let hasMore = true;
-
+        
         const gallery = document.getElementById('gallery');
         const sentinel = document.getElementById('sentinel');
         const spinner = document.getElementById('spinner');
         const endMsg = document.getElementById('end-msg');
         const modal = document.getElementById('modal');
         const modalImg = document.getElementById('modal-img');
-
+        
+        // 인피니티 스크롤 옵저버 선언
+        const observer = new IntersectionObserver(async (entries) => {
+            if (entries[0].isIntersecting && !isLoading && hasMore) {
+                const data = await loadImages(currentPage);
+                if (data && data.length > 0) {
+                    render(data);
+                    currentPage++;
+                }
+            }
+        }, { rootMargin: '800px' });
+        
         async function loadImages(page) {
-            if (isLoading || !hasMore) return;
+            if (isLoading || !hasMore) return null;
             isLoading = true;
-
+        
             try {
                 const response = await fetch(`${BASE_URL}/api/images?page=${page}&limit=${limit}`);
                 if (!response.ok) throw new Error('Server Error');
                 
                 const items = await response.json();
-
-                // 데이터 종료 로직 수정
+        
+                // [강력 조치] 데이터가 없거나 limit보다 적으면 아예 감시를 종료함
                 if (!items || items.length === 0 || items.length < limit) {
                     hasMore = false;
-                    spinner.style.display = 'none'; // 로딩바 숨김
-                    endMsg.style.display = 'block'; // 종료 문구 노출
+                    stopInfiniteScroll(); // 감시 중단 함수 실행
                 }
                 
                 return items;
             } catch (err) {
                 console.error("Fetch failed:", err);
-                // 에러 발생 시 무한 루프 방지
-                spinner.style.display = 'none';
-                return [];
+                stopInfiniteScroll(); // 에러 발생 시에도 일단 멈춤
+                return null;
             } finally {
                 isLoading = false;
             }
         }
-
+        
+        // 무한 스크롤을 완전히 종료시키는 함수
+        function stopInfiniteScroll() {
+            hasMore = false;
+            observer.unobserve(sentinel); // 더 이상 감시 안 함
+            spinner.style.display = 'none'; // 스피너 강제 숨김
+            endMsg.style.display = 'block'; // 종료 메시지 표시
+            
+            // 혹시 모르니 sentinel의 높이도 줄여버림
+            sentinel.style.minHeight = 'auto';
+            sentinel.style.padding = '40px 0';
+        }
+        
         function render(items) {
             if (!items) return;
             const fragment = document.createDocumentFragment();
@@ -222,34 +243,25 @@
             
             gallery.appendChild(fragment);
         }
-
+        
+        // 모달 닫기 로직은 동일...
         modal.onclick = () => {
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
             setTimeout(() => { if(!modal.classList.contains('active')) modalImg.src = ''; }, 300);
         };
-
-        const observer = new IntersectionObserver(async (entries) => {
-            if (entries[0].isIntersecting && !isLoading && hasMore) {
-                const data = await loadImages(currentPage);
-                if (data && data.length > 0) {
-                    render(data);
-                    currentPage++;
-                }
-            }
-        }, { rootMargin: '800px' });
-
+        
         window.onload = () => {
             observer.observe(sentinel);
             document.addEventListener('touchstart', () => {}, {passive: true});
         };
-
+        
+        // 헤더 제어 로직은 동일...
         let lastPos = window.scrollY;
         window.addEventListener('scroll', () => {
             if (document.body.classList.contains('modal-open')) return;
             const header = document.getElementById('main-header');
             const currentPos = window.scrollY;
-            
             if (currentPos > lastPos && currentPos > 120) {
                 header.style.transform = 'translateY(-100%)';
             } else {
