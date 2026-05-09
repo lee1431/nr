@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -20,16 +20,11 @@
             overflow-x: hidden;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #ffffff;
-            /* iOS 스크롤 탄력성 */
             -webkit-overflow-scrolling: touch;
         }
 
-        /* 스무스 스크롤 */
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
-        /* 갤러리 그리드 - 모바일 2열, 고해상도 반응형 */
         .gallery-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -47,7 +42,6 @@
             }
         }
 
-        /* 이미지 카드 모션 디자인 */
         .img-card {
             position: relative;
             background-color: var(--card-bg);
@@ -62,9 +56,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
-        @media (min-width: 768px) {
-            .img-card { border-radius: 16px; }
-        }
+        @media (min-width: 768px) { .img-card { border-radius: 16px; } }
 
         .img-card.loaded {
             opacity: 1;
@@ -78,12 +70,8 @@
             transition: transform 0.5s ease;
         }
 
-        /* 모바일 터치 피드백 */
-        .img-card:active img {
-            transform: scale(1.08);
-        }
+        .img-card:active img { transform: scale(1.08); }
 
-        /* 모달 시스템 */
         #modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -95,10 +83,7 @@
             padding: 16px;
         }
 
-        #modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        #modal.active { opacity: 1; visibility: visible; }
 
         #modal img {
             max-width: 100%;
@@ -109,16 +94,15 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
         }
 
-        #modal.active img {
-            transform: scale(1);
-        }
+        #modal.active img { transform: scale(1); }
 
-        /* 무한 로더 */
         .loader {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 60px 0;
+            padding: 80px 0;
+            min-height: 150px;
         }
 
         .spinner {
@@ -129,18 +113,26 @@
             animation: spin 0.8s linear infinite;
         }
 
+        /* 종료 메시지 스타일 */
+        .end-msg {
+            display: none;
+            color: #4b5563;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            opacity: 0.6;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* 터치 조작 유틸리티 */
         .touch-action-none { touch-action: pan-y; }
         body.modal-open { overflow: hidden; }
-
         header { transition: transform 0.4s ease; }
     </style>
 </head>
 <body class="touch-action-none">
 
-    <!-- 상단 헤더 -->
     <header id="main-header" class="sticky top-0 z-50 bg-[#0b0f1a]/60 backdrop-blur-xl border-b border-white/5 px-6 py-4">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <h1 class="text-white text-lg font-bold tracking-widest uppercase">Stream Feed</h1>
@@ -148,25 +140,19 @@
         </div>
     </header>
 
-    <!-- 갤러리 메인 -->
-    <main id="gallery" class="gallery-container">
-        <!-- JS 렌더링 영역 -->
-    </main>
+    <main id="gallery" class="gallery-container"></main>
 
-    <!-- 트리거 포인트 -->
+    <!-- 상태 표시 영역 -->
     <div id="sentinel" class="loader">
-        <div class="spinner"></div>
+        <div id="spinner" class="spinner"></div>
+        <div id="end-msg" class="end-msg">End of Gallery</div>
     </div>
 
-    <!-- 풀스크린 모달 -->
     <div id="modal" aria-hidden="true">
         <img id="modal-img" src="" alt="View">
     </div>
 
     <script>
-        /**
-         * 연동 설정
-         */
         const BASE_URL = "https://localflow.ddns.net/fu";
         let currentPage = 1;
         const limit = 16;
@@ -175,12 +161,11 @@
 
         const gallery = document.getElementById('gallery');
         const sentinel = document.getElementById('sentinel');
+        const spinner = document.getElementById('spinner');
+        const endMsg = document.getElementById('end-msg');
         const modal = document.getElementById('modal');
         const modalImg = document.getElementById('modal-img');
 
-        /**
-         * 백엔드 API 데이터 호출
-         */
         async function loadImages(page) {
             if (isLoading || !hasMore) return;
             isLoading = true;
@@ -191,30 +176,31 @@
                 
                 const items = await response.json();
 
-                if (items.length < limit) {
+                // 데이터 종료 로직 수정
+                if (!items || items.length === 0 || items.length < limit) {
                     hasMore = false;
-                    sentinel.style.display = 'none';
+                    spinner.style.display = 'none'; // 로딩바 숨김
+                    endMsg.style.display = 'block'; // 종료 문구 노출
                 }
                 
                 return items;
             } catch (err) {
                 console.error("Fetch failed:", err);
+                // 에러 발생 시 무한 루프 방지
+                spinner.style.display = 'none';
                 return [];
             } finally {
                 isLoading = false;
             }
         }
 
-        /**
-         * DOM 생성 및 렌더링
-         */
         function render(items) {
+            if (!items) return;
             const fragment = document.createDocumentFragment();
             
             items.forEach((item, idx) => {
                 const card = document.createElement('div');
                 card.className = 'img-card';
-                // 순차적 등장 효과
                 card.style.transitionDelay = `${(idx % 4) * 0.05}s`;
                 
                 const img = document.createElement('img');
@@ -237,18 +223,12 @@
             gallery.appendChild(fragment);
         }
 
-        /**
-         * 모달 닫기
-         */
         modal.onclick = () => {
             modal.classList.remove('active');
             document.body.classList.remove('modal-open');
             setTimeout(() => { if(!modal.classList.contains('active')) modalImg.src = ''; }, 300);
         };
 
-        /**
-         * 인피니티 스크롤 옵저버
-         */
         const observer = new IntersectionObserver(async (entries) => {
             if (entries[0].isIntersecting && !isLoading && hasMore) {
                 const data = await loadImages(currentPage);
@@ -257,16 +237,13 @@
                     currentPage++;
                 }
             }
-        }, { rootMargin: '800px' }); // 사용자 경험을 위해 미리 로드
+        }, { rootMargin: '800px' });
 
-        // 초기화
         window.onload = () => {
             observer.observe(sentinel);
-            // 모바일 터치 이벤트 최적화
             document.addEventListener('touchstart', () => {}, {passive: true});
         };
 
-        // 헤더 자동 숨김 제어
         let lastPos = window.scrollY;
         window.addEventListener('scroll', () => {
             if (document.body.classList.contains('modal-open')) return;
