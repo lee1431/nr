@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#4c1d95">
+  <meta name="theme-color" content="#12091f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LocalFlow">
@@ -11,27 +11,27 @@
   <title>LocalFlow Dashboard</title>
   <style>
     :root {
-      --bg-color: #efe7ff;
-      --bg-gradient: radial-gradient(circle at top left, rgba(109, 40, 217, 0.44), transparent 35%),
-                     radial-gradient(circle at 88% 8%, rgba(168, 85, 247, 0.40), transparent 31%),
-                     radial-gradient(circle at 45% 100%, rgba(76, 29, 149, 0.26), transparent 40%),
-                     linear-gradient(135deg, #f5edff 0%, #e9d5ff 46%, #f3e8ff 100%);
-      --panel-bg: rgba(255, 255, 255, 0.70);
-      --column-bg: rgba(255, 255, 255, 0.66);
-      --column-border: rgba(148, 163, 184, 0.28);
-      --card-bg: #ffffff;
-      --card-border: rgba(226, 232, 240, 0.95);
-      --text-main: #111827;
-      --text-muted: #6b7280;
-      --text-soft: #94a3b8;
-      --accent: #6d28d9;
-      --accent-strong: #4c1d95;
-      --accent-soft: rgba(109, 40, 217, 0.18);
-      --success: #16a34a;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --shadow-sm: 0 8px 24px rgba(15, 23, 42, 0.06);
-      --shadow-md: 0 18px 48px rgba(15, 23, 42, 0.10);
+      --bg-color: #12091f;
+      --bg-gradient: radial-gradient(circle at top left, rgba(126, 34, 206, 0.42), transparent 34%),
+                     radial-gradient(circle at 88% 8%, rgba(88, 28, 135, 0.54), transparent 31%),
+                     radial-gradient(circle at 45% 100%, rgba(49, 18, 80, 0.72), transparent 42%),
+                     linear-gradient(135deg, #0b0714 0%, #170a2a 45%, #10081f 100%);
+      --panel-bg: rgba(30, 18, 48, 0.76);
+      --column-bg: rgba(25, 16, 40, 0.78);
+      --column-border: rgba(196, 181, 253, 0.16);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(216, 180, 254, 0.14);
+      --text-main: #f8f5ff;
+      --text-muted: #c4b5fd;
+      --text-soft: #9f8fc4;
+      --accent: #a855f7;
+      --accent-strong: #d8b4fe;
+      --accent-soft: rgba(168, 85, 247, 0.18);
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --shadow-sm: 0 12px 30px rgba(0, 0, 0, 0.28);
+      --shadow-md: 0 24px 60px rgba(0, 0, 0, 0.38);
       --radius-lg: clamp(18px, 2.4vw, 24px);
       --radius-md: clamp(14px, 1.8vw, 18px);
       --radius-sm: 14px;
@@ -92,7 +92,7 @@
       width: 100%;
       margin-bottom: var(--gap);
       padding: clamp(16px, 2vw, 24px);
-      border: 1px solid rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(216, 180, 254, 0.16);
       border-radius: var(--radius-lg);
       background: var(--panel-bg);
       box-shadow: var(--shadow-sm);
@@ -164,7 +164,7 @@
       padding: 9px 12px;
       border: 1px solid rgba(148, 163, 184, 0.28);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.78);
+      background: rgba(255, 255, 255, 0.08);
       color: var(--text-muted);
       font-size: clamp(0.74rem, 1.4vw, 0.82rem);
       font-weight: 650;
@@ -305,9 +305,9 @@
       height: 38px;
       min-width: 96px;
       padding: 0 28px 0 11px;
-      border: 1px solid rgba(203, 213, 225, 0.9);
+      border: 1px solid rgba(216, 180, 254, 0.18);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.08);
       color: var(--text-muted);
       font-size: 0.78rem;
       font-weight: 700;
@@ -337,6 +337,8 @@
       max-width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border-radius: var(--radius-md);
       padding: clamp(13px, 1.6vw, 15px);
       box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
@@ -406,9 +408,9 @@
       width: 24px;
       height: 24px;
       margin: 0;
-      border: 1.5px solid #cbd5e1;
+      border: 1.5px solid rgba(216, 180, 254, 0.36);
       border-radius: 8px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.10);
       cursor: pointer;
       transition: all 0.14s ease;
     }
@@ -416,7 +418,7 @@
     .task input[type="checkbox"]:checked {
       border-color: var(--success);
       background: var(--success);
-      box-shadow: inset 0 0 0 4px #fff;
+      box-shadow: inset 0 0 0 4px #12091f;
     }
 
     .task-meta {
@@ -439,8 +441,8 @@
       min-height: 30px;
       padding: 5px 9px;
       border-radius: 999px;
-      background: #f8fafc;
-      border: 1px solid rgba(226, 232, 240, 0.9);
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(216, 180, 254, 0.14);
       font-weight: 700;
       white-space: nowrap;
     }
@@ -468,22 +470,22 @@
     }
 
     .priority-high {
-      color: #b91c1c;
-      background: linear-gradient(180deg, rgba(254, 226, 226, 0.95), rgba(254, 202, 202, 0.72));
-      border-color: rgba(239, 68, 68, 0.34);
-      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.10);
+      color: #fecaca;
+      background: linear-gradient(180deg, rgba(127, 29, 29, 0.92), rgba(69, 10, 10, 0.76));
+      border-color: rgba(248, 113, 113, 0.42);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.16);
     }
 
     .priority-mid {
-      color: #475569;
-      background: #f8fafc;
-      border-color: rgba(226, 232, 240, 0.95);
+      color: #ddd6fe;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(216, 180, 254, 0.16);
     }
 
     .priority-low {
-      color: #0369a1;
-      background: rgba(224, 242, 254, 0.78);
-      border-color: rgba(14, 165, 233, 0.20);
+      color: #bae6fd;
+      background: rgba(14, 165, 233, 0.16);
+      border-color: rgba(56, 189, 248, 0.24);
     }
 
     .add-btn {
@@ -493,7 +495,7 @@
       padding: 12px 14px;
       border: 1px dashed rgba(100, 116, 139, 0.45);
       border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.52);
+      background: rgba(255, 255, 255, 0.07);
       color: var(--text-muted);
       cursor: pointer;
       font-size: clamp(0.82rem, 1.5vw, 0.9rem);
@@ -503,14 +505,14 @@
 
     .add-btn:hover {
       border-color: rgba(109, 40, 217, 0.54);
-      background: rgba(109, 40, 217, 0.13);
+      background: rgba(168, 85, 247, 0.18);
       color: var(--accent-strong);
       transform: translateY(-1px);
     }
 
     .drag-over {
-      background: rgba(109, 40, 217, 0.13);
-      box-shadow: inset 0 0 0 1px rgba(109, 40, 217, 0.24);
+      background: rgba(168, 85, 247, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(216, 180, 254, 0.22);
     }
 
     .empty-state {
@@ -526,7 +528,7 @@
       font-size: clamp(0.78rem, 1.5vw, 0.86rem);
       font-weight: 650;
       line-height: 1.5;
-      background: rgba(255, 255, 255, 0.34);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     @media (max-width: 1120px) {
@@ -564,7 +566,7 @@
         padding: 10px 12px;
         border: 1px solid rgba(255, 255, 255, 0.72);
         border-radius: 18px;
-        background: rgba(255, 255, 255, 0.66);
+        background: rgba(30, 18, 48, 0.78);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
         box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
