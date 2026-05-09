@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#6d28d9">
+  <meta name="theme-color" content="#4c1d95">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LocalFlow">
@@ -11,22 +11,22 @@
   <title>LocalFlow Dashboard</title>
   <style>
     :root {
-      --bg-color: #f7f2ff;
-      --bg-gradient: radial-gradient(circle at top left, rgba(124, 58, 237, 0.24), transparent 34%),
-                     radial-gradient(circle at 88% 8%, rgba(192, 132, 252, 0.22), transparent 30%),
-                     radial-gradient(circle at 50% 100%, rgba(91, 33, 182, 0.12), transparent 36%),
-                     linear-gradient(135deg, #fbf7ff 0%, #f5edff 44%, #f8f5ff 100%);
-      --panel-bg: rgba(255, 255, 255, 0.74);
-      --column-bg: rgba(255, 255, 255, 0.70);
+      --bg-color: #efe7ff;
+      --bg-gradient: radial-gradient(circle at top left, rgba(109, 40, 217, 0.44), transparent 35%),
+                     radial-gradient(circle at 88% 8%, rgba(168, 85, 247, 0.40), transparent 31%),
+                     radial-gradient(circle at 45% 100%, rgba(76, 29, 149, 0.26), transparent 40%),
+                     linear-gradient(135deg, #f5edff 0%, #e9d5ff 46%, #f3e8ff 100%);
+      --panel-bg: rgba(255, 255, 255, 0.70);
+      --column-bg: rgba(255, 255, 255, 0.66);
       --column-border: rgba(148, 163, 184, 0.28);
       --card-bg: #ffffff;
       --card-border: rgba(226, 232, 240, 0.95);
       --text-main: #111827;
       --text-muted: #6b7280;
       --text-soft: #94a3b8;
-      --accent: #7c3aed;
-      --accent-strong: #6d28d9;
-      --accent-soft: rgba(124, 58, 237, 0.12);
+      --accent: #6d28d9;
+      --accent-strong: #4c1d95;
+      --accent-soft: rgba(109, 40, 217, 0.18);
       --success: #16a34a;
       --warning: #f59e0b;
       --danger: #ef4444;
@@ -254,7 +254,7 @@
     .column:hover {
       transform: translateY(-2px);
       box-shadow: var(--shadow-md);
-      border-color: rgba(124, 58, 237, 0.20);
+      border-color: rgba(109, 40, 217, 0.28);
     }
 
     .column-header {
@@ -316,8 +316,8 @@
     }
 
     .sort-select:focus {
-      border-color: rgba(124, 58, 237, 0.62);
-      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+      border-color: rgba(109, 40, 217, 0.70);
+      box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.18);
     }
 
     .task-list {
@@ -350,13 +350,13 @@
       position: absolute;
       inset: 0 auto 0 0;
       width: 5px;
-      background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+      background: linear-gradient(180deg, #7c3aed, #4c1d95);
       border-radius: var(--radius-md) 0 0 var(--radius-md);
     }
 
     .task:hover {
       transform: translateY(-2px);
-      border-color: rgba(124, 58, 237, 0.26);
+      border-color: rgba(109, 40, 217, 0.34);
       box-shadow: 0 16px 34px rgba(15, 23, 42, 0.10);
     }
 
@@ -458,7 +458,7 @@
 
     .priority-badge:focus-visible {
       outline: none;
-      box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.14);
+      box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.20);
     }
 
     .date-badge {
@@ -502,15 +502,15 @@
     }
 
     .add-btn:hover {
-      border-color: rgba(124, 58, 237, 0.45);
-      background: rgba(124, 58, 237, 0.09);
+      border-color: rgba(109, 40, 217, 0.54);
+      background: rgba(109, 40, 217, 0.13);
       color: var(--accent-strong);
       transform: translateY(-1px);
     }
 
     .drag-over {
-      background: rgba(124, 58, 237, 0.09);
-      box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.18);
+      background: rgba(109, 40, 217, 0.13);
+      box-shadow: inset 0 0 0 1px rgba(109, 40, 217, 0.24);
     }
 
     .empty-state {
