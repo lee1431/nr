@@ -1,41 +1,53 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Aemangsieve — Fast Mobile Edition</title>
+  <title>Aemangsieve — TagCanvas Edition</title>
   <style>
     :root {
       --bg0: #05030b;
       --bg1: #100923;
+      --bg2: #1d113a;
       --text: #f4edff;
       --muted: #bcaee3;
       --cyan: #8feaff;
+      --glass: rgba(10, 7, 24, .58);
+      --line: rgba(255,255,255,.16);
     }
 
     * { box-sizing: border-box; }
 
     html, body {
+      margin: 0;
       width: 100%;
       height: 100%;
-      margin: 0;
       overflow: hidden;
       background:
         radial-gradient(circle at 50% 58%, rgba(106, 74, 218, .22), transparent 24%),
-        radial-gradient(circle at 50% 50%, #1d113a, var(--bg1) 42%, var(--bg0) 82%);
+        radial-gradient(circle at 50% 50%, var(--bg2), var(--bg1) 42%, var(--bg0) 82%);
       color: var(--text);
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-      touch-action: none;
     }
 
     body::before {
       content: "";
       position: fixed;
-      inset: 0;
+      inset: -12%;
       pointer-events: none;
-      background-image: radial-gradient(circle, rgba(255,255,255,.46) 0 1px, transparent 1.4px);
-      background-size: 92px 92px;
-      opacity: .18;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,.45) 0 1px, transparent 1.4px),
+        radial-gradient(circle, rgba(147,120,255,.22) 0 1px, transparent 1.5px);
+      background-size: 92px 92px, 151px 151px;
+      background-position: 0 0, 42px 64px;
+      opacity: .24;
+      animation: drift 38s linear infinite;
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(0,0,0); }
+      to { transform: translate3d(60px,-50px,0); }
     }
 
     .app {
@@ -43,53 +55,145 @@
       width: 100vw;
       height: 100dvh;
       min-height: 100vh;
-      overflow: hidden;
+      display: grid;
+      place-items: center;
     }
 
     .title {
       position: fixed;
-      top: max(18px, env(safe-area-inset-top));
-      left: max(18px, env(safe-area-inset-left));
-      z-index: 5;
+      top: max(28px, env(safe-area-inset-top));
+      left: max(32px, env(safe-area-inset-left));
+      z-index: 10;
+      max-width: 360px;
       pointer-events: none;
     }
 
     .title h1 {
-      margin: 0 0 6px;
-      font-size: clamp(38px, 8vw, 72px);
+      margin: 0 0 8px;
+      font-size: clamp(38px, 5vw, 76px);
       line-height: .86;
-      letter-spacing: -.07em;
-      text-shadow: 0 0 24px rgba(180, 145, 255, .35);
+      letter-spacing: -.075em;
+      text-shadow: 0 0 28px rgba(180, 145, 255, .38);
     }
 
     .title p {
       margin: 0;
-      max-width: 300px;
       color: var(--muted);
-      line-height: 1.45;
-      font-size: 13px;
+      line-height: 1.5;
+      font-size: 14px;
     }
 
-    #scene {
-      position: absolute;
-      inset: 0;
+    .canvas-wrap {
+      position: relative;
+      width: min(86vmin, 780px);
+      height: min(86vmin, 780px);
+      display: grid;
+      place-items: center;
+    }
+
+    #ideaCanvas {
       width: 100%;
       height: 100%;
       display: block;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .well {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(25vmin, 210px);
+      height: min(25vmin, 210px);
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(234,247,255,.55), rgba(151,127,255,.22) 24%, rgba(33,18,66,.74) 54%, rgba(5,3,12,.94) 76%),
+        conic-gradient(from 120deg, rgba(155,221,255,.18), rgba(174,129,255,.32), rgba(255,255,255,.12), rgba(113,226,255,.18), rgba(155,221,255,.18));
+      border: 1px solid rgba(255,255,255,.30);
+      box-shadow:
+        0 0 32px rgba(171,141,255,.58),
+        0 0 92px rgba(103,224,255,.18),
+        inset 0 0 32px rgba(255,255,255,.18),
+        inset 0 -28px 52px rgba(7,4,18,.88);
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    .well::before {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      border-radius: 50%;
+      background:
+        repeating-radial-gradient(circle, rgba(255,255,255,.16) 0 1px, transparent 2px 11px),
+        radial-gradient(circle, rgba(156,221,255,.24), transparent 68%);
+      opacity: .82;
+      animation: ripple 4.8s ease-in-out infinite;
+    }
+
+    .well::after {
+      content: "";
+      position: absolute;
+      width: 175%;
+      height: 34%;
+      border-radius: 50%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+      transform: rotate(-18deg);
+      filter: blur(8px);
+      opacity: .52;
+      animation: shimmer 5.4s ease-in-out infinite;
+    }
+
+    @keyframes ripple {
+      0%, 100% { transform: scale(.92) rotate(0deg); opacity: .72; }
+      50% { transform: scale(1.08) rotate(13deg); opacity: 1; }
+    }
+
+    @keyframes shimmer {
+      0%, 100% { translate: -28% 0; opacity: .18; }
+      50% { translate: 28% 0; opacity: .62; }
+    }
+
+    .well-label {
+      position: relative;
+      z-index: 3;
+      text-align: center;
+      color: rgba(250,246,255,.92);
+      font-size: clamp(12px, 1.6vmin, 16px);
+      line-height: 1.4;
+      letter-spacing: -.03em;
+      text-shadow: 0 0 18px rgba(255,255,255,.42);
+    }
+
+    .well-label strong {
+      display: block;
+      font-size: clamp(22px, 3vmin, 32px);
+      margin-bottom: 4px;
+      letter-spacing: -.055em;
+    }
+
+    #ideaTags {
+      display: none;
     }
 
     .input-dock {
       position: fixed;
-      right: max(18px, env(safe-area-inset-right));
-      top: max(18px, env(safe-area-inset-top));
-      z-index: 10;
-      width: min(360px, calc(100vw - 36px));
+      right: max(28px, env(safe-area-inset-right));
+      top: max(28px, env(safe-area-inset-top));
+      z-index: 20;
+      width: min(370px, calc(100vw - 56px));
       padding: 10px;
       border-radius: 999px;
-      background: rgba(10, 7, 24, .56);
-      border: 1px solid rgba(255,255,255,.14);
+      background: var(--glass);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(16px);
       display: flex;
       gap: 8px;
+      box-shadow: 0 18px 70px rgba(0,0,0,.26);
     }
 
     .input-dock input {
@@ -99,9 +203,9 @@
       outline: 0;
       color: white;
       background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.12);
       border-radius: 999px;
-      padding: 11px 13px;
+      padding: 12px 14px;
       font: inherit;
     }
 
@@ -110,7 +214,7 @@
     .input-dock button {
       border: 0;
       border-radius: 999px;
-      padding: 0 14px;
+      padding: 0 15px;
       color: #110925;
       background: linear-gradient(135deg, #f4edff, #aeeaff);
       font-weight: 900;
@@ -120,18 +224,20 @@
     .panel {
       position: fixed;
       left: 50%;
-      bottom: max(24px, env(safe-area-inset-bottom));
+      bottom: max(34px, env(safe-area-inset-bottom));
       transform: translateX(-50%);
-      z-index: 8;
-      width: min(620px, calc(100vw - 36px));
-      padding: 15px 17px;
-      border-radius: 22px;
-      background: rgba(10, 7, 24, .68);
-      border: 1px solid rgba(255,255,255,.15);
+      z-index: 15;
+      width: min(620px, calc(100vw - 40px));
+      padding: 16px 18px;
+      border-radius: 24px;
+      background: rgba(10, 7, 24, .60);
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 90px rgba(0,0,0,.34);
+      backdrop-filter: blur(16px);
       opacity: 0;
-      translate: 0 12px;
+      translate: 0 14px;
       pointer-events: none;
-      transition: opacity .18s ease, translate .18s ease;
+      transition: opacity .2s ease, translate .2s ease;
     }
 
     .panel.show {
@@ -141,15 +247,15 @@
 
     .panel .eyebrow {
       color: var(--cyan);
-      font-size: 11px;
+      font-size: 12px;
       letter-spacing: .16em;
       text-transform: uppercase;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
 
     .panel .selected {
-      font-size: clamp(22px, 5.4vw, 34px);
-      line-height: 1.14;
+      font-size: clamp(22px, 3.2vw, 36px);
+      line-height: 1.15;
       letter-spacing: -.06em;
       font-weight: 800;
     }
@@ -157,8 +263,8 @@
     .panel .desc {
       margin-top: 8px;
       color: rgba(245,238,255,.70);
-      line-height: 1.48;
-      font-size: 13px;
+      line-height: 1.5;
+      font-size: 14px;
     }
 
     .detail-modal {
@@ -167,11 +273,14 @@
       z-index: 50;
       display: grid;
       place-items: center;
-      padding: 24px;
-      background: rgba(3, 2, 9, .78);
+      padding: 28px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(116,89,210,.18), transparent 34%),
+        rgba(3,2,9,.72);
+      backdrop-filter: blur(10px);
       opacity: 0;
       pointer-events: none;
-      transition: opacity .18s ease;
+      transition: opacity .2s ease;
     }
 
     .detail-modal.show {
@@ -180,14 +289,18 @@
     }
 
     .modal-card {
-      width: min(680px, calc(100vw - 36px));
-      max-height: min(76dvh, 720px);
+      width: min(680px, calc(100vw - 40px));
+      max-height: min(74vh, 720px);
       overflow: auto;
-      border-radius: 28px;
-      padding: 24px;
-      background: rgba(12, 8, 30, .95);
-      border: 1px solid rgba(255,255,255,.18);
-      box-shadow: 0 30px 100px rgba(0,0,0,.52);
+      border-radius: 30px;
+      padding: 26px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.06)),
+        rgba(12,8,30,.90);
+      border: 1px solid rgba(255,255,255,.20);
+      box-shadow:
+        0 30px 120px rgba(0,0,0,.58),
+        0 0 70px rgba(159,108,255,.22);
     }
 
     .modal-top {
@@ -208,7 +321,7 @@
 
     .modal-title {
       margin: 0;
-      font-size: clamp(26px, 7vw, 46px);
+      font-size: clamp(26px, 4vw, 46px);
       letter-spacing: -.065em;
       line-height: 1.05;
     }
@@ -258,50 +371,72 @@
       background: linear-gradient(135deg, #f4edff, #aeeaff);
     }
 
-    .perf {
+    .status {
       position: fixed;
-      left: max(18px, env(safe-area-inset-left));
-      bottom: max(18px, env(safe-area-inset-bottom));
-      z-index: 6;
-      color: rgba(245,238,255,.48);
+      right: max(28px, env(safe-area-inset-right));
+      bottom: max(28px, env(safe-area-inset-bottom));
+      z-index: 12;
+      padding: 10px 13px;
+      color: rgba(245,238,255,.62);
+      border: 1px solid var(--line);
+      background: rgba(10,7,24,.42);
+      border-radius: 999px;
       font-size: 12px;
-      pointer-events: none;
+      backdrop-filter: blur(14px);
     }
 
     @media (max-width: 760px) {
+      body::before {
+        opacity: .16;
+        animation: none;
+      }
+
       .title {
         top: max(18px, env(safe-area-inset-top));
         left: 18px;
+        max-width: 230px;
       }
 
       .title h1 {
-        font-size: 40px;
+        font-size: 42px;
       }
 
       .title p {
-        max-width: 220px;
         font-size: 12px;
       }
 
+      .canvas-wrap {
+        width: 100vmin;
+        height: 100vmin;
+        margin-top: -8vh;
+      }
+
+      .well {
+        width: 130px;
+        height: 130px;
+      }
+
       .input-dock {
-        top: auto;
         left: 14px;
         right: 14px;
-        bottom: calc(96px + env(safe-area-inset-bottom));
+        top: auto;
+        bottom: calc(94px + env(safe-area-inset-bottom));
         width: auto;
+        backdrop-filter: none;
       }
 
       .panel {
         bottom: calc(160px + env(safe-area-inset-bottom));
+        backdrop-filter: none;
       }
 
-      .perf {
+      .status {
         display: none;
       }
-    }
 
-    @media (prefers-reduced-motion: reduce) {
-      body::before { display: none; }
+      .detail-modal {
+        backdrop-filter: none;
+      }
     }
   </style>
 </head>
@@ -312,7 +447,20 @@
       <p>생각 한 가닥을 꺼내 우물에 떨어뜨리면, 아이디어들이 천체처럼 공전합니다.</p>
     </section>
 
-    <canvas id="scene"></canvas>
+    <section class="canvas-wrap">
+      <canvas width="760" height="760" id="ideaCanvas">
+        현재 브라우저는 canvas를 지원하지 않습니다.
+      </canvas>
+
+      <div class="well">
+        <div class="well-label">
+          <strong>펜시브</strong>
+          기억의 수면
+        </div>
+      </div>
+
+      <div id="ideaTags"></div>
+    </section>
 
     <form class="input-dock" id="ideaForm">
       <input id="ideaInput" autocomplete="off" placeholder="기억 한 가닥을 적어보기" />
@@ -322,7 +470,7 @@
     <section class="panel" id="panel">
       <div class="eyebrow">selected memory</div>
       <div class="selected" id="selectedText">기억 저장소</div>
-      <div class="desc">가운데 근처로 포인터를 가져가면 별자리 전체가 재정렬되며 가장 가까운 기억이 전면에 고정됩니다. 탭하면 상세 내용을 엽니다.</div>
+      <div class="desc">태그 위에 마우스를 올리면 회전이 감속되고, 클릭하면 기억이 앞으로 다가온 뒤 상세 내용을 엽니다.</div>
     </section>
 
     <section class="detail-modal" id="detailModal" aria-hidden="true">
@@ -342,13 +490,14 @@
       </article>
     </section>
 
-    <div class="perf" id="perf">canvas mode · mobile optimized</div>
+    <div class="status" id="status">TagCanvas mode</div>
   </main>
 
+  <script src="https://www.goat1000.com/tagcanvas.min.js"></script>
   <script>
     (() => {
-      const canvas = document.getElementById("scene");
-      const ctx = canvas.getContext("2d", { alpha: true });
+      const canvas = document.getElementById("ideaCanvas");
+      const tagHolder = document.getElementById("ideaTags");
       const form = document.getElementById("ideaForm");
       const input = document.getElementById("ideaInput");
       const panel = document.getElementById("panel");
@@ -359,20 +508,10 @@
       const modalClose = document.getElementById("modalClose");
       const modalDone = document.getElementById("modalDone");
       const modalOpenPage = document.getElementById("modalOpenPage");
+      const status = document.getElementById("status");
 
-      const isSmall = matchMedia("(max-width: 760px)").matches;
-      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      const config = {
-        dprCap: isSmall ? 1.5 : 2,
-        fps: isSmall ? 30 : 60,
-        maxItems: isSmall ? 14 : 22,
-        shadows: !isSmall,
-        blur: false,
-        stars: !isSmall ? 140 : 55
-      };
-
-      const seedIdeas = [
+      const isMobile = matchMedia("(max-width: 760px)").matches;
+      const data = [
         {
           title: "비밀번호 대신 기억 조각으로 로그인",
           detail: "정답 문자열이 아니라 사용자의 기억 조각을 조합해서 인증하는 UX. 보안 기능이라기보다 시적이고 개인적인 온보딩 경험에 가깝다.",
@@ -385,12 +524,12 @@
         },
         {
           title: "혼잣말을 저장하는 작은 우물",
-          detail: "메모는 너무 생산성 도구 같고, 일기는 너무 부담스럽다. 그 사이 어딘가에 있는 저장소. 사용자는 완성된 문장을 쓰지 않아도 된다. 생각의 파편, 감정의 찌꺼기, 이상하게 남은 이미지, 이름 붙일 수 없는 느낌을 그냥 떨어뜨린다.\n\n우물은 정리하지 않는다. 다만 가라앉히고, 보존하고, 언젠가 다시 떠오르게 한다. 나중에 특정 단어를 클릭하면 그 기억이 수면 위로 올라오고, 그때의 날짜와 주변 단어들이 같이 열린다.\n\n이 서비스의 핵심은 검색이 아니라 회상이다. 사용자가 찾으려는 것을 정확히 몰라도, 근처를 맴돌다 보면 기억이 먼저 반응하는 구조.",
+          detail: "메모는 너무 생산성 도구 같고, 일기는 너무 부담스럽다. 그 사이 어딘가에 있는 저장소. 사용자는 완성된 문장을 쓰지 않아도 된다. 생각의 파편, 감정의 찌꺼기, 이상하게 남은 이미지, 이름 붙일 수 없는 느낌을 그냥 떨어뜨린다.\n\n우물은 정리하지 않는다. 다만 가라앉히고, 보존하고, 언젠가 다시 떠오르게 한다. 나중에 특정 단어를 클릭하면 그 기억이 수면 위로 올라오고, 그때의 날짜와 주변 단어들이 같이 열린다.\n\n이 서비스의 핵심은 검색이 아니라 회상이다.",
           openMode: "page"
         },
         { title: "언젠가 만들 서비스 이름", detail: "아직 구현보다 이름이 먼저 떠오른 프로젝트들을 저장하는 별도 컬렉션.", openMode: "modal" },
         { title: "밤 2시에 떠오른 문장", detail: "낮에는 민망하지만 새벽에는 확실해 보였던 문장들을 버리지 않고 저장한다.", openMode: "modal" },
-        { title: "사라지기 직전의 기획", detail: "회의록이나 PRD가 되기 전, 거의 사라질 뻔한 기획의 전 단계. 설명하면 약해지는 것들을 임시 보관한다.", openMode: "modal" },
+        { title: "사라지기 직전의 기획", detail: "회의록이나 PRD가 되기 전, 거의 사라질 뻔한 기획의 전 단계.", openMode: "modal" },
         { title: "아이디어의 중력", detail: "아이디어들은 같은 무게로 존재하지 않는다. 어떤 것은 자꾸 주변 생각을 끌어당기고, 어떤 것은 멀리서만 돈다.", openMode: "modal" },
         { title: "좋은데 설명하기 어려운 느낌", detail: "논리보다 먼저 오는 확신. 아직 근거는 없지만 이상하게 계속 마음에 남는 감각.", openMode: "modal" },
         { title: "폴더가 아니라 수면 아래", detail: "분류하지 않고 가라앉히는 저장 방식. 폴더 대신 깊이, 태그 대신 파문.", openMode: "modal" },
@@ -400,117 +539,106 @@
         { title: "태그가 아니라 별자리", detail: "태그 클라우드가 아니라 별자리. 클릭하면 주변 별들이 같이 반응해야 한다.", openMode: "modal" },
         { title: "기억을 클릭하면 수면이 열린다", detail: "상세 화면은 카드가 튀어나오는 느낌보다, 수면이 열리고 아래에 있던 기억이 드러나는 느낌이어야 한다.", openMode: "modal" },
         { title: "아직 이름 없는 프로젝트", detail: "이름 붙이기 전의 프로젝트는 너무 쉽게 사라진다.", openMode: "modal" },
-        { title: "문장 이전의 감각", detail: "문장이 되기 전의 감각도 저장할 수 있는가? 색, 온도, 질감, 음악 같은 입력이 필요할 수 있다.", openMode: "modal" },
-        { title: "가까이 가면 멈추는 생각", detail: "마우스를 중앙에 가져가면 선택된 기억이 멈춘다.", openMode: "modal" },
-        { title: "메모 앱 말고 의식의 창고", detail: "생산성 중심의 메모 앱과 다르게, 애망시브는 정리보다 보존과 회상에 초점을 둔다.", openMode: "modal" },
-        { title: "아무도 안 볼 초안", detail: "공개하지 않을 생각일수록 오래 보관할 가치가 있다.", openMode: "modal" },
-        { title: "오늘의 이상한 확신", detail: "근거는 부족하지만 왠지 맞을 것 같은 확신을 날짜와 함께 저장한다.", openMode: "modal" }
-      ].slice(0, config.maxItems);
+        { title: "문장 이전의 감각", detail: "문장이 되기 전의 감각도 저장할 수 있는가?", openMode: "modal" }
+      ];
 
-      let W = 0, H = 0, DPR = 1, cx = 0, cy = 0, radius = 260;
-      let memories = [];
-      let stars = [];
-      let rotation = { x: -0.35, y: 0.55 };
-      let velocity = { x: 0.0015, y: 0.003 };
-      let pointer = { x: 0, y: 0, sx: 0, sy: 0, inside: false, down: false };
-      let active = null;
-      let sphereShift = { x: 0, y: 0 };
-      let lastTime = 0;
-      let frameInterval = 1000 / config.fps;
-
-      function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
-
-      function distribute(index, total) {
-        const golden = Math.PI * (3 - Math.sqrt(5));
-        const y = 1 - (index / Math.max(1, total - 1)) * 2;
-        const r = Math.sqrt(Math.max(0, 1 - y * y));
-        const theta = golden * index;
-        return { x: Math.cos(theta) * r, y, z: Math.sin(theta) * r };
+      function resizeCanvas() {
+        const wrap = canvas.parentElement.getBoundingClientRect();
+        const size = Math.floor(Math.min(wrap.width, wrap.height));
+        const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
+        canvas.width = Math.floor(size * dpr);
+        canvas.height = Math.floor(size * dpr);
+        canvas.style.width = size + "px";
+        canvas.style.height = size + "px";
       }
 
-      function rotatePoint(p, rx, ry) {
-        const cosX = Math.cos(rx), sinX = Math.sin(rx);
-        const cosY = Math.cos(ry), sinY = Math.sin(ry);
-        const y1 = p.y * cosX - p.z * sinX;
-        const z1 = p.y * sinX + p.z * cosX;
-        const x2 = p.x * cosY + z1 * sinY;
-        const z2 = -p.x * sinY + z1 * cosY;
-        return { x: x2, y: y1, z: z2 };
-      }
-
-      function normalizeIdea(idea) {
-        if (typeof idea === "string") return { title: idea, detail: "상세 내용이 없습니다.", openMode: "modal" };
-        return {
-          title: idea.title || "제목 없는 기억",
-          detail: idea.detail || "상세 내용이 없습니다.",
-          openMode: idea.openMode || "auto",
-          url: idea.url || null,
-          createdAt: idea.createdAt || new Date().toISOString()
-        };
-      }
-
-      function rebuildPositions() {
-        radius = Math.min(W, H) * (isSmall ? 0.34 : 0.36);
-        memories.forEach((m, i) => { m.home = distribute(i, memories.length); });
-      }
-
-      function makeMemory(idea) {
-        const data = normalizeIdea(idea);
-        memories.push({
-          ...data,
-          home: { x: 0, y: 0, z: 0 },
-          screen: { x: 0, y: 0, z: 0 },
-          box: { x: 0, y: 0, w: 0, h: 0 },
-          focus: 0
+      function renderTagLinks() {
+        tagHolder.innerHTML = "";
+        data.forEach((item, index) => {
+          const a = document.createElement("a");
+          a.href = "#";
+          a.textContent = item.title;
+          a.dataset.index = String(index);
+          a.addEventListener("click", (event) => {
+            event.preventDefault();
+            selectMemory(index, true);
+          });
+          tagHolder.appendChild(a);
         });
-        if (memories.length > config.maxItems + 4) memories.shift();
-        rebuildPositions();
       }
 
-      function resize() {
-        DPR = Math.min(devicePixelRatio || 1, config.dprCap);
-        W = innerWidth;
-        H = innerHeight;
-        canvas.width = Math.round(W * DPR);
-        canvas.height = Math.round(H * DPR);
-        canvas.style.width = W + "px";
-        canvas.style.height = H + "px";
-        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-        cx = W / 2;
-        cy = H / 2 + (isSmall ? -22 : 10);
-        rebuildPositions();
-        stars = Array.from({ length: config.stars }, () => ({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          r: Math.random() * 1.3 + 0.2,
-          a: Math.random() * 0.45 + 0.1
-        }));
+      function startTagCanvas() {
+        if (!window.TagCanvas) {
+          status.textContent = "TagCanvas CDN 로드 실패";
+          return;
+        }
+
+        try {
+          TagCanvas.Delete("ideaCanvas");
+        } catch (_) {}
+
+        resizeCanvas();
+        renderTagLinks();
+
+        const ok = TagCanvas.Start("ideaCanvas", "ideaTags", {
+          textColour: "#efe8ff",
+          textHeight: isMobile ? 17 : 22,
+          textFont: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Apple SD Gothic Neo, Noto Sans KR, sans-serif",
+          weight: true,
+          weightFrom: "data-weight",
+          weightMode: "size",
+          weightSize: 1.0,
+
+          outlineMethod: "block",
+          outlineColour: "rgba(255,255,255,0.20)",
+          outlineThickness: 1,
+          outlineOffset: 8,
+          outlineRadius: 18,
+
+          shadow: isMobile ? null : "rgba(165, 130, 255, 0.55)",
+          shadowBlur: isMobile ? 0 : 8,
+          shadowOffset: [0, 0],
+
+          reverse: true,
+          depth: 0.88,
+          maxSpeed: isMobile ? 0.035 : 0.055,
+          minSpeed: 0.006,
+          initial: [0.08, -0.04],
+          decel: 0.96,
+          dragControl: true,
+          dragThreshold: 4,
+          wheelZoom: false,
+
+          freezeActive: true,
+          freezeDecel: true,
+          activeCursor: "pointer",
+
+          clickToFront: 650,
+          pinchZoom: false,
+          noSelect: true,
+          noMouse: false,
+          imageMode: null,
+          tooltip: null,
+          centreImage: null,
+          fadeIn: 500,
+          interval: isMobile ? 35 : 20,
+          lock: null
+        });
+
+        status.textContent = ok ? "TagCanvas mode" : "TagCanvas 시작 실패";
       }
 
-      function pointerFromEvent(e) {
-        const t = e.touches ? e.touches[0] : e;
-        if (!t) return;
-        pointer.sx = t.clientX;
-        pointer.sy = t.clientY;
-        pointer.x = ((t.clientX - cx) / Math.min(W, H)) * 2.2;
-        pointer.y = ((t.clientY - cy) / Math.min(W, H)) * 2.2;
-        pointer.inside = true;
-      }
+      function selectMemory(index, openDetail) {
+        const item = data[index];
+        if (!item) return;
 
-      addEventListener("resize", resize);
-      addEventListener("pointermove", pointerFromEvent, { passive: true });
-      addEventListener("pointerdown", (e) => { pointer.down = true; pointerFromEvent(e); handleTap(); }, { passive: true });
-      addEventListener("pointerup", () => { pointer.down = false; }, { passive: true });
-      addEventListener("pointerleave", () => { pointer.inside = false; }, { passive: true });
-      addEventListener("touchmove", pointerFromEvent, { passive: true });
-
-      function showPanel(item) {
         selectedText.textContent = item.title;
         panel.classList.add("show");
-      }
 
-      function hidePanel() {
-        panel.classList.remove("show");
+        // TagCanvas가 클릭된 태그를 앞으로 가져오는 동안 살짝 늦게 상세를 연다.
+        if (openDetail) {
+          setTimeout(() => openMemory(item), 260);
+        }
       }
 
       function shouldOpenAsPage(item) {
@@ -549,275 +677,86 @@
 
       function openDetailPage(item) {
         if (item.url) {
-          open(item.url, "_blank", "noopener,noreferrer");
+          window.open(item.url, "_blank", "noopener,noreferrer");
           return;
         }
 
         const title = escapeHTML(item.title);
         const detail = escapeHTML(item.detail || "상세 내용이 없습니다.").replaceAll("\n", "<br />");
-        const page = `<!doctype html><html lang="ko"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>${title}</title><style>
-          :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;color:#f6f0ff;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:radial-gradient(circle at 50% 20%,rgba(138,104,255,.24),transparent 34%),#05030b}main{width:min(860px,calc(100vw - 36px));margin:0 auto;padding:72px 0}.kicker{color:#8feaff;font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px}h1{margin:0 0 26px;font-size:clamp(38px,7vw,82px);line-height:.95;letter-spacing:-.075em}article{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);border-radius:32px;padding:clamp(24px,4vw,44px)}.body{color:rgba(246,240,255,.84);font-size:18px;line-height:1.82}.back{display:inline-flex;margin-top:28px;color:#110925;background:linear-gradient(135deg,#f4edff,#aeeaff);text-decoration:none;font-weight:900;padding:12px 16px;border-radius:999px}
-        </style></head><body><main><div class="kicker">memory detail</div><h1>${title}</h1><article><div class="body">${detail}</div><a class="back" href="javascript:window.close()">우물로 돌아가기</a></article></main></body></html>`;
+        const page = `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${title} — Aemangsieve</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: #f6f0ff;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: radial-gradient(circle at 50% 20%, rgba(138,104,255,.24), transparent 34%), #05030b;
+    }
+    main { width: min(860px, calc(100vw - 36px)); margin: 0 auto; padding: 72px 0; }
+    .kicker { color: #8feaff; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 14px; }
+    h1 { margin: 0 0 26px; font-size: clamp(38px, 7vw, 82px); line-height: .95; letter-spacing: -.075em; }
+    article { border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.07); border-radius: 32px; padding: clamp(24px, 4vw, 44px); }
+    .body { color: rgba(246,240,255,.84); font-size: 18px; line-height: 1.82; }
+    .back { display: inline-flex; margin-top: 28px; color: #110925; background: linear-gradient(135deg,#f4edff,#aeeaff); text-decoration: none; font-weight: 900; padding: 12px 16px; border-radius: 999px; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="kicker">memory detail</div>
+    <h1>${title}</h1>
+    <article>
+      <div class="body">${detail}</div>
+      <a class="back" href="javascript:window.close()">우물로 돌아가기</a>
+    </article>
+  </main>
+</body>
+</html>`;
 
         const blob = new Blob([page], { type: "text/html;charset=utf-8" });
         const url = URL.createObjectURL(blob);
-        open(url, "_blank", "noopener,noreferrer");
+        window.open(url, "_blank", "noopener,noreferrer");
         setTimeout(() => URL.revokeObjectURL(url), 60000);
       }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        data.push({
+          title: text,
+          detail: "방금 떨어뜨린 새 기억입니다. 여기에는 상세 메모, 참고 링크, 다음에 할 일 등을 붙일 수 있습니다.",
+          openMode: "modal"
+        });
+
+        input.value = "";
+        startTagCanvas();
+        selectMemory(data.length - 1, false);
+      });
 
       modalClose.addEventListener("click", closeDetailModal);
       modalDone.addEventListener("click", closeDetailModal);
       detailModal.addEventListener("click", (event) => {
         if (event.target === detailModal) closeDetailModal();
       });
-      addEventListener("keydown", (event) => {
+      window.addEventListener("keydown", (event) => {
         if (event.key === "Escape") closeDetailModal();
       });
 
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const text = input.value.trim();
-        if (!text) return;
-        makeMemory({
-          title: text,
-          detail: "방금 떨어뜨린 새 기억입니다. 여기에는 상세 메모, 참고 링크, 다음에 할 일 등을 붙일 수 있습니다.",
-          openMode: "modal"
-        });
-        active = memories[memories.length - 1];
-        showPanel(active);
-        input.value = "";
+      let resizeTimer = null;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(startTagCanvas, 180);
       });
 
-      function handleTap() {
-        let hit = null;
-        for (let i = memories.length - 1; i >= 0; i--) {
-          const m = memories[i];
-          const b = m.box;
-          if (
-            pointer.sx >= b.x &&
-            pointer.sx <= b.x + b.w &&
-            pointer.sy >= b.y &&
-            pointer.sy <= b.y + b.h
-          ) {
-            hit = m;
-            break;
-          }
-        }
-
-        if (hit) {
-          active = hit;
-          showPanel(hit);
-          openMemory(hit);
-        }
-      }
-
-      function pickCenterCandidate() {
-        const dist = Math.hypot(pointer.x, pointer.y);
-        if (!pointer.inside || dist > 0.38) return null;
-
-        let best = null;
-        let bestScore = -Infinity;
-        for (const m of memories) {
-          const centerCloseness = 1 - Math.hypot(m.screen.x, m.screen.y) / (radius * 1.15);
-          const score = centerCloseness * 2 + m.screen.z;
-          if (score > bestScore) {
-            bestScore = score;
-            best = m;
-          }
-        }
-        return best;
-      }
-
-      function roundRect(ctx, x, y, w, h, r) {
-        const rr = Math.min(r, w / 2, h / 2);
-        ctx.beginPath();
-        ctx.moveTo(x + rr, y);
-        ctx.arcTo(x + w, y, x + w, y + h, rr);
-        ctx.arcTo(x + w, y + h, x, y + h, rr);
-        ctx.arcTo(x, y + h, x, y, rr);
-        ctx.arcTo(x, y, x + w, y, rr);
-        ctx.closePath();
-      }
-
-      function drawBackground() {
-        ctx.clearRect(0, 0, W, H);
-
-        for (const s of stars) {
-          ctx.globalAlpha = s.a;
-          ctx.fillStyle = "#ffffff";
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-      }
-
-      function drawWell(t) {
-        const r = Math.min(W, H) * (isSmall ? 0.13 : 0.145);
-        const pulse = active ? 1.04 : 1;
-        const rr = r * pulse;
-
-        const g = ctx.createRadialGradient(cx, cy - rr * .15, rr * .05, cx, cy, rr);
-        g.addColorStop(0, "rgba(235,247,255,.78)");
-        g.addColorStop(.24, "rgba(151,127,255,.32)");
-        g.addColorStop(.58, "rgba(33,18,66,.78)");
-        g.addColorStop(1, "rgba(5,3,12,.96)");
-
-        ctx.save();
-        if (config.shadows) {
-          ctx.shadowColor = "rgba(171,141,255,.7)";
-          ctx.shadowBlur = active ? 42 : 30;
-        }
-
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(cx, cy, rr, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = "rgba(255,255,255,.28)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.strokeStyle = "rgba(210,230,255,.22)";
-        for (let i = 1; i <= 4; i++) {
-          ctx.beginPath();
-          ctx.arc(cx, cy, rr * (0.18 + i * 0.13 + Math.sin(t * 0.002 + i) * 0.01), 0, Math.PI * 2);
-          ctx.stroke();
-        }
-
-        ctx.fillStyle = "rgba(250,246,255,.92)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.font = `800 ${isSmall ? 22 : 28}px ui-sans-serif, system-ui`;
-        ctx.fillText("펜시브", cx, cy - 7);
-        ctx.font = `${isSmall ? 11 : 13}px ui-sans-serif, system-ui`;
-        ctx.fillStyle = "rgba(245,238,255,.66)";
-        ctx.fillText("기억의 수면", cx, cy + 20);
-        ctx.restore();
-      }
-
-      function wrapWidth(text, scale) {
-        return Math.min(isSmall ? W * .72 : 360, Math.max(88, ctx.measureText(text).width + 30 * scale));
-      }
-
-      function drawMemory(m, depth, t) {
-        const isActive = m === active;
-        const scale = (0.62 + depth * 0.78) * (1 - m.focus) + 1.34 * m.focus;
-        const fontSize = (isSmall ? 13 : 15) * scale;
-        ctx.font = `800 ${fontSize}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR"`;
-        const w = wrapWidth(m.title, scale);
-        const h = 28 * scale;
-        const x = cx + m.screen.x - w / 2;
-        const y = cy + m.screen.y - h / 2;
-
-        const centerCollision = active && !isActive && Math.hypot(m.screen.x, m.screen.y) < radius * .32;
-        const alpha = clamp((0.22 + depth * .65 + m.focus * .24) * (centerCollision ? .18 : 1), .06, 1);
-
-        m.box = { x, y, w, h };
-
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        if (config.shadows && isActive) {
-          ctx.shadowColor = "rgba(166,132,255,.72)";
-          ctx.shadowBlur = 32;
-        }
-
-        roundRect(ctx, x, y, w, h, h / 2);
-        ctx.fillStyle = isActive ? "rgba(255,255,255,.20)" : "rgba(255,255,255,.07)";
-        ctx.fill();
-        ctx.strokeStyle = isActive ? "rgba(255,255,255,.62)" : "rgba(255,255,255,.15)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = isActive ? "rgba(255,255,255,.98)" : "rgba(238,230,255,.86)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(m.title, x + w / 2, y + h / 2 + 0.5);
-        ctx.restore();
-      }
-
-      function tick(now) {
-        requestAnimationFrame(tick);
-        if (now - lastTime < frameInterval) return;
-        lastTime = now;
-
-        if (reduceMotion) {
-          velocity.x *= 0.8;
-          velocity.y *= 0.8;
-        }
-
-        const pointerStrength = pointer.inside ? clamp(Math.hypot(pointer.x, pointer.y), 0, 1) : 0;
-        const centerCandidate = pickCenterCandidate();
-
-        if (centerCandidate) {
-          active = centerCandidate;
-          showPanel(active);
-        } else if (pointer.inside && Math.hypot(pointer.x, pointer.y) > 0.58 && !pointer.down) {
-          active = null;
-          hidePanel();
-        }
-
-        const targetVX = pointer.inside ? pointer.y * 0.014 * pointerStrength : 0.0012;
-        const targetVY = pointer.inside ? pointer.x * 0.020 * pointerStrength : 0.0024;
-        const freeze = active && pointer.inside && Math.hypot(pointer.x, pointer.y) < 0.48;
-
-        velocity.x += (targetVX - velocity.x) * (freeze ? 0.02 : 0.055);
-        velocity.y += (targetVY - velocity.y) * (freeze ? 0.02 : 0.055);
-        if (freeze) {
-          velocity.x *= 0.90;
-          velocity.y *= 0.90;
-        }
-
-        rotation.x += velocity.x;
-        rotation.y += velocity.y;
-
-        let targetShift = { x: 0, y: 0 };
-        if (active) {
-          const ar = rotatePoint(active.home, rotation.x, rotation.y);
-          targetShift.x = -ar.x * radius * active.focus;
-          targetShift.y = -ar.y * radius * active.focus;
-        }
-        sphereShift.x += (targetShift.x - sphereShift.x) * 0.12;
-        sphereShift.y += (targetShift.y - sphereShift.y) * 0.12;
-
-        const drawList = [];
-        for (const m of memories) {
-          const r = rotatePoint(m.home, rotation.x, rotation.y);
-          const focusTarget = m === active ? 1 : 0;
-          m.focus += (focusTarget - m.focus) * 0.13;
-
-          const orbitX = r.x * radius + sphereShift.x;
-          const orbitY = r.y * radius + sphereShift.y;
-          const x = orbitX * (1 - m.focus);
-          const y = orbitY * (1 - m.focus);
-          const z = r.z + m.focus * 1.4;
-          m.screen = { x, y, z };
-          drawList.push({ m, depth: clamp((z + 1) / 2, 0, 1.25) });
-        }
-
-        drawList.sort((a, b) => a.depth - b.depth);
-        drawBackground();
-        drawWell(now);
-        for (const item of drawList) drawMemory(item.m, item.depth, now);
-
-        if (active && active.focus > .25) {
-          ctx.save();
-          ctx.strokeStyle = "rgba(229,240,255,.44)";
-          ctx.lineWidth = 1;
-          ctx.setLineDash([5, 8]);
-          ctx.beginPath();
-          ctx.moveTo(cx + active.screen.x, cy + active.screen.y);
-          ctx.quadraticCurveTo(cx + active.screen.x * .4 + Math.sin(now * .003) * 24, cy + active.screen.y * .4 - 50, cx, cy);
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
-
-      seedIdeas.forEach(makeMemory);
-      resize();
-      requestAnimationFrame(tick);
+      window.addEventListener("load", startTagCanvas);
     })();
   </script>
 </body>
