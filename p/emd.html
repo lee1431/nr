@@ -367,7 +367,7 @@
     <section class="panel" id="panel">
       <div class="eyebrow">selected memory</div>
       <div class="selected" id="selectedText">기억 저장소</div>
-      <div class="desc">태그 위에 마우스를 올리면 회전이 감속되고, 클릭하면 선택한 기억의 상세 내용을 엽니다.</div>
+      <div class="desc">태그를 클릭하면 즉시 선택한 기억의 상세 내용을 엽니다. 마우스를 올리면 회전이 감속됩니다.</div>
     </section>
 
     <section class="detail-modal" id="detailModal" aria-hidden="true">
@@ -411,6 +411,14 @@
       const status = document.getElementById("status");
 
       const isMobile = matchMedia("(max-width: 760px)").matches;
+
+      // TagCanvas는 실제 DOM 링크의 href를 따라가는 방식으로 클릭을 처리한다.
+      // 그래서 hidden anchor의 onclick만 믿지 않고, javascript: href에서도 접근 가능한
+      // 전역 선택 함수를 열어둔다.
+      window.__aemangsieveSelect = function(index) {
+        selectMemory(Number(index), true);
+        return false;
+      };
 
       let data = [];
       let rawStore = null;
@@ -613,12 +621,13 @@
           const li = document.createElement("li");
           const a = document.createElement("a");
 
-          a.href = "javascript:void(0)";
+          a.href = "javascript:window.__aemangsieveSelect(" + index + ")";
           a.textContent = item.title;
           a.setAttribute("data-index", String(index));
           a.style.fontSize = isMobile ? "16px" : "20px";
           a.style.color = "#efe8ff";
-          a.onclick = function () {
+          a.onclick = function (event) {
+            if (event) event.preventDefault();
             selectMemory(index, true);
             return false;
           };
@@ -668,8 +677,10 @@
             freezeActive: true,
             freezeDecel: true,
             activeCursor: "pointer",
-            clickToFront: 650,
-            frontSelect: true,
+            // clickToFront를 켜면 첫 클릭이 "앞으로 이동"에 소비되어
+            // 상세 모달이 바로 열리지 않는 경우가 있다. 클릭 UX 우선.
+            clickToFront: false,
+            frontSelect: false,
 
             fadeIn: 500,
             interval: isMobile ? 35 : 20,
