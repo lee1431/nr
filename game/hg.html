@@ -400,16 +400,16 @@ function tick(){
   const t = now();
   const dt = t - lastT;
   lastT = t;
+  
   const every = chestEvery();
   state.chestTimer -= dt;
 
-  if(state.chestTimer <= 0){
+  while(state.chestTimer <= 0){
     state.chest += 1;
-    state.chestTimer = every;
+    state.chestTimer += every;
     appendLog(`<span style="color:#31d2ff"><b>[알림]</b> 상자가 도착했습니다!</span>`);
   }
   
-  // 프로그레스 바 UI 업데이트 (0% -> 100% 차오르는 애니메이션)
   const percent = Math.max(0, Math.min(100, ((every - state.chestTimer) / every) * 100));
   $("chestProgress").style.width = percent + "%";
 
