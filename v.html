@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>내가 보는 뷰</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --panel: #141414;
+      --line: #282828;
+      --text: #f2f2f2;
+      --muted: #969696;
+      --dim: #5f5f5f;
+      --accent: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      width: min(960px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 42px 0 72px;
+    }
+
+    header {
+      display: grid;
+      place-items: center;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .logo {
+      width: min(340px, 68vw);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 0 28px rgba(255,255,255,0.26));
+    }
+
+    .intro {
+      max-width: 460px;
+      margin: 18px auto 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .count {
+      color: var(--dim);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 0;
+      margin-bottom: 10px;
+    }
+
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    button, input { font: inherit; }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #000;
+    }
+
+    input {
+      width: 180px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 11px;
+      background: transparent;
+      color: var(--text);
+      outline: none;
+      font-size: 13px;
+    }
+
+    .feed {
+      display: grid;
+      border-top: 1px solid var(--line);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 92px 1fr 96px 86px;
+      gap: 12px;
+      align-items: baseline;
+      min-height: 48px;
+      border-bottom: 1px solid var(--line);
+      padding: 11px 0;
+    }
+
+    .date, .horizon, .status {
+      color: var(--dim);
+      font-size: 13px;
+    }
+
+    .title {
+      min-width: 0;
+      color: var(--text);
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .title small {
+      display: inline-block;
+      margin-right: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status.done { color: var(--text); }
+    .status.watch { color: var(--muted); }
+
+    details {
+      grid-column: 2 / -1;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    summary {
+      width: fit-content;
+      color: var(--dim);
+      cursor: pointer;
+      font-size: 13px;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .detail {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+    }
+
+    .detail p { margin: 6px 0; }
+    .detail b { color: var(--text); font-weight: 500; }
+
+    .empty {
+      padding: 26px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    footer {
+      margin-top: 28px;
+      color: var(--dim);
+      font-size: 12px;
+    }
+
+    @media (max-width: 720px) {
+      header { display: block; }
+      .count { margin-top: 14px; }
+      .toolbar { align-items: stretch; flex-direction: column; }
+      input { width: 100%; }
+      .row {
+        grid-template-columns: 72px 1fr;
+        gap: 4px 10px;
+      }
+      .horizon, .status { font-size: 12px; }
+      details { grid-column: 2 / -1; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <svg class="logo" viewBox="0 0 716 360" role="img" aria-label="내가 보는 뷰 로고" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="12" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <path d="M96 188C160 108 246 68 358 68C470 68 556 108 620 188C556 268 470 308 358 308C246 308 160 268 96 188Z" fill="none" stroke="white" stroke-width="28" stroke-linejoin="round" filter="url(#glow)" />
+        <circle cx="358" cy="188" r="70" fill="none" stroke="white" stroke-width="24" />
+        <circle cx="382" cy="160" r="16" fill="white" />
+        <path d="M300 125L358 26L416 125" fill="none" stroke="white" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <p class="intro">앞날에 대한 한 줄 예측을 남기고, 시간이 지난 뒤 실제로 어떻게 됐는지 붙인다.</p>
+    </header>
+
+    <section class="toolbar" aria-label="필터">
+      <div class="tabs" id="tabs"></div>
+      <input id="search" type="search" placeholder="검색" />
+    </section>
+
+    <section class="feed" id="feed" aria-label="한 줄 뷰 피드"></section>
+
+    <footer>
+      단일 HTML. 빌드 없음. 서버 없어도 열림. 오래 남기기 위한 바닐라맛.
+    </footer>
+  </main>
+
+  <script>
+    const views = [
+      {
+        category: "AI",
+        title: "검색은 정보를 찾는 행위에서 결정을 맡기는 행위로 바뀐다",
+        prediction: "사람들은 여러 링크를 비교하기보다 자신에게 맞는 선택지를 바로 제안받는 쪽으로 이동할 것이다.",
+        reason: "정보량이 많아질수록 사용자는 탐색보다 판단 비용을 줄이고 싶어 한다.",
+        date: "2026-05-24",
+        horizon: "6개월",
+        status: "관찰 중",
+        result: "아직 관찰 중"
+      },
+      {
+        category: "소비",
+        title: "오프라인 매장은 판매 공간보다 인증 공간에 가까워진다",
+        prediction: "사람들은 물건을 사러 가기보다 경험하고 사진 찍고 브랜드 감각을 확인하러 매장을 찾게 된다.",
+        reason: "구매는 온라인이 편하지만, 신뢰와 감각은 여전히 공간에서 강하게 만들어진다.",
+        date: "2026-05-24",
+        horizon: "1년",
+        status: "관찰 중",
+        result: "아직 관찰 중"
+      },
+      {
+        category: "일",
+        title: "좋은 사람의 기준은 성실함보다 판단 속도로 이동한다",
+        prediction: "AI 도구가 보편화될수록 실행량보다 무엇을 할지 빨리 정하는 능력이 더 중요해질 것이다.",
+        reason: "실행 보조는 쉬워지고, 문제 정의와 선택의 가치는 커진다.",
+        date: "2026-05-24",
+        horizon: "2년",
+        status: "열림",
+        result: "나중에 확인하기"
+      }
+    ];
+
+    const categories = ["전체", ...new Set(views.map(view => view.category))];
+    let activeCategory = "전체";
+
+    const tabs = document.querySelector("#tabs");
+    const feed = document.querySelector("#feed");
+    const search = document.querySelector("#search");
+    const count = document.querySelector("#count");
+
+    function renderTabs() {
+      tabs.innerHTML = categories.map(category => `
+        <button class="${category === activeCategory ? "active" : ""}" data-category="${category}">${category}</button>
+      `).join("");
+    }
+
+    function getFilteredViews() {
+      const query = search.value.trim().toLowerCase();
+      return views.filter(view => {
+        const categoryMatch = activeCategory === "전체" || view.category === activeCategory;
+        const text = `${view.category} ${view.title} ${view.prediction} ${view.reason} ${view.result}`.toLowerCase();
+        return categoryMatch && text.includes(query);
+      });
+    }
+
+    function renderFeed() {
+      const filtered = getFilteredViews();
+      count.textContent = `${filtered.length} views`;
+
+      if (filtered.length === 0) {
+        feed.innerHTML = `<div class="empty">보이는 뷰가 없다.</div>`;
+        return;
+      }
+
+      feed.innerHTML = filtered.map(view => `
+        <article class="row">
+          <div class="date">${view.date}</div>
+          <div class="title"><small>${view.category}</small>${view.title}</div>
+          <div class="horizon">${view.horizon}</div>
+          <div class="status ${view.status === "관찰 중" ? "watch" : "done"}">${view.status}</div>
+          <details>
+            <summary>펼쳐보기</summary>
+            <div class="detail">
+              <p><b>예측</b> ${view.prediction}</p>
+              <p><b>근거</b> ${view.reason}</p>
+              <p><b>이후</b> ${view.result}</p>
+            </div>
+          </details>
+        </article>
+      `).join("");
+    }
+
+    tabs.addEventListener("click", event => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      activeCategory = button.dataset.category;
+      renderTabs();
+      renderFeed();
+    });
+
+    search.addEventListener("input", renderFeed);
+
+    renderTabs();
+    renderFeed();
+  </script>
+</body>
+</html>
