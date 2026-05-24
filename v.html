@@ -53,6 +53,7 @@
     }
 
     .count {
+      margin-top: 10px;
       color: var(--dim);
       font-size: 13px;
       white-space: nowrap;
@@ -210,6 +211,7 @@
         <path d="M300 125L358 26L416 125" fill="none" stroke="white" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
       <p class="intro">앞날에 대한 한 줄 예측을 남기고, 시간이 지난 뒤 실제로 어떻게 됐는지 붙인다.</p>
+      <div class="count" id="count"></div>
     </header>
 
     <section class="toolbar" aria-label="필터">
@@ -283,7 +285,7 @@
 
     function renderFeed() {
       const filtered = getFilteredViews();
-      count.textContent = `${filtered.length} views`;
+      if (count) count.textContent = `${filtered.length} views`;
 
       if (filtered.length === 0) {
         feed.innerHTML = `<div class="empty">보이는 뷰가 없다.</div>`;
