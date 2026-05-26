@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>LocalFlow - 충주</title>
+  <meta name="description" content="LocalFlow는 오늘 먹고 싶은 메뉴를 모아 충주의 다음 흐름을 만드는 시민 참여형 로컬 프로젝트입니다. 실시간 맛집 랭킹을 확인하고 투표해보세요!" />
+  <meta name="keywords" content="충주, 충주맛집, 로컬플로우, LocalFlow, 충주여행, 맛집투표, 오늘뭐먹지, 성서동맛집" />
+  <meta name="author" content="Planet Chungju" />
+  
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="LocalFlow - 충주 맛집 투표" />
+  <meta property="og:description" content="오늘, 뭐 먹고 싶어? 충주 시민들이 직접 만드는 로컬 맛집 흐름에 참여하세요." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1604908177522-402a2edbfb8b?auto=format&fit=crop&w=1200&q=80" />
+  <meta property="og:url" content="https://localflow.info" />
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --nav: #110820;
+      --text: #17172a;
+      --muted: #6f7284;
+      --line: #ece7f5;
+      --purple: #8d4df4;
+      --purple-2: #b981ff;
+      --shadow: 0 18px 45px rgba(42, 22, 75, 0.11);
+      --soft-shadow: 0 10px 28px rgba(48, 23, 84, 0.09);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px; 
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 13% 14%, rgba(166, 95, 255, 0.10), transparent 22%),
+        radial-gradient(circle at 75% 18%, rgba(183, 128, 255, 0.14), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #ffffff 76%, #fbf9ff 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+
+    /* 상단 네비게이션 */
+    .topbar {
+      height: 72px;
+      background:
+        radial-gradient(circle at 22% 0%, rgba(141, 77, 244, 0.25), transparent 30%),
+        linear-gradient(90deg, #100820 0%, #120820 45%, #0d0718 100%);
+      color: #fff;
+      border-bottom: 1px solid rgba(190, 140, 255, 0.22);
+      box-shadow: 0 6px 20px rgba(24, 10, 45, 0.18);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .nav-inner { width: min(1148px, calc(100% - 48px)); height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 14px; font-weight: 800; letter-spacing: -0.03em; }
+    .brand-icon { width: 39px; height: 39px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 21px; background: linear-gradient(145deg, #d39cff 0%, #944fff 72%); box-shadow: inset 0 2px 7px rgba(255, 255, 255, 0.45), 0 8px 18px rgba(141, 77, 244, 0.38); }
+    .brand-name { font-size: 20px; line-height: 1; }
+    .brand-sub { margin-left: 2px; color: #a99cbf; font-size: 12px; font-weight: 700; }
+    
+    .nav { display: flex; align-items: center; gap: 40px; font-size: 14px; font-weight: 800; }
+    .nav a { height: 72px; display: flex; align-items: center; color: rgba(255, 255, 255, 0.92); position: relative; transition: color 0.2s; }
+    .nav a:hover { color: #b981ff; }
+    .nav a.active::after { content: ""; position: absolute; left: 50%; bottom: 10px; width: 64px; height: 3px; border-radius: 99px; transform: translateX(-50%); background: linear-gradient(90deg, transparent, #b87cff, transparent); }
+
+    /* 페이지 헤더 영역 */
+    .page { width: min(1148px, calc(100% - 48px)); margin: 0 auto; padding-bottom: 60px; }
+    .sub-hero { padding: 48px 0 32px; text-align: center; }
+    .sub-title { font-size: 38px; font-weight: 900; letter-spacing: -0.05em; margin: 0 0 12px; color: var(--text); }
+    .sub-desc { color: var(--muted); font-size: 16px; font-weight: 600; margin: 0; }
+
+    /* 카테고리 필터 칩 */
+    .filter-chips { display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; flex-wrap: wrap; }
+    .filter-chip {
+      border: 1px solid #e0c9ff; color: #7443c9; background: rgba(255, 255, 255, 0.8);
+      border-radius: 999px; padding: 10px 20px; font-size: 15px; font-weight: 800;
+      transition: 0.2s ease; box-shadow: 0 4px 12px rgba(146, 80, 238, 0.05);
+    }
+    .filter-chip.active { background: linear-gradient(135deg, #9c55f7 0%, #763de9 100%); color: #fff; border-color: transparent; box-shadow: 0 8px 16px rgba(131, 68, 237, 0.25); }
+    .filter-chip:hover:not(.active) { background: #f4eaff; transform: translateY(-2px); }
+
+    /* 핀터레스트 스타일 Masonry 갤러리 */
+    .gallery-masonry {
+      column-count: 3; /* 기본 3단 */
+      column-gap: 24px;
+    }
+
+    .gallery-item {
+      break-inside: avoid; /* 이미지가 단 사이에서 잘리지 않도록 보호 */
+      margin-bottom: 24px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--soft-shadow);
+      overflow: hidden;
+      cursor: zoom-in;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+      position: relative;
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow);
+    }
+
+    .gallery-img-wrap {
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gallery-img {
+      width: 100%;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .gallery-item:hover .gallery-img {
+      transform: scale(1.05);
+    }
+
+    .gallery-info {
+      padding: 18px 20px;
+    }
+
+    .gallery-type {
+      color: var(--purple);
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .gallery-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin: 0 0 8px;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .gallery-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      font-size: 12px;
+      color: #888ba0;
+      font-weight: 600;
+      background: #f4f5f8;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    /* 라이트박스(모달) UI */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10, 5, 20, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+    .modal-content {
+      position: relative;
+      max-width: 90%; max-height: 90vh;
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .modal-overlay.active .modal-content { transform: scale(1); }
+
+    .modal-img {
+      max-width: 100%; max-height: 85vh;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      display: block;
+    }
+
+    .modal-close {
+      position: absolute; top: -40px; right: 0;
+      background: transparent; border: 0;
+      color: #fff; font-size: 32px; font-weight: 300;
+      cursor: pointer; padding: 0;
+      transition: transform 0.2s;
+    }
+    .modal-close:hover { transform: rotate(90deg); }
+
+    /* 푸터 */
+    .footer { border-top: 1px solid #eeeaf5; background: rgba(255, 255, 255, 0.72); }
+    .footer-inner { width: min(1148px, calc(100% - 48px)); margin: 0 auto; min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .footer-brand { color: #9a55f3; font-size: 19px; font-weight: 900; margin-bottom: 5px; }
+    .copyright { color: #6f7284; font-size: 12px; font-weight: 700; }
+    .footer-links { display: flex; align-items: center; gap: 14px; color: #65697a; font-size: 13px; font-weight: 800; }
+    .footer-icons { display: flex; gap: 17px; margin-left: 22px; color: #747789; font-weight: 900; }
+
+    /* 반응형 */
+    @media (max-width: 900px) {
+      .gallery-masonry { column-count: 2; }
+    }
+    @media (max-width: 680px) {
+      .topbar { height: auto; }
+      .nav-inner { width: min(100% - 28px, 1148px); min-height: 72px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 16px; padding: 16px 0; }
+      .nav { width: 100%; overflow-x: auto; gap: 24px; padding-bottom: 4px; }
+      .nav a { height: 34px; flex: 0 0 auto; }
+      .nav a.active::after { bottom: -4px; }
+      .page, .footer-inner { width: min(100% - 28px, 1148px); }
+      
+      .gallery-masonry { column-count: 1; }
+      .sub-title { font-size: 32px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; padding: 20px 0; }
+      .footer-links { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="nav-inner">
+      <a href="index.html" class="brand" aria-label="LocalFlow 홈">
+        <span class="brand-icon">L</span>
+        <span>
+          <span class="brand-name">LocalFlow</span>
+          <span class="brand-sub">충주 로컬플로우</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="주요 메뉴">
+        <a href="./localflow.html">홈</a>
+        <a class="active" href="./gallery.html">갤러리</a>
+        <a href="./coupon.html">쿠폰</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="sub-hero">
+      <h1 class="sub-title">눈으로 맛보는 로컬</h1>
+      <p class="sub-desc">시민들이 직접 올린 충주의 일상과 맛집들을 확인해보세요.</p>
+    </section>
+
+    <!-- 카테고리 필터 -->
+    <div class="filter-chips" id="filterContainer"></div>
+
+    <!-- 갤러리 리스트 렌더링 영역 (Masonry 레이아웃) -->
+    <div class="gallery-masonry" id="galleryList"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">LocalFlow</div>
+        <div class="copyright">© 2026 LocalFlow. All rights reserved.</div>
+      </div>
+      <div class="footer-links">
+        <a href="#">이용약관</a><span>|</span>
+        <a href="#">개인정보처리방침</a><span>|</span>
+        <a href="#">문의하기</a>
+        <span class="footer-icons"><span>◎</span><span>N</span><span>☁</span></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 라이트박스(모달) HTML -->
+  <div class="modal-overlay" id="imageModal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">×</button>
+      <img src="" alt="상세 이미지" class="modal-img" id="modalImg" />
+    </div>
+  </div>
+
+  <script>
+    // 1. JSON 기반 메타데이터 (이 배열만 수정하면 갤러리가 통째로 바뀝니다)
+    // 비율을 다르게 보이게 하기 위해 unsplash 이미지 url 끝에 width/height 쿼리를 다르게 주었습니다.
+    const rawGallery = [
+      { id: "G01", type: "음식", title: "비오는 날엔 역시 전골", url: "https://images.unsplash.com/photo-1604908177522-402a2edbfb8b?auto=format&fit=crop&w=600&h=800&q=80", tags: ["성서동", "마라전골"] },
+      { id: "G02", type: "풍경", title: "호암지의 평화로운 오후", url: "https://images.unsplash.com/photo-1506744626753-eda818c9ce5e?auto=format&fit=crop&w=600&h=400&q=80", tags: ["산책", "힐링"] },
+      { id: "G03", type: "카페", title: "햇살 맛집, 라떼 한 잔", url: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=600&h=700&q=80", tags: ["카페투어", "디저트"] },
+      { id: "G04", type: "음식", title: "수제버거 두께 실화?", url: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&h=500&q=80", tags: ["가성비", "존맛탱"] },
+      { id: "G05", type: "풍경", title: "충주호 드라이브 코스", url: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&h=850&q=80", tags: ["드라이브", "충주댐"] },
+      { id: "G06", type: "음식", title: "꾸덕한 크림 파스타", url: "https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&w=600&h=600&q=80", tags: ["데이트코스", "양식"] }
+    ];
+
+    const galleryListEl = document.getElementById("galleryList");
+    const filterContainerEl = document.getElementById("filterContainer");
+    const modalOverlay = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImg");
+    
+    let currentFilter = "전체";
+
+    // 2. 카테고리 필터 자동 렌더링
+    function renderFilters() {
+      const types = ["전체", ...new Set(rawGallery.map(g => g.type))];
+      
+      filterContainerEl.innerHTML = types.map(type => `
+        <button class="filter-chip ${type === currentFilter ? 'active' : ''}" data-type="${type}">
+          ${type}
+        </button>
+      `).join('');
+
+      document.querySelectorAll(".filter-chip").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          currentFilter = e.target.getAttribute("data-type");
+          renderFilters();
+          renderGallery();
+        });
+      });
+    }
+
+    // 3. 갤러리 렌더링 (순수 문자열 조합 후 innerHTML 주입 = 가장 빠르고 가벼움)
+    function renderGallery() {
+      const filtered = currentFilter === "전체" 
+        ? rawGallery 
+        : rawGallery.filter(g => g.type === currentFilter);
+
+      if (filtered.length === 0) {
+        galleryListEl.innerHTML = `<p style="text-align: center; color: var(--muted); padding: 40px 0; grid-column: 1/-1;">해당 카테고리의 사진이 없습니다.</p>`;
+        return;
+      }
+
+      galleryListEl.innerHTML = filtered.map(item => `
+        <article class="gallery-item" onclick="openModal('${item.url}')">
+          <div class="gallery-img-wrap">
+            <img src="${item.url}" alt="${escapeHtml(item.title)}" class="gallery-img" loading="lazy" />
+          </div>
+          <div class="gallery-info">
+            <div class="gallery-type">${item.type}</div>
+            <h3 class="gallery-title">${escapeHtml(item.title)}</h3>
+            <div class="gallery-tags">
+              ${item.tags.map(tag => `<span class="tag">#${escapeHtml(tag)}</span>`).join('')}
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    // 4. 모달(라이트박스) 제어
+    window.openModal = function(imageUrl) {
+      modalImg.src = imageUrl;
+      modalOverlay.classList.add("active");
+      document.body.style.overflow = "hidden"; // 배경 스크롤 방지
+    };
+
+    window.closeModal = function() {
+      modalOverlay.classList.remove("active");
+      document.body.style.overflow = "auto";
+    };
+
+    // ESC 키 누르면 모달 닫기
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modalOverlay.classList.contains("active")) {
+        closeModal();
+      }
+    });
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[char]));
+    }
+
+    // 초기화
+    renderFilters();
+    renderGallery();
+  </script>
+</body>
+</html>
