@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>LocalFlow - 충주</title>
+  <meta name="description" content="LocalFlow는 오늘 먹고 싶은 메뉴를 모아 충주의 다음 흐름을 만드는 시민 참여형 로컬 프로젝트입니다. 실시간 맛집 랭킹을 확인하고 투표해보세요!" />
+  <meta name="keywords" content="충주, 충주맛집, 로컬플로우, LocalFlow, 충주여행, 맛집투표, 오늘뭐먹지, 성서동맛집" />
+  <meta name="author" content="Planet Chungju" />
+  
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="LocalFlow - 충주 맛집 투표" />
+  <meta property="og:description" content="오늘, 뭐 먹고 싶어? 충주 시민들이 직접 만드는 로컬 맛집 흐름에 참여하세요." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1604908177522-402a2edbfb8b?auto=format&fit=crop&w=1200&q=80" />
+  <meta property="og:url" content="https://localflow.info" />
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --nav: #110820;
+      --nav-2: #180c2c;
+      --text: #17172a;
+      --muted: #6f7284;
+      --line: #ece7f5;
+      --purple: #8d4df4;
+      --purple-2: #b981ff;
+      --purple-3: #efe4ff;
+      --card: #ffffff;
+      --shadow: 0 18px 45px rgba(42, 22, 75, 0.11);
+      --soft-shadow: 0 10px 28px rgba(48, 23, 84, 0.09);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    /* [추가] 부드러운 스크롤 & 고정 헤더 높이만큼 스크롤 위치 보정 */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px; 
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family:
+        Pretendard,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans KR",
+        "Apple SD Gothic Neo",
+        sans-serif;
+      background:
+        radial-gradient(circle at 13% 14%, rgba(166, 95, 255, 0.10), transparent 22%),
+        radial-gradient(circle at 75% 18%, rgba(183, 128, 255, 0.14), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #ffffff 76%, #fbf9ff 100%);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .topbar {
+      height: 72px;
+      background:
+        radial-gradient(circle at 22% 0%, rgba(141, 77, 244, 0.25), transparent 30%),
+        linear-gradient(90deg, #100820 0%, #120820 45%, #0d0718 100%);
+      color: #fff;
+      border-bottom: 1px solid rgba(190, 140, 255, 0.22);
+      box-shadow: 0 6px 20px rgba(24, 10, 45, 0.18);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .nav-inner {
+      width: min(1148px, calc(100% - 48px));
+      height: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-icon {
+      width: 39px;
+      height: 39px;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 900;
+      font-size: 21px;
+      background:
+        linear-gradient(145deg, #d39cff 0%, #944fff 72%);
+      box-shadow:
+        inset 0 2px 7px rgba(255, 255, 255, 0.45),
+        0 8px 18px rgba(141, 77, 244, 0.38);
+    }
+
+    .brand-name {
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .brand-sub {
+      margin-left: 2px;
+      color: #a99cbf;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .nav a {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      color: rgba(255, 255, 255, 0.92);
+      position: relative;
+      transition: color 0.2s;
+    }
+    
+    .nav a:hover {
+      color: #b981ff;
+    }
+
+    .nav a.active::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      width: 64px;
+      height: 3px;
+      border-radius: 99px;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, transparent, #b87cff, transparent);
+    }
+
+    .page {
+      width: min(1148px, calc(100% - 48px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: 506px;
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      align-items: center;
+      gap: 42px;
+      padding-top: 54px;
+      position: relative;
+    }
+
+    .badge {
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 17px;
+      border-radius: 999px;
+      color: #9b56f8;
+      font-size: 14px;
+      font-weight: 800;
+      background: linear-gradient(90deg, rgba(151, 82, 248, 0.13), rgba(197, 157, 255, 0.13));
+    }
+
+    .hero-title {
+      margin: 19px 0 18px;
+      font-size: clamp(46px, 5vw, 64px);
+      line-height: 1.16;
+      letter-spacing: -0.075em;
+      font-weight: 900;
+    }
+
+    .hero-title span {
+      display: inline-block;
+      color: var(--purple);
+    }
+
+    .hero-desc {
+      margin: 0 0 41px;
+      color: #5f6476;
+      font-size: 16px;
+      line-height: 1.72;
+      letter-spacing: -0.025em;
+      font-weight: 600;
+    }
+
+    .vote-box {
+      width: 100%;
+      max-width: 660px;
+      height: 82px;
+      padding: 11px 13px 11px 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 2px solid #d8a9ff;
+      border-radius: 17px;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow:
+        0 0 0 5px rgba(162, 87, 244, 0.035),
+        0 18px 40px rgba(147, 79, 244, 0.11);
+    }
+
+    .vote-box input {
+      min-width: 0;
+      flex: 1;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      color: #29253a;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .vote-box input::placeholder {
+      color: #b4b0c0;
+    }
+
+    .vote-box button {
+      width: 205px;
+      height: 58px;
+      border: 0;
+      border-radius: 9px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #9c55f7 0%, #763de9 100%);
+      box-shadow: 0 10px 22px rgba(131, 68, 237, 0.33);
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+
+    .vote-box button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.04);
+    }
+
+    .chips {
+      margin-top: 25px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      flex-wrap: wrap;
+    }
+
+    .chips strong {
+      color: #8b4cf0;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .chip {
+      border: 1px solid #e0c9ff;
+      color: #9753ee;
+      background: rgba(255, 255, 255, 0.76);
+      border-radius: 10px;
+      padding: 10px 17px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(146, 80, 238, 0.07);
+      transition: 0.18s ease;
+    }
+
+    .chip:hover {
+      background: #f4eaff;
+      transform: translateY(-1px);
+    }
+
+    .hero-art {
+      height: 410px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .orbit {
+      position: absolute;
+      width: 520px;
+      height: 166px;
+      border: 3px solid rgba(180, 108, 255, 0.26);
+      border-left-color: rgba(180, 108, 255, 0.06);
+      border-bottom-color: rgba(180, 108, 255, 0.10);
+      border-radius: 50%;
+      transform: rotate(-10deg);
+      filter: drop-shadow(0 8px 16px rgba(147, 82, 240, 0.12));
+    }
+
+    .orbit::after {
+      content: "";
+      position: absolute;
+      right: 20px;
+      top: 74px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #e0c2ff, #9a58f2);
+      box-shadow: 0 4px 12px rgba(142, 76, 235, 0.4);
+    }
+
+    .cube-wrap {
+      position: relative;
+      transform: rotate(12deg);
+      animation: float 5s ease-in-out infinite;
+    }
+
+    .cube {
+      width: 205px;
+      height: 205px;
+      border-radius: 45px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 20% 14%, rgba(255, 255, 255, 0.55), transparent 25%),
+        linear-gradient(145deg, #e8bdff 0%, #bb7dff 58%, #8a54ef 100%);
+      box-shadow:
+        inset 0 8px 14px rgba(255, 255, 255, 0.34),
+        inset -12px -14px 20px rgba(94, 38, 179, 0.24),
+        22px 28px 36px rgba(102, 64, 168, 0.28);
+      position: relative;
+    }
+
+    .cube::after {
+      content: "";
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: -12px;
+      height: 32px;
+      border-radius: 0 0 34px 34px;
+      background: rgba(119, 68, 219, 0.22);
+      filter: blur(2px);
+    }
+
+    .cube-letter {
+      color: #fff;
+      font-size: 112px;
+      line-height: 1;
+      font-weight: 900;
+      transform: rotate(-12deg);
+      text-shadow:
+        0 7px 0 rgba(109, 54, 198, 0.16),
+        0 11px 24px rgba(74, 30, 134, 0.20);
+    }
+
+    .dot,
+    .spark {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #dcb6ff 0%, #8e4bf1 100%);
+      box-shadow: 0 8px 18px rgba(131, 68, 237, 0.33);
+    }
+
+    .dot.d1 { left: 50px; top: 119px; }
+    .dot.d2 { left: 92px; bottom: 84px; width: 13px; height: 13px; }
+    .dot.d3 { right: 112px; top: 36px; width: 10px; height: 10px; opacity: 0.75; }
+    .dot.d4 { right: 69px; bottom: 104px; width: 14px; height: 14px; opacity: 0.5; }
+    .dot.d5 { left: 233px; top: 37px; width: 8px; height: 8px; opacity: 0.7; }
+
+    .spark {
+      color: #c999ff;
+      font-size: 25px;
+      opacity: 0.48;
+    }
+
+    .spark.s1 { left: 82px; top: 63px; }
+    .spark.s2 { left: 101px; bottom: 46px; font-size: 18px; }
+    .spark.s3 { right: 139px; bottom: 80px; font-size: 15px; }
+
+    @keyframes float {
+      0%, 100% { transform: rotate(12deg) translateY(0); }
+      50% { transform: rotate(12deg) translateY(-14px); }
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.58fr 0.97fr;
+      gap: 24px;
+      margin-top: 13px;
+    }
+
+    .card {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.90));
+      border: 1px solid #eeeaf4;
+      border-radius: var(--radius);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .ranking-card,
+    .gallery-card {
+      min-height: 378px;
+      padding: 28px 27px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 25px;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1;
+      letter-spacing: -0.035em;
+      font-weight: 900;
+    }
+
+    .more {
+      color: #9b55f4;
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .ranking-list {
+      border: 1px solid #ece7f4;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .rank-row {
+      height: 57px;
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px 0 13px;
+      border-bottom: 1px solid #ece7f4;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .rank-row:last-child {
+      border-bottom: 0;
+    }
+
+    .rank-no {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      font-weight: 900;
+      background: linear-gradient(135deg, #9857f4, #ba8cff);
+      box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.28);
+    }
+
+    .rank-vote {
+      color: #7443c9;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .rank-vote .fire {
+      margin-left: 5px;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .food-img {
+      height: 121px;
+      border-radius: 10px;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+      box-shadow: inset 0 -35px 45px rgba(0, 0, 0, 0.10);
+    }
+
+    .food-1 {
+      background-image:
+        linear-gradient(rgba(0,0,0,0.03), rgba(0,0,0,0.08)),
+        url("https://images.unsplash.com/photo-1604908177522-402a2edbfb8b?auto=format&fit=crop&w=700&q=80");
+    }
+
+    .food-2 {
+      background-image:
+        linear-gradient(rgba(0,0,0,0.02), rgba(0,0,0,0.06)),
+        url("https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=700&q=80");
+    }
+
+    .food-3 {
+      background-image:
+        linear-gradient(rgba(0,0,0,0.02), rgba(0,0,0,0.06)),
+        url("https://images.unsplash.com/photo-1645112411341-6c4fd023714a?auto=format&fit=crop&w=700&q=80");
+    }
+
+    .food-4 {
+      background-image:
+        linear-gradient(rgba(0,0,0,0.02), rgba(0,0,0,0.10)),
+        url("https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=700&q=80");
+    }
+
+    .hash {
+      margin: 20px 0 0;
+      color: #9b55f4;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .promo-grid {
+      margin: 28px 0 29px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .promo {
+      min-height: 176px;
+      padding: 28px 22px 23px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .promo h3 {
+      margin: 0 0 17px;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: -0.035em;
+      font-weight: 900;
+    }
+
+    .promo p {
+      width: 61%;
+      margin: 0 0 20px;
+      color: #626678;
+      font-size: 14px;
+      line-height: 1.58;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .outline-btn {
+      height: 40px;
+      min-width: 154px;
+      padding: 0 19px;
+      border: 2px solid #b06cff;
+      border-radius: 8px;
+      color: #914df0;
+      background: rgba(255, 255, 255, 0.65);
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .promo-art {
+      position: absolute;
+      right: 25px;
+      top: 43px;
+    }
+
+    .ticket {
+      width: 82px;
+      height: 82px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 31px;
+      font-weight: 900;
+      transform: rotate(-43deg);
+      border-radius: 12px;
+      background: linear-gradient(135deg, #d9b6ff, #9a5cf6);
+      box-shadow: 0 14px 30px rgba(135, 74, 222, 0.22);
+    }
+
+    .ticket::before,
+    .ticket::after {
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      top: 32px;
+    }
+
+    .ticket::before { left: -9px; }
+    .ticket::after { right: -9px; }
+
+    .trophy {
+      width: 86px;
+      height: 89px;
+      display: grid;
+      place-items: center;
+      font-size: 49px;
+      border-radius: 16px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 50% 33%, rgba(255,255,255,0.45), transparent 25%),
+        linear-gradient(145deg, #d7b2ff, #9160f1);
+      box-shadow: 0 16px 30px rgba(119, 71, 210, 0.22);
+    }
+
+    .heart {
+      width: 88px;
+      height: 88px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 65px;
+      transform: rotate(-6deg);
+      filter: drop-shadow(0 14px 22px rgba(127, 73, 212, 0.26));
+      background: linear-gradient(145deg, #e3bdff, #9653f3);
+      clip-path: path("M44 78 C26 64 8 51 8 31 C8 19 17 11 29 11 C36 11 41 15 44 20 C47 15 52 11 59 11 C71 11 80 19 80 31 C80 51 62 64 44 78 Z");
+    }
+
+    .footer {
+      border-top: 1px solid #eeeaf5;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .footer-inner {
+      width: min(1148px, calc(100% - 48px));
+      margin: 0 auto;
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .footer-brand {
+      color: #9a55f3;
+      font-size: 19px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .copyright {
+      color: #6f7284;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #65697a;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .footer-icons {
+      display: flex;
+      gap: 17px;
+      margin-left: 22px;
+      color: #747789;
+      font-weight: 900;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 30px;
+      z-index: 50;
+      transform: translateX(-50%) translateY(30px);
+      opacity: 0;
+      pointer-events: none;
+      padding: 14px 20px;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, #9b55f4, #6f39df);
+      box-shadow: 0 14px 28px rgba(112, 57, 223, 0.3);
+      font-weight: 900;
+      transition: 0.25s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .nav { gap: 20px; }
+      .hero { grid-template-columns: 1fr; min-height: auto; padding-bottom: 20px; }
+      .hero-art { height: 300px; }
+      .main-grid, .promo-grid { grid-template-columns: 1fr; }
+      .promo p { width: 70%; }
+    }
+
+    @media (max-width: 680px) {
+      .topbar { height: auto; }
+      .nav-inner { width: min(100% - 28px, 1148px); min-height: 72px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 16px; padding: 16px 0; }
+      .nav { width: 100%; overflow-x: auto; gap: 24px; padding-bottom: 4px; }
+      .nav a { height: 34px; flex: 0 0 auto; }
+      .nav a.active::after { bottom: -4px; }
+      .page, .footer-inner { width: min(100% - 28px, 1148px); }
+      .hero { padding-top: 36px; }
+      .hero-title { font-size: 44px; }
+      .vote-box { height: auto; flex-direction: column; align-items: stretch; padding: 17px; }
+      .vote-box input { height: 46px; }
+      .vote-box button { width: 100%; }
+      .hero-art { display: none; }
+      .ranking-card, .gallery-card { padding: 22px 18px; }
+      .rank-row { grid-template-columns: 44px 1fr auto; font-size: 15px; }
+      .gallery-grid { grid-template-columns: 1fr; }
+      .food-img { height: 170px; }
+      .promo p { width: 100%; }
+      .promo-art { opacity: 0.25; }
+      .footer-inner { flex-direction: column; align-items: flex-start; padding: 20px 0; }
+      .footer-links { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="nav-inner">
+      <a href="#home" class="brand" aria-label="LocalFlow 홈">
+        <span class="brand-icon">L</span>
+        <span>
+          <span class="brand-name">LocalFlow</span>
+          <span class="brand-sub">충주 로컬플로우</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="주요 메뉴">
+        <a class="active" href="index.html">홈</a>
+        <a href="./gallery.html">갤러리</a>
+        <a href="./coupon.html">쿠폰</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero" id="home">
+      <div class="hero-copy">
+        <div class="badge">♙ 로컬의 선택이 지역의 흐름이 됩니다</div>
+
+        <h1 class="hero-title">
+          오늘,<br />
+          <span>뭐 먹고 싶어?</span>
+        </h1>
+
+        <p class="hero-desc">
+          LocalFlow는 오늘 먹고 싶은 한마디를 모아<br />
+          충주의 다음 흐름을 만드는 시민 참여형 로컬 프로젝트입니다.
+        </p>
+
+        <form class="vote-box" id="voteForm">
+          <input
+            id="voteInput"
+            type="text"
+            placeholder="오늘 먹고 싶은 메뉴나 가게를 적어주세요!"
+            autocomplete="off"
+            required
+          />
+          <button type="submit">✈ 투표하기</button>
+        </form>
+
+        <div class="chips" aria-label="추천 키워드">
+          <strong>추천 키워드</strong>
+          <button class="chip" type="button">마라탕</button>
+          <button class="chip" type="button">칼국수</button>
+          <button class="chip" type="button">떡볶이</button>
+          <button class="chip" type="button">카페</button>
+          <button class="chip" type="button">초밥</button>
+          <button class="chip" type="button">삼겹살</button>
+          <button class="chip" type="button">샐러드</button>
+        </div>
+      </div>
+
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit"></div>
+        <span class="spark s1">✦</span>
+        <span class="spark s2">✦</span>
+        <span class="spark s3">✦</span>
+        <span class="dot d1"></span>
+        <span class="dot d2"></span>
+        <span class="dot d3"></span>
+        <span class="dot d4"></span>
+        <span class="dot d5"></span>
+
+        <div class="cube-wrap">
+          <div class="cube">
+            <div class="cube-letter">L</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <article class="card ranking-card" id="ranking">
+        <div class="card-head">
+          <h2 class="card-title">🔥 실시간 랭킹 TOP 5</h2>
+          <a href="#ranking" class="more">새로고침 ↻</a>
+        </div>
+        <div class="ranking-list" id="rankingList">
+          </div>
+      </article>
+
+      <article class="card gallery-card" id="gallery">
+        <div class="card-head">
+          <h2 class="card-title">▣ 오늘의 갤러리</h2>
+          <a href="./gallery.html" class="more">더보기 ›</a>
+        </div>
+
+        <div class="gallery-grid">
+          <div class="food-img food-1" role="img" aria-label="매콤한 전골 음식"></div>
+          <div class="food-img food-2" role="img" aria-label="디저트와 커피"></div>
+          <div class="food-img food-3" role="img" aria-label="크림 파스타"></div>
+          <div class="food-img food-4" role="img" aria-label="수제버거와 감자튀김"></div>
+        </div>
+
+        <p class="hash">#충주맛집&nbsp; #오늘뭐먹지&nbsp; #LocalFlow</p>
+      </article>
+    </section>
+
+    <section class="promo-grid" id="event">
+      <article class="card promo">
+        <h3>🎁 Local 쿠폰 이벤트</h3>
+        <p>투표하고 쿠폰 받아가세요!<br />매월 추첨을 통해 다양한 혜택을 드려요.</p>
+        <a href="./coupon.html"><button class="outline-btn" type="button">이벤트 참여하기 ›</button></a>
+        <div class="promo-art ticket">%</div>
+      </article>
+
+      <article class="card promo">
+        <h3>🏆 이달의 맛집 챔피언</h3>
+        <p>이번 달 가장 많은 선택을 받은<br />맛집은 어디일까요?</p>
+        <button class="outline-btn" type="button">챔피언 확인하기 ›</button>
+        <div class="promo-art trophy">★</div>
+      </article>
+
+      <article class="card promo">
+        <h3>♡ LocalFlow란?</h3>
+        <p>우리의 작은 선택이 모여<br />더 나은 지역을 만듭니다.</p>
+        <button class="outline-btn" type="button">자세히 알아보기 ›</button>
+        <div class="promo-art heart"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="footer" id="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">LocalFlow</div>
+        <div class="copyright">© 2026 LocalFlow. All rights reserved.</div>
+      </div>
+
+      <div class="footer-links">
+        <a href="#">이용약관</a>
+        <span>|</span>
+        <a href="#">개인정보처리방침</a>
+        <span>|</span>
+        <a href="#">문의하기</a>
+        <span class="footer-icons">
+          <span>◎</span>
+          <span>N</span>
+          <span>☁</span>
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast">투표가 반영되었습니다.</div>
+
+  <script>
+    // [추가] DB 연동 전까지 데이터 증발을 막기 위해 LocalStorage를 활용한 JSON 저장/불러오기 로직 탑재
+    const STORAGE_KEY = "localflow_ranking";
+    
+    // 초기 기본 데이터
+    const defaultRanking = [
+      { name: "마라탕", votes: 128 },
+      { name: "성서동 칼국수 맛집", votes: 97 },
+      { name: "충주댐 근처 브런치 카페", votes: 76 },
+      { name: "떡볶이 + 튀김 조합", votes: 64 },
+      { name: "수제버거", votes: 53 }
+    ];
+
+    // 스토리지에서 데이터 불러오기 (없으면 기본값 세팅)
+    let ranking = [];
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        ranking = JSON.parse(saved);
+      } else {
+        ranking = [...defaultRanking];
+        saveRanking();
+      }
+    } catch (e) {
+      ranking = [...defaultRanking];
+    }
+
+    function saveRanking() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ranking));
+    }
+
+    const form = document.querySelector("#voteForm");
+    const input = document.querySelector("#voteInput");
+    const chips = document.querySelectorAll(".chip");
+    const rankingList = document.querySelector("#rankingList");
+    const toast = document.querySelector("#toast");
+
+    // 초기 렌더링
+    renderRanking();
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        input.value = chip.textContent.trim();
+        input.focus();
+      });
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const value = input.value.trim();
+
+      if (!value) {
+        showToast("메뉴나 가게 이름을 입력해주세요.");
+        input.focus();
+        return;
+      }
+
+      const found = ranking.find((item) => item.name === value);
+
+      if (found) {
+        found.votes += 1;
+      } else {
+        ranking.push({ name: value, votes: 1 });
+      }
+
+      ranking.sort((a, b) => b.votes - a.votes);
+      
+      saveRanking(); // [추가] 투표 시 로컬 스토리지 업데이트
+      renderRanking();
+      showToast(`"${value}" 투표가 반영되었습니다.`);
+      input.value = "";
+    });
+
+    function renderRanking() {
+      rankingList.innerHTML = ranking
+        .slice(0, 5)
+        .map((item, index) => {
+          const fire = index === 0 ? '<span class="fire">🔥</span>' : "";
+          return `
+            <div class="rank-row">
+              <span class="rank-no">${index + 1}</span>
+              <span class="rank-name">${escapeHtml(item.name)}</span>
+              <span class="rank-vote">${item.votes}표 ${fire}</span>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 1800);
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, (char) => {
+        const map = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        };
+        return map[char];
+      });
+    }
+
+    // [추가] 메뉴 클릭 시 Active 상태 변경 (스크롤 이동은 CSS scroll-behavior가 처리)
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function() {
+        navLinks.forEach(n => n.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
