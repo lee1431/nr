@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>LocalFlow - 쿠폰 및 추첨 일정</title>
+  <meta name="description" content="LocalFlow 충주 로컬 쿠폰 리스트 및 추첨 캘린더" />
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --nav: #110820;
+      --nav-2: #180c2c;
+      --text: #17172a;
+      --muted: #6f7284;
+      --line: #ece7f5;
+      --purple: #8d4df4;
+      --purple-2: #b981ff;
+      --purple-3: #efe4ff;
+      --card: #ffffff;
+      --shadow: 0 18px 45px rgba(42, 22, 75, 0.11);
+      --soft-shadow: 0 10px 28px rgba(48, 23, 84, 0.09);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      background:
+        radial-gradient(circle at 13% 14%, rgba(166, 95, 255, 0.10), transparent 22%),
+        radial-gradient(circle at 75% 18%, rgba(183, 128, 255, 0.14), transparent 24%),
+        linear-gradient(180deg, #ffffff 0%, #ffffff 76%, #fbf9ff 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    /* 상단 네비게이션 */
+    .topbar {
+      height: 72px;
+      background: radial-gradient(circle at 22% 0%, rgba(141, 77, 244, 0.25), transparent 30%), linear-gradient(90deg, #100820 0%, #120820 45%, #0d0718 100%);
+      color: #fff;
+      border-bottom: 1px solid rgba(190, 140, 255, 0.22);
+      box-shadow: 0 6px 20px rgba(24, 10, 45, 0.18);
+      position: sticky; top: 0; z-index: 20;
+    }
+
+    .nav-inner { width: min(1148px, calc(100% - 48px)); height: 100%; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 14px; font-weight: 800; letter-spacing: -0.03em; }
+    .brand-icon { width: 39px; height: 39px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 21px; background: linear-gradient(145deg, #d39cff 0%, #944fff 72%); box-shadow: inset 0 2px 7px rgba(255, 255, 255, 0.45), 0 8px 18px rgba(141, 77, 244, 0.38); }
+    .brand-name { font-size: 20px; line-height: 1; }
+    .brand-sub { margin-left: 2px; color: #a99cbf; font-size: 12px; font-weight: 700; }
+    .nav { display: flex; align-items: center; gap: 40px; font-size: 14px; font-weight: 800; }
+    .nav a { height: 72px; display: flex; align-items: center; color: rgba(255, 255, 255, 0.92); position: relative; transition: color 0.2s; }
+    .nav a:hover { color: #b981ff; }
+    .nav a.active::after { content: ""; position: absolute; left: 50%; bottom: 10px; width: 64px; height: 3px; border-radius: 99px; transform: translateX(-50%); background: linear-gradient(90deg, transparent, #b87cff, transparent); }
+
+    .page { width: min(1148px, calc(100% - 48px)); margin: 0 auto; padding-bottom: 60px; }
+    .sub-hero { padding: 48px 0 32px; text-align: center; }
+    .sub-title { font-size: 38px; font-weight: 900; letter-spacing: -0.05em; margin: 0 0 12px; color: var(--text); }
+    .sub-desc { color: var(--muted); font-size: 16px; font-weight: 600; margin: 0; }
+
+    /* 캘린더 위젯 스타일 */
+    .calendar-wrap {
+      max-width: 660px; margin: 0 auto 48px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--soft-shadow); padding: 28px;
+    }
+    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .cal-title { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); margin: 0; display: flex; align-items: center; gap: 8px; }
+    .cal-title span { color: var(--purple); }
+    .cal-nav-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--text); font-weight: 900; display: grid; place-items: center; transition: 0.2s; }
+    .cal-nav-btn:hover { background: var(--purple-3); color: var(--purple); border-color: var(--purple-2); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
+    .cal-day-name { font-size: 13px; font-weight: 800; color: var(--muted); padding-bottom: 12px; }
+    .cal-day-name.sun { color: #ff5252; }
+    .cal-day-name.sat { color: #448aff; }
+    
+    /* 캘린더 셀 내부 요소 정렬을 위해 플렉스 방향을 column으로 변경 및 패딩 살짝 추가 */
+    .cal-cell {
+      aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; border: 2px solid transparent;
+      transition: all 0.2s; position: relative; padding-top: 4px;
+    }
+    .cal-cell:not(.empty):hover { background: #fbf9ff; border-color: #e0c9ff; transform: translateY(-2px); }
+    .cal-cell.empty { pointer-events: none; }
+    .cal-cell.today { background: var(--text); color: #fff; }
+    
+    /* 예정된 추첨일 */
+    .cal-cell.has-event { background: linear-gradient(135deg, rgba(185,129,255,0.1), rgba(141,77,244,0.1)); color: var(--purple); border-color: rgba(185,129,255,0.3); font-weight: 900; }
+    .cal-cell.has-event::after { content: "🎁"; position: absolute; top: -2px; right: 2px; font-size: 12px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); animation: bounce 2s infinite ease-in-out; }
+
+    /* --- [추가] 달력 내 추첨 완료일 스타일 --- */
+    .cal-cell.cal-expired {
+      background: #f1f0f5; color: #a0a3b5; border-color: transparent; filter: grayscale(0.4);
+    }
+    .cal-cell.cal-expired::after { content: ""; } /* 선물상자 제거 */
+
+    .cal-done-text {
+      font-size: 9px; font-weight: 800; color: #ff5252; margin-top: 2px;
+      background: rgba(255, 82, 82, 0.1); padding: 1px 4px; border-radius: 4px;
+      letter-spacing: -0.05em; display: inline-block; transform: scale(0.95);
+    }
+
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+    /* 카테고리 필터 칩 */
+    .filter-chips { display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; flex-wrap: wrap; }
+    .filter-chip { border: 1px solid #e0c9ff; color: #7443c9; background: rgba(255, 255, 255, 0.8); border-radius: 999px; padding: 10px 20px; font-size: 15px; font-weight: 800; transition: 0.2s ease; box-shadow: 0 4px 12px rgba(146, 80, 238, 0.05); }
+    .filter-chip.active { background: linear-gradient(135deg, #9c55f7 0%, #763de9 100%); color: #fff; border-color: transparent; box-shadow: 0 8px 16px rgba(131, 68, 237, 0.25); }
+    .filter-chip:hover:not(.active) { background: #f4eaff; transform: translateY(-2px); }
+
+    /* 쿠폰 그리드 */
+    .coupon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+    .coupon-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--soft-shadow); display: flex; flex-direction: column; overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; position: relative; }
+    .coupon-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    
+    .coupon-head { height: 110px; padding: 24px; display: flex; flex-direction: column; justify-content: center; position: relative; border-bottom: 2px dashed rgba(255, 255, 255, 0.4); }
+    .bg-purple { background: linear-gradient(135deg, #b981ff, #8d4df4); color: #fff; }
+    .bg-dark { background: linear-gradient(135deg, #2a164b, #110820); color: #fff; }
+    .bg-light { background: linear-gradient(135deg, #f4eaff, #e0c9ff); color: #7443c9; }
+    
+    /* 날짜 마감된 쿠폰의 그레이스케일 처리 테마 */
+    .coupon-card.expired-card { filter: grayscale(0.85); opacity: 0.75; }
+    
+    /* 쿠폰 우측 상단 추첨일 및 마감 뱃지 */
+    .draw-badge {
+      position: absolute; top: 16px; right: 20px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: -0.02em; background: rgba(255, 255, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    }
+    .bg-light .draw-badge { background: rgba(141, 77, 244, 0.1); border: 1px solid rgba(141, 77, 244, 0.2); color: var(--purple); }
+    .draw-badge.expired-badge { background: #ff5252 !important; border-color: transparent !important; color: #fff !important; }
+
+    .coupon-type { font-size: 13px; font-weight: 800; opacity: 0.9; margin-bottom: 6px; }
+    .coupon-title { font-size: 26px; font-weight: 900; letter-spacing: -0.04em; margin: 0; line-height: 1.1; }
+    .coupon-card::before, .coupon-card::after { content: ''; position: absolute; top: 98px; width: 24px; height: 24px; background: #fbf9ff; border-radius: 50%; border: 1px solid var(--line); z-index: 2; }
+    .coupon-card::before { left: -13px; border-right-color: transparent; border-top-color: transparent; transform: rotate(-45deg); }
+    .coupon-card::after { right: -13px; border-left-color: transparent; border-top-color: transparent; transform: rotate(45deg); }
+    .coupon-body { padding: 24px; display: flex; flex-direction: column; flex: 1; background: #fff; }
+    .store-name { font-size: 18px; font-weight: 800; color: var(--text); margin: 0 0 8px; }
+    .expire-date { font-size: 14px; color: var(--muted); font-weight: 600; margin-bottom: 20px; }
+    
+    /* 응모 버튼 스타일 */
+    .use-btn { margin-top: auto; height: 48px; border: 0; border-radius: 8px; background: var(--purple-3); color: var(--purple); font-size: 15px; font-weight: 800; transition: 0.2s ease; }
+    .use-btn:hover { background: var(--purple); color: #fff; }
+    .use-btn.used { background: #f0f0f5; color: #a0a3b5; cursor: not-allowed; }
+
+    /* 커스텀 응모 모달창 스타일 */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(12, 6, 24, 0.76); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .entry-modal { width: min(440px, calc(100% - 32px)); background: #ffffff; border-radius: 20px; box-shadow: 0 25px 60px rgba(22, 10, 43, 0.35); padding: 32px 28px; transform: translateY(20px); transition: transform 0.25s ease; position: relative; border: 1px solid var(--line); }
+    .modal-overlay.show .entry-modal { transform: translateY(0); }
+    .modal-close-btn { position: absolute; top: 20px; right: 20px; background: transparent; border: 0; font-size: 24px; color: var(--muted); font-weight: 300; transition: color 0.2s; }
+    .modal-close-btn:hover { color: var(--text); }
+    .modal-head { text-align: center; margin-bottom: 24px; }
+    .modal-icon { font-size: 32px; margin-bottom: 10px; display: inline-block; animation: wingwing 2.5s infinite linear; }
+    .modal-head h3 { margin: 0 0 8px; font-size: 22px; font-weight: 900; letter-spacing: -0.03em; color: var(--text); }
+    .modal-head p { margin: 0; font-size: 14px; font-weight: 600; color: var(--muted); line-height: 1.4; }
+    .modal-target-info { color: var(--purple); font-weight: 800; display: block; margin-top: 4px; }
+    .modal-body form { display: flex; flex-direction: column; gap: 14px; }
+    .input-wrap { position: relative; }
+    .modal-input { width: 100%; height: 54px; padding: 0 20px; border-radius: 10px; border: 2px solid var(--line); outline: 0; font-size: 15px; font-weight: 700; color: var(--text); transition: border-color 0.2s; }
+    .modal-input:focus { border-color: var(--purple-2); box-shadow: 0 0 0 4px rgba(185, 129, 255, 0.1); }
+    .modal-input::placeholder { color: #b4b0c0; }
+    .modal-submit-btn { height: 54px; border: 0; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 900; letter-spacing: -0.01em; background: linear-gradient(135deg, #9c55f7 0%, #763de9 100%); box-shadow: 0 8px 20px rgba(131, 68, 237, 0.28); transition: transform 0.15s ease, filter 0.15s ease; }
+    .modal-submit-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+
+    @keyframes wingwing { 0%, 100% { transform: rotate(0deg); } 10%, 20% { transform: rotate(-8deg); } 15%, 25% { transform: rotate(8deg); } 30% { transform: rotate(0deg); } }
+
+    /* 푸터 및 토스트 */
+    .footer { border-top: 1px solid #eeeaf5; background: rgba(255, 255, 255, 0.72); }
+    .footer-inner { width: min(1148px, calc(100% - 48px)); margin: 0 auto; min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .footer-brand { color: #9a55f3; font-size: 19px; font-weight: 900; margin-bottom: 5px; }
+    .copyright { color: #6f7284; font-size: 12px; font-weight: 700; }
+    .footer-links { display: flex; align-items: center; gap: 14px; color: #65697a; font-size: 13px; font-weight: 800; }
+    .footer-icons { display: flex; gap: 17px; margin-left: 22px; color: #747789; font-weight: 900; }
+
+    .toast { position: fixed; left: 50%; bottom: 30px; z-index: 120; transform: translateX(-50%) translateY(30px); opacity: 0; pointer-events: none; padding: 14px 20px; border-radius: 999px; color: #fff; background: linear-gradient(135deg, #9b55f4, #6f39df); box-shadow: 0 14px 28px rgba(112, 57, 223, 0.3); font-weight: 900; transition: 0.25s ease; text-align: center; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 680px) {
+      .topbar { height: auto; }
+      .nav-inner { width: min(100% - 28px, 1148px); min-height: 72px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 16px; padding: 16px 0; }
+      .nav { width: 100%; overflow-x: auto; gap: 24px; padding-bottom: 4px; }
+      .nav a { height: 34px; flex: 0 0 auto; }
+      .nav a.active::after { bottom: -4px; }
+      .page, .footer-inner { width: min(100% - 28px, 1148px); }
+      .sub-title { font-size: 32px; }
+      .coupon-grid { grid-template-columns: 1fr; }
+      .calendar-wrap { padding: 20px 16px; }
+      .cal-cell { font-size: 14px; border-radius: 8px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; padding: 20px 0; }
+      .footer-links { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="nav-inner">
+      <a href="localflow.html" class="brand" aria-label="LocalFlow 홈">
+        <span class="brand-icon">L</span>
+        <span>
+          <span class="brand-name">LocalFlow</span>
+          <span class="brand-sub">충주 로컬플로우</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="주요 메뉴">
+        <a href="localflow.html">홈</a>
+        <a href="./gallery.html">갤러리</a>
+        <a class="active" href="./coupon.html">쿠폰</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="sub-hero">
+      <h1 class="sub-title">로컬 쿠폰 & 추첨</h1>
+      <p class="sub-desc">달력에 표시된 추첨일을 확인하고 이벤트에 응모하세요.</p>
+    </section>
+
+    <!-- 추첨일 캘린더 영역 -->
+    <section class="calendar-wrap">
+      <div class="cal-header">
+        <button class="cal-nav-btn" id="prevMonth" aria-label="이전 달">‹</button>
+        <h2 class="cal-title" id="calTitle">2026년 <span>5월</span></h2>
+        <button class="cal-nav-btn" id="nextMonth" aria-label="다음 달">›</button>
+      </div>
+      <div class="cal-grid">
+        <div class="cal-day-name sun">일</div>
+        <div class="cal-day-name">월</div>
+        <div class="cal-day-name">화</div>
+        <div class="cal-day-name">수</div>
+        <div class="cal-day-name">목</div>
+        <div class="cal-day-name">금</div>
+        <div class="cal-day-name sat">토</div>
+      </div>
+      <div class="cal-grid" id="calDays"></div>
+    </section>
+
+    <!-- 카테고리 필터 -->
+    <div class="filter-chips" id="filterContainer"></div>
+
+    <!-- 쿠폰 리스트 -->
+    <div class="coupon-grid" id="couponList"></div>
+  </main>
+
+  <!-- 커스텀 응모 모달 팝업 레이아웃 -->
+  <div class="modal-overlay" id="entryModalOverlay" onclick="closeEntryModal()">
+    <div class="entry-modal" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeEntryModal()">×</button>
+      
+      <div class="modal-head">
+        <span class="modal-icon">✈</span>
+        <h3>이벤트 응모하기</h3>
+        <p>추첨 결과를 전달받을 <br><strong>네이버 이메일</strong>을 입력해주세요.</p>
+        <span class="modal-target-info" id="modalTargetTitle">쿠폰명 정보</span>
+      </div>
+
+      <div class="modal-body">
+        <form id="modalForm">
+          <div class="input-wrap">
+            <input 
+              type="text" 
+              id="modalEmailInput" 
+              class="modal-input" 
+              placeholder="localflow@naver.com" 
+              autocomplete="off"
+            />
+          </div>
+          <button type="submit" class="modal-submit-btn">응모 완료하기</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">LocalFlow</div>
+        <div class="copyright">© 2026 LocalFlow. All rights reserved.</div>
+      </div>
+      <div class="footer-links">
+        <a href="#">이용약관</a><span>|</span>
+        <a href="#">개인정보처리방침</a><span>|</span>
+        <a href="#">문의하기</a>
+        <span class="footer-icons"><span>◎</span><span>N</span><span>☁</span></span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast">메시지</div>
+
+  <script>
+    const toast = document.getElementById("toast");
+
+    // 1. 캘린더 추첨일 JSON 데이터
+    const drawEvents = [
+      { date: "2026-05-15", title: "가정의 달 특별 추첨" },
+      { date: "2026-05-25", title: "성서동 마라탕 패키지 추첨" },
+      { date: "2026-05-28", title: "월말 로컬 챔피언 쿠폰 발표" },
+      { date: "2026-06-10", title: "여름맞이 빙수 쿠폰팩 추첨" }
+    ];
+
+    let currentDate = new Date();
+    let currYear = currentDate.getFullYear();
+    let currMonth = currentDate.getMonth();
+
+    const calTitle = document.getElementById("calTitle");
+    const calDays = document.getElementById("calDays");
+
+    // [수정] 현재 시간 컨텍스트 기준 날짜 비교 로직을 넣어 달력 내 "추첨완료" 텍스트 동적 분기
+    function renderCalendar(year, month) {
+      calDays.innerHTML = "";
+      calTitle.innerHTML = `${year}년 <span>${month + 1}월</span>`;
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0,0,0,0);
+
+      for (let i = 0; i < firstDay; i++) {
+        calDays.innerHTML += `<div class="cal-cell empty"></div>`;
+      }
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        const eventMatch = drawEvents.find(e => e.date === dateString);
+        
+        const cellDate = new Date(year, month, i);
+        cellDate.setHours(0,0,0,0);
+        
+        const isExpiredEvent = eventMatch && (cellDate < todayMidnight); // 추첨일이 지났는지 여부
+
+        let cellClasses = ["cal-cell"];
+        if (todayMidnight.getTime() === cellDate.getTime()) cellClasses.push("today");
+        
+        let innerHtml = `<span>${i}</span>`;
+        let onClick = `onclick="showToast('${month + 1}월 ${i}일은 일정이 없습니다.')"`;
+
+        if (eventMatch) {
+          if (isExpiredEvent) {
+            cellClasses.push("cal-expired"); // 마감용 그레이 스케일 클래스
+            innerHtml += `<span class="cal-done-text">✓ 추첨완료</span>`; // 달력 안에 뙇!
+            onClick = `onclick="showToast('✅ ${eventMatch.date} : [${eventMatch.title}] 추첨이 완료된 이벤트입니다.')"`;
+          } else {
+            cellClasses.push("has-event"); // 다가올 추첨일 (기존 스타일)
+            onClick = `onclick="showToast('🎁 ${eventMatch.date} : ${eventMatch.title}')"`;
+          }
+        }
+
+        calDays.innerHTML += `<div class="${cellClasses.join(' ')}" ${onClick}>${innerHtml}</div>`;
+      }
+    }
+
+    document.getElementById("prevMonth").addEventListener("click", () => {
+      currMonth--; if (currMonth < 0) { currMonth = 11; currYear--; } renderCalendar(currYear, currMonth);
+    });
+    document.getElementById("nextMonth").addEventListener("click", () => {
+      currMonth++; if (currMonth > 11) { currMonth = 0; currYear++; } renderCalendar(currYear, currMonth);
+    });
+
+    renderCalendar(currYear, currMonth);
+
+    // 2. 쿠폰 리스트 JSON 데이터
+    const rawCoupons = [
+      { id: "CP_01", store: "성서동 마라탕", title: "소고기 100g 무료", type: "음식점", expire: "2026-05-25", style: "bg-purple", used: false, drawDate: "5/15 추첨" },
+      { id: "CP_02", store: "호암지 뷰 카페", title: "아메리카노 1+1", type: "카페", expire: "2026-05-28", style: "bg-dark", used: false, drawDate: "5/28 추첨" },
+      { id: "CP_03", store: "충주호 유람선", title: "탑승권 20% 할인", type: "액티비티", expire: "2026-07-01", style: "bg-light", used: false, drawDate: "6/10 추첨" },
+      { id: "CP_04", store: "수제버거 전문점", title: "감자튀김 사이즈업", type: "음식점", expire: "2026-05-24", style: "bg-purple", used: false, drawDate: "5/24 추첨" },
+      { id: "CP_05", store: "로컬 베이커리", title: "전 품목 10% 할인", type: "카페", expire: "2026-06-20", style: "bg-dark", used: false, drawDate: "상시 추첨" },
+      { id: "CP_06", store: "충주 사과 직판장", title: "5,000원 즉시 할인", type: "쇼핑", expire: "2026-08-15", style: "bg-light", used: false, drawDate: "6/10 추첨" }
+    ];
+
+    const couponListEl = document.getElementById("couponList");
+    const filterContainerEl = document.getElementById("filterContainer");
+    let currentFilter = "전체";
+
+    function renderFilters() {
+      const types = ["전체", ...new Set(rawCoupons.map(c => c.type))];
+      filterContainerEl.innerHTML = types.map(type => `<button class="filter-chip ${type === currentFilter ? 'active' : ''}" data-type="${type}">${type}</button>`).join('');
+
+      document.querySelectorAll("#filterContainer .filter-chip").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          currentFilter = e.target.getAttribute("data-type");
+          renderFilters(); renderCoupons();
+        });
+      });
+    }
+
+    function renderCoupons() {
+      const filtered = currentFilter === "전체" ? rawCoupons : rawCoupons.filter(c => c.type === currentFilter);
+      if (filtered.length === 0) {
+        couponListEl.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px 0;">해당 카테고리의 쿠폰이 없습니다.</p>`;
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      couponListEl.innerHTML = filtered.map(coupon => {
+        const expireDate = new Date(coupon.expire);
+        expireDate.setHours(0,0,0,0);
+        const isExpired = expireDate < today;
+
+        let btnClass = "use-btn";
+        let btnText = "이벤트 응모하기 ✈";
+        let disabled = "";
+        let cardClass = "coupon-card";
+        let badgeHtml = "";
+
+        if (isExpired) {
+          btnClass = "use-btn used"; btnText = "추첨완료!"; disabled = "disabled";
+          cardClass = "coupon-card expired-card";
+          badgeHtml = `<span class="draw-badge expired-badge">추첨완료</span>`;
+        } else {
+          btnClass = coupon.used ? "use-btn used" : "use-btn";
+          btnText = coupon.used ? "응모 완료" : "이벤트 응모하기 ✈";
+          disabled = coupon.used ? "disabled" : "";
+          badgeHtml = coupon.drawDate ? `<span class="draw-badge">${escapeHtml(coupon.drawDate)}</span>` : "";
+        }
+
+        return `
+          <article class="${cardClass}">
+            <div class="coupon-head ${coupon.style}">
+              ${badgeHtml}
+              <div class="coupon-type">${coupon.type}</div>
+              <h3 class="coupon-title">${escapeHtml(coupon.title)}</h3>
+            </div>
+            <div class="coupon-body">
+              <h4 class="store-name">${escapeHtml(coupon.store)}</h4>
+              <div class="expire-date">추첨/마감일: ${coupon.expire}</div>
+              <button class="${btnClass}" ${disabled} onclick="openEntryModal('${coupon.id}', '${escapeHtml(coupon.title)}')">
+                ${btnText}
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // 모달창 제어 로직
+    const modalOverlay = document.getElementById("entryModalOverlay");
+    const modalTargetTitle = document.getElementById("modalTargetTitle");
+    const modalEmailInput = document.getElementById("modalEmailInput");
+    const modalForm = document.getElementById("modalForm");
+    let activeCouponId = null;
+
+    window.openEntryModal = function(id, title) {
+      activeCouponId = id;
+      modalTargetTitle.textContent = `[${title}]`;
+      modalEmailInput.value = "";
+      modalOverlay.classList.add("show");
+      setTimeout(() => modalEmailInput.focus(), 100);
+    };
+
+    window.closeEntryModal = function() {
+      modalOverlay.classList.remove("show");
+      activeCouponId = null;
+    };
+
+    modalForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = modalEmailInput.value.trim();
+      const naverRegex = /^[a-z0-9_.-]+@naver\.com$/i;
+
+      if (!email) { showToast("❌ 이메일을 입력하셔야 응모가 가능합니다."); return; }
+      if (!naverRegex.test(email)) { showToast("❌ 네이버 이메일(@naver.com)만 입력 가능합니다! ㅋ"); return; }
+
+      closeEntryModal();
+      showToast(`🎉 응모 완료! 추첨 결과는 ${email}로 발송됩니다.`);
+      
+      const targetCoupon = rawCoupons.find(c => c.id === activeCouponId);
+      if (targetCoupon) {
+        targetCoupon.used = true;
+        renderCoupons();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeEntryModal(); });
+
+    function showToast(message) {
+      toast.textContent = message; toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => { toast.classList.remove("show"); }, 3000);
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
+    }
+
+    renderFilters();
+    renderCoupons();
+  </script>
+</body>
+</html>
