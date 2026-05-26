@@ -4,16 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>LocalFlow - 충주</title>
-  <meta name="description" content="LocalFlow는 오늘 먹고 싶은 메뉴를 모아 충주의 다음 흐름을 만드는 시민 참여형 로컬 프로젝트입니다. 실시간 맛집 랭킹을 확인하고 투표해보세요!" />
-  <meta name="keywords" content="충주, 충주맛집, 로컬플로우, LocalFlow, 충주여행, 맛집투표, 오늘뭐먹지, 성서동맛집" />
-  <meta name="author" content="Planet Chungju" />
-  
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="LocalFlow - 충주 맛집 투표" />
-  <meta property="og:description" content="오늘, 뭐 먹고 싶어? 충주 시민들이 직접 만드는 로컬 맛집 흐름에 참여하세요." />
-  <meta property="og:image" content="https://archive.localflow.info/assets/img/localflow.png" />
-  <meta property="og:url" content="https://localflow.info" />
+  <title>LocalFlow - 쿠폰 및 추첨 일정</title>
+  <meta name="description" content="LocalFlow 충주 로컬 쿠폰 리스트 및 추첨 캘린더" />
 
   <style>
     :root {
@@ -76,7 +68,7 @@
     .sub-title { font-size: 38px; font-weight: 900; letter-spacing: -0.05em; margin: 0 0 12px; color: var(--text); }
     .sub-desc { color: var(--muted); font-size: 16px; font-weight: 600; margin: 0; }
 
-    /* 캘린더 위젯 스타일 */
+    /* 데스크톱 기준 캘린더 위젯 스타일 */
     .calendar-wrap {
       max-width: 660px; margin: 0 auto 48px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--soft-shadow); padding: 28px;
     }
@@ -90,7 +82,6 @@
     .cal-day-name.sun { color: #ff5252; }
     .cal-day-name.sat { color: #448aff; }
     
-    /* 캘린더 셀 내부 요소 정렬을 위해 플렉스 방향을 column으로 변경 및 패딩 살짝 추가 */
     .cal-cell {
       aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
       border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; border: 2px solid transparent;
@@ -100,15 +91,11 @@
     .cal-cell.empty { pointer-events: none; }
     .cal-cell.today { background: var(--text); color: #fff; }
     
-    /* 예정된 추첨일 */
     .cal-cell.has-event { background: linear-gradient(135deg, rgba(185,129,255,0.1), rgba(141,77,244,0.1)); color: var(--purple); border-color: rgba(185,129,255,0.3); font-weight: 900; }
     .cal-cell.has-event::after { content: "🎁"; position: absolute; top: -2px; right: 2px; font-size: 12px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); animation: bounce 2s infinite ease-in-out; }
 
-    /* --- [추가] 달력 내 추첨 완료일 스타일 --- */
-    .cal-cell.cal-expired {
-      background: #f1f0f5; color: #a0a3b5; border-color: transparent; filter: grayscale(0.4);
-    }
-    .cal-cell.cal-expired::after { content: ""; } /* 선물상자 제거 */
+    .cal-cell.cal-expired { background: #f1f0f5; color: #a0a3b5; border-color: transparent; filter: grayscale(0.4); }
+    .cal-cell.cal-expired::after { content: ""; }
 
     .cal-done-text {
       font-size: 9px; font-weight: 800; color: #ff5252; margin-top: 2px;
@@ -134,10 +121,8 @@
     .bg-dark { background: linear-gradient(135deg, #2a164b, #110820); color: #fff; }
     .bg-light { background: linear-gradient(135deg, #f4eaff, #e0c9ff); color: #7443c9; }
     
-    /* 날짜 마감된 쿠폰의 그레이스케일 처리 테마 */
     .coupon-card.expired-card { filter: grayscale(0.85); opacity: 0.75; }
     
-    /* 쿠폰 우측 상단 추첨일 및 마감 뱃지 */
     .draw-badge {
       position: absolute; top: 16px; right: 20px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: -0.02em; background: rgba(255, 255, 255, 0.22); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     }
@@ -153,7 +138,6 @@
     .store-name { font-size: 18px; font-weight: 800; color: var(--text); margin: 0 0 8px; }
     .expire-date { font-size: 14px; color: var(--muted); font-weight: 600; margin-bottom: 20px; }
     
-    /* 응모 버튼 스타일 */
     .use-btn { margin-top: auto; height: 48px; border: 0; border-radius: 8px; background: var(--purple-3); color: var(--purple); font-size: 15px; font-weight: 800; transition: 0.2s ease; }
     .use-btn:hover { background: var(--purple); color: #fff; }
     .use-btn.used { background: #f0f0f5; color: #a0a3b5; cursor: not-allowed; }
@@ -193,6 +177,9 @@
     .toast { position: fixed; left: 50%; bottom: 30px; z-index: 120; transform: translateX(-50%) translateY(30px); opacity: 0; pointer-events: none; padding: 14px 20px; border-radius: 999px; color: #fff; background: linear-gradient(135deg, #9b55f4, #6f39df); box-shadow: 0 14px 28px rgba(112, 57, 223, 0.3); font-weight: 900; transition: 0.25s ease; text-align: center; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    /* ==========================================
+       [수정] 모바일 최적화 미디어 쿼리 영역
+       ========================================== */
     @media (max-width: 680px) {
       .topbar { height: auto; }
       .nav-inner { width: min(100% - 28px, 1148px); min-height: 72px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 16px; padding: 16px 0; }
@@ -202,8 +189,50 @@
       .page, .footer-inner { width: min(100% - 28px, 1148px); }
       .sub-title { font-size: 32px; }
       .coupon-grid { grid-template-columns: 1fr; }
-      .calendar-wrap { padding: 20px 16px; }
-      .cal-cell { font-size: 14px; border-radius: 8px; }
+      
+      /* --- 달력 패딩 축소 및 그리드 갭 조절 --- */
+      .calendar-wrap { padding: 18px 12px 20px; margin-bottom: 32px; }
+      .cal-header { margin-bottom: 16px; }
+      .cal-title { font-size: 19px; }
+      .cal-grid { gap: 4px; }
+      
+      /* --- 요일 헤더 폰트 축소 --- */
+      .cal-day-name { font-size: 12px; padding-bottom: 8px; }
+      
+      /* --- [핵심] 모달 셀 공간 확보 및 텍스트 찌그러짐 방지 --- */
+      .cal-cell { 
+        font-size: 13px; 
+        border-radius: 8px; 
+        padding-top: 2px;
+        justify-content: flex-start; /* 모바일에서는 텍스트 정렬을 위쪽으로 고정 */
+        padding: 4px 0;
+      }
+      
+      /* 숫자 노출용 span 스타일 보정 */
+      .cal-cell span:first-child {
+        display: block;
+        line-height: 1.2;
+      }
+
+      /* 모바일 전용 "추첨완료" 초소형 배너 튜닝 */
+      .cal-done-text {
+        font-size: 8px;
+        padding: 0px 2px;
+        margin-top: 1px;
+        border-radius: 3px;
+        transform: scale(0.88); /* 뷰포트가 좁아도 단어 분리 안 되도록 압축 */
+        white-space: nowrap;
+        max-width: 100%;
+        overflow: hidden;
+      }
+      
+      /* 모바일용 이벤트 아이콘 위치 살짝 조정 */
+      .cal-cell.has-event::after {
+        font-size: 10px;
+        top: -3px;
+        right: 0px;
+      }
+
       .footer-inner { flex-direction: column; align-items: flex-start; padding: 20px 0; }
       .footer-links { flex-wrap: wrap; }
     }
@@ -213,7 +242,7 @@
 <body>
   <header class="topbar">
     <div class="nav-inner">
-      <a href="localflow.html" class="brand" aria-label="LocalFlow 홈">
+      <a href="index.html" class="brand" aria-label="LocalFlow 홈">
         <span class="brand-icon">L</span>
         <span>
           <span class="brand-name">LocalFlow</span>
@@ -222,9 +251,10 @@
       </a>
 
       <nav class="nav" aria-label="주요 메뉴">
-        <a href="localflow.html">홈</a>
-        <a href="./gallery.html">갤러리</a>
-        <a class="active" href="./coupon.html">쿠폰</a>
+        <a href="index.html">홈</a>
+        <a href="index.html#ranking">랭킹</a>
+        <a href="gallery.html">갤러리</a>
+        <a class="active" href="#">쿠폰</a>
       </nav>
     </div>
   </header>
@@ -325,7 +355,6 @@
     const calTitle = document.getElementById("calTitle");
     const calDays = document.getElementById("calDays");
 
-    // [수정] 현재 시간 컨텍스트 기준 날짜 비교 로직을 넣어 달력 내 "추첨완료" 텍스트 동적 분기
     function renderCalendar(year, month) {
       calDays.innerHTML = "";
       calTitle.innerHTML = `${year}년 <span>${month + 1}월</span>`;
@@ -347,7 +376,7 @@
         const cellDate = new Date(year, month, i);
         cellDate.setHours(0,0,0,0);
         
-        const isExpiredEvent = eventMatch && (cellDate < todayMidnight); // 추첨일이 지났는지 여부
+        const isExpiredEvent = eventMatch && (cellDate < todayMidnight);
 
         let cellClasses = ["cal-cell"];
         if (todayMidnight.getTime() === cellDate.getTime()) cellClasses.push("today");
@@ -357,11 +386,11 @@
 
         if (eventMatch) {
           if (isExpiredEvent) {
-            cellClasses.push("cal-expired"); // 마감용 그레이 스케일 클래스
-            innerHtml += `<span class="cal-done-text">✓ 추첨완료</span>`; // 달력 안에 뙇!
+            cellClasses.push("cal-expired");
+            innerHtml += `<span class="cal-done-text">✓ 추첨완료</span>`;
             onClick = `onclick="showToast('✅ ${eventMatch.date} : [${eventMatch.title}] 추첨이 완료된 이벤트입니다.')"`;
           } else {
-            cellClasses.push("has-event"); // 다가올 추첨일 (기존 스타일)
+            cellClasses.push("has-event");
             onClick = `onclick="showToast('🎁 ${eventMatch.date} : ${eventMatch.title}')"`;
           }
         }
@@ -456,7 +485,6 @@
       }).join('');
     }
 
-    // 모달창 제어 로직
     const modalOverlay = document.getElementById("entryModalOverlay");
     const modalTargetTitle = document.getElementById("modalTargetTitle");
     const modalEmailInput = document.getElementById("modalEmailInput");
