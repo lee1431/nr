@@ -240,7 +240,7 @@ function logSell(rarity, name, qty, gain){
 }
 
 function chestEvery(){
-  const base = 60_000; 
+  const base = 1_000; 
   const speed = Math.pow(0.92, state.respawnLv - 1);
   return clamp(base * speed, 10_000, base);
 }
