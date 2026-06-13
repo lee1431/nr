@@ -2,62 +2,142 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>동전 쌓기 게임</title>
 
 <style>
-body {
+* {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
-  background: #1a1a1a;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #151515;
+  font-family: Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  touch-action: manipulation;
+}
+
+body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  font-family: Arial, sans-serif;
 }
 
-#gameContainer {
+#gameWrap {
   position: relative;
+  width: min(100vw, 430px);
+  height: min(100vh, 860px);
+  background: #111;
+  overflow: hidden;
 }
 
 canvas {
-  background: linear-gradient(#87ceeb, #dff6ff);
-  border: 3px solid #333;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: linear-gradient(#24b8f4 0%, #bff4ff 72%, #6b3d15 72%, #3a1f0c 100%);
 }
 
-#ui {
+#hud {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 24px;
+  left: 22px;
+  z-index: 3;
   color: white;
-  font-size: 24px;
-  font-weight: bold;
-  text-shadow: 2px 2px 4px black;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.35;
+  text-shadow:
+    -2px -2px 0 #1d4a66,
+     2px -2px 0 #1d4a66,
+    -2px  2px 0 #1d4a66,
+     2px  2px 0 #1d4a66,
+     0 4px 8px rgba(0,0,0,0.35);
+}
+
+#pauseBtn {
+  position: absolute;
+  top: 24px;
+  right: 22px;
+  z-index: 3;
+  width: 66px;
+  height: 66px;
+  border-radius: 18px;
+  background: rgba(0, 31, 52, 0.65);
+  color: white;
+  font-size: 34px;
+  font-weight: 900;
+  border: 0;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
 }
 
 #message {
   position: absolute;
-  top: 50%;
+  z-index: 4;
   left: 50%;
+  top: 44%;
   transform: translate(-50%, -50%);
-  color: white;
-  font-size: 30px;
-  font-weight: bold;
+  width: 80%;
+  padding: 22px 18px;
+  border-radius: 14px;
   text-align: center;
-  text-shadow: 2px 2px 5px black;
-  line-height: 1.6;
+  color: white;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.55;
+  background: rgba(13, 45, 63, 0.75);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+  text-shadow: 0 3px 5px rgba(0,0,0,0.45);
   user-select: none;
+}
+
+#message .yellow {
+  color: #ffe03b;
+}
+
+#bottomTip {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 52px;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 12px;
+  color: white;
+  font-size: 22px;
+  font-weight: 900;
+  background: rgba(37, 21, 8, 0.68);
+  text-shadow: 0 3px 5px rgba(0,0,0,0.45);
+  user-select: none;
+}
+
+#bottomTip .yellow {
+  color: #ffe03b;
 }
 </style>
 </head>
 
 <body>
-<div id="gameContainer">
-  <canvas id="game" width="400" height="700"></canvas>
-  <div id="ui">점수: <span id="score">0</span></div>
+<div id="gameWrap">
+  <canvas id="game"></canvas>
+
+  <div id="hud">
+    점수: <span id="score">0</span><br>
+    최고: <span id="best">0</span>
+  </div>
+
+  <button id="pauseBtn" type="button">Ⅱ</button>
+
   <div id="message">
-    동전 쌓기<br><br>
-    클릭 또는 스페이스바 시작
+    타이밍을 맞춰 <span class="yellow">클릭 또는 스페이스!</span><br>
+    동전을 떨어뜨려 쌓아보세요!
+  </div>
+
+  <div id="bottomTip">
+    최근 <span class="yellow">5층</span>만 보여집니다
   </div>
 </div>
 
@@ -66,173 +146,451 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
 const scoreEl = document.getElementById("score");
+const bestEl = document.getElementById("best");
 const messageEl = document.getElementById("message");
+const pauseBtn = document.getElementById("pauseBtn");
 
-const coinRadius = 40;
+let W = 400;
+let H = 800;
+let dpr = 1;
+
+const GAME = {
+  ready: "ready",
+  moving: "moving",
+  falling: "falling",
+  over: "over",
+  pause: "pause"
+};
+
+let state = GAME.ready;
+let previousState = GAME.ready;
+
+let score = 0;
+let best = Number(localStorage.getItem("coinStackBest") || 0);
 
 let stack = [];
-let movingCoin = null;
-let score = 0;
-let speed = 3;
-let gameStarted = false;
-let gameOver = false;
+let activeCoin = null;
 
-function createMovingCoin() {
-  movingCoin = {
-    x: coinRadius,
-    y: 120,
-    r: coinRadius,
-    dir: 1
-  };
+let coinW = 150;
+let coinH = 42;
+let targetY = 0;
+let baseY = 0;
+
+let moveSpeed = 2.7;
+let fallSpeed = 0;
+let direction = 1;
+
+let perfectCount = 0;
+let shakeTime = 0;
+
+bestEl.textContent = best;
+
+function resize() {
+  const rect = canvas.getBoundingClientRect();
+  dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+  W = Math.floor(rect.width);
+  H = Math.floor(rect.height);
+
+  canvas.width = Math.floor(W * dpr);
+  canvas.height = Math.floor(H * dpr);
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  coinW = Math.min(158, W * 0.42);
+  coinH = coinW * 0.28;
+
+  baseY = H * 0.74;
+  targetY = baseY - coinH * 0.35;
+
+  if (stack.length > 0) {
+    normalizeVisibleStack();
+  }
+
+  if (activeCoin && state !== GAME.falling) {
+    activeCoin.y = H * 0.19;
+  }
 }
+
+window.addEventListener("resize", resize);
 
 function resetGame() {
   score = 0;
-  speed = 3;
-  gameOver = false;
+  perfectCount = 0;
+  moveSpeed = 2.7;
+  direction = 1;
+  shakeTime = 0;
+
+  scoreEl.textContent = score;
 
   stack = [
     {
-      x: canvas.width / 2,
-      y: canvas.height - 70,
-      r: coinRadius
+      x: W / 2,
+      y: targetY,
+      w: coinW,
+      h: coinH
     }
   ];
 
-  createMovingCoin();
+  createActiveCoin();
 
-  scoreEl.textContent = score;
+  state = GAME.ready;
+
+  messageEl.style.display = "block";
+  messageEl.innerHTML = `
+    타이밍을 맞춰 <span class="yellow">클릭 또는 스페이스!</span><br>
+    동전을 떨어뜨려 쌓아보세요!
+  `;
 }
 
-function drawCoin(x, y, r) {
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = "#FFD700";
-  ctx.fill();
-
-  ctx.lineWidth = 4;
-  ctx.strokeStyle = "#CCAA00";
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(x, y, r - 10, 0, Math.PI * 2);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "#FFF2A8";
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.arc(x - 10, y - 10, 8, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255,255,255,0.35)";
-  ctx.fill();
+function createActiveCoin() {
+  activeCoin = {
+    x: W / 2,
+    y: H * 0.19,
+    w: coinW,
+    h: coinH,
+    vx: moveSpeed * direction
+  };
+  fallSpeed = 0;
 }
 
-function drawGround() {
-  ctx.fillStyle = "#6b4f2a";
-  ctx.fillRect(0, canvas.height - 30, canvas.width, 30);
+function normalizeVisibleStack() {
+  const visible = stack.slice(-5);
+  const startY = targetY;
+
+  for (let i = visible.length - 1; i >= 0; i--) {
+    const fromTop = visible.length - 1 - i;
+    visible[i].y = startY + fromTop * coinH * 0.78;
+  }
+
+  stack = visible;
 }
 
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  drawGround();
-
-  for (const coin of stack) {
-    drawCoin(coin.x, coin.y, coin.r);
-  }
-
-  if (!gameOver && movingCoin) {
-    drawCoin(movingCoin.x, movingCoin.y, movingCoin.r);
-  }
-}
-
-function update() {
-  if (!gameStarted || gameOver || !movingCoin) return;
-
-  movingCoin.x += speed * movingCoin.dir;
-
-  if (movingCoin.x >= canvas.width - coinRadius) {
-    movingCoin.x = canvas.width - coinRadius;
-    movingCoin.dir = -1;
-  }
-
-  if (movingCoin.x <= coinRadius) {
-    movingCoin.x = coinRadius;
-    movingCoin.dir = 1;
-  }
+function startMoving() {
+  state = GAME.moving;
+  messageEl.style.display = "none";
 }
 
 function dropCoin() {
-  if (!gameStarted) {
-    gameStarted = true;
+  if (state === GAME.ready) {
+    startMoving();
+    return;
+  }
+
+  if (state === GAME.moving) {
+    state = GAME.falling;
+    fallSpeed = 0;
+    return;
+  }
+
+  if (state === GAME.over) {
     resetGame();
-    messageEl.innerHTML = "";
     return;
   }
 
-  if (gameOver) {
-    gameStarted = true;
-    resetGame();
-    messageEl.innerHTML = "";
+  if (state === GAME.pause) {
     return;
   }
-
-  const topCoin = stack[stack.length - 1];
-  const offset = Math.abs(movingCoin.x - topCoin.x);
-
-  if (offset > coinRadius * 0.8) {
-    gameOver = true;
-    messageEl.innerHTML = `
-      게임 오버<br>
-      점수: ${score}<br><br>
-      클릭하여 재시작
-    `;
-    return;
-  }
-
-  stack.push({
-    x: movingCoin.x,
-    y: topCoin.y - coinRadius * 1.2,
-    r: coinRadius
-  });
-
-  score++;
-  scoreEl.textContent = score;
-
-  speed += 0.2;
-
-  if (stack[stack.length - 1].y < 170) {
-    for (const coin of stack) {
-      coin.y += coinRadius * 1.2;
-    }
-  }
-
-  createMovingCoin();
 }
 
-function gameLoop() {
-  update();
-  draw();
-  requestAnimationFrame(gameLoop);
+function togglePause(e) {
+  e.stopPropagation();
+
+  if (state === GAME.over || state === GAME.ready) return;
+
+  if (state === GAME.pause) {
+    state = previousState;
+    pauseBtn.textContent = "Ⅱ";
+    messageEl.style.display = "none";
+  } else {
+    previousState = state;
+    state = GAME.pause;
+    pauseBtn.textContent = "▶";
+    messageEl.style.display = "block";
+    messageEl.innerHTML = `일시정지<br><span class="yellow">버튼을 누르면 계속</span>`;
+  }
 }
 
-canvas.addEventListener("click", dropCoin);
+pauseBtn.addEventListener("click", togglePause);
 
-document.addEventListener("keydown", function(e) {
+canvas.addEventListener("pointerdown", dropCoin);
+
+document.addEventListener("keydown", (e) => {
   if (e.code === "Space") {
     e.preventDefault();
     dropCoin();
   }
+
+  if (e.code === "KeyP") {
+    togglePause(e);
+  }
 });
 
+function update() {
+  if (state === GAME.pause || state === GAME.ready || state === GAME.over) return;
+
+  if (shakeTime > 0) {
+    shakeTime--;
+  }
+
+  if (state === GAME.moving) {
+    activeCoin.x += activeCoin.vx;
+
+    const half = activeCoin.w / 2;
+    if (activeCoin.x >= W - half - 18) {
+      activeCoin.x = W - half - 18;
+      activeCoin.vx *= -1;
+    }
+
+    if (activeCoin.x <= half + 18) {
+      activeCoin.x = half + 18;
+      activeCoin.vx *= -1;
+    }
+  }
+
+  if (state === GAME.falling) {
+    fallSpeed += 0.75;
+    activeCoin.y += fallSpeed;
+
+    const topCoin = stack[stack.length - 1];
+
+    if (activeCoin.y >= topCoin.y - coinH * 0.78) {
+      judgeLanding(topCoin);
+    }
+  }
+}
+
+function judgeLanding(topCoin) {
+  const offset = Math.abs(activeCoin.x - topCoin.x);
+  const allowed = coinW * 0.42;
+  const perfect = coinW * 0.08;
+
+  if (offset > allowed) {
+    gameOver();
+    return;
+  }
+
+  if (offset <= perfect) {
+    perfectCount++;
+    score += 2;
+    shakeTime = 8;
+  } else {
+    perfectCount = 0;
+    score += 1;
+  }
+
+  scoreEl.textContent = score;
+
+  if (score > best) {
+    best = score;
+    localStorage.setItem("coinStackBest", best);
+    bestEl.textContent = best;
+  }
+
+  stack.push({
+    x: activeCoin.x,
+    y: topCoin.y - coinH * 0.78,
+    w: coinW,
+    h: coinH
+  });
+
+  normalizeVisibleStack();
+
+  moveSpeed = Math.min(7.2, moveSpeed + 0.12);
+  direction = Math.random() > 0.5 ? 1 : -1;
+
+  createActiveCoin();
+  activeCoin.vx = moveSpeed * direction;
+
+  state = GAME.moving;
+}
+
+function gameOver() {
+  state = GAME.over;
+
+  messageEl.style.display = "block";
+  messageEl.innerHTML = `
+    게임 오버<br>
+    점수: <span class="yellow">${score}</span><br><br>
+    클릭하여 재시작
+  `;
+}
+
+function drawBackground() {
+  const sky = ctx.createLinearGradient(0, 0, 0, H * 0.72);
+  sky.addColorStop(0, "#22b7f4");
+  sky.addColorStop(1, "#c9f7ff");
+
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  drawCloud(W * 0.07, H * 0.43, 1.0);
+  drawCloud(W * 0.78, H * 0.49, 0.9);
+
+  ctx.fillStyle = "#805527";
+  ctx.fillRect(0, H * 0.72, W, H * 0.035);
+
+  ctx.fillStyle = "#4a2b12";
+  ctx.fillRect(0, H * 0.755, W, H * 0.245);
+
+  const floorGrad = ctx.createLinearGradient(0, H * 0.755, 0, H);
+  floorGrad.addColorStop(0, "#6b3d15");
+  floorGrad.addColorStop(1, "#2a1608");
+  ctx.fillStyle = floorGrad;
+  ctx.fillRect(0, H * 0.755, W, H * 0.245);
+}
+
+function drawCloud(x, y, s) {
+  ctx.save();
+  ctx.globalAlpha = 0.8;
+  ctx.fillStyle = "white";
+
+  ctx.beginPath();
+  ctx.arc(x, y, 34 * s, 0, Math.PI * 2);
+  ctx.arc(x + 34 * s, y - 12 * s, 44 * s, 0, Math.PI * 2);
+  ctx.arc(x + 78 * s, y + 4 * s, 32 * s, 0, Math.PI * 2);
+  ctx.rect(x - 34 * s, y, 140 * s, 42 * s);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawCoin(coin, isActive = false) {
+  const x = coin.x;
+  const y = coin.y;
+  const w = coin.w;
+  const h = coin.h;
+
+  ctx.save();
+
+  if (isActive) {
+    ctx.shadowColor = "rgba(0,0,0,0.25)";
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 8;
+  }
+
+  ctx.fillStyle = "#7d4b08";
+  roundEllipse(x, y + h * 0.16, w * 0.52, h * 0.52);
+  ctx.fill();
+
+  const sideGrad = ctx.createLinearGradient(x, y, x, y + h);
+  sideGrad.addColorStop(0, "#ffdd27");
+  sideGrad.addColorStop(0.5, "#ffb900");
+  sideGrad.addColorStop(1, "#c87b00");
+
+  ctx.fillStyle = sideGrad;
+  ctx.fillRect(x - w / 2, y, w, h * 0.55);
+
+  ctx.strokeStyle = "#8b5500";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(x - w / 2, y, w, h * 0.55);
+
+  for (let i = -w / 2 + 12; i < w / 2; i += 12) {
+    ctx.beginPath();
+    ctx.moveTo(x + i, y + 4);
+    ctx.lineTo(x + i, y + h * 0.52);
+    ctx.strokeStyle = "rgba(123,72,0,0.45)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  const topGrad = ctx.createRadialGradient(
+    x - w * 0.18,
+    y - h * 0.24,
+    4,
+    x,
+    y - h * 0.2,
+    w * 0.55
+  );
+  topGrad.addColorStop(0, "#fff36b");
+  topGrad.addColorStop(0.45, "#ffd41f");
+  topGrad.addColorStop(1, "#ffb700");
+
+  ctx.fillStyle = topGrad;
+  roundEllipse(x, y, w * 0.54, h * 0.58);
+  ctx.fill();
+
+  ctx.strokeStyle = "#855000";
+  ctx.lineWidth = 4;
+  roundEllipse(x, y, w * 0.54, h * 0.58);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(255,255,255,0.5)";
+  ctx.lineWidth = 3;
+  roundEllipse(x, y - 1, w * 0.38, h * 0.38);
+  ctx.stroke();
+
+  drawStar(x, y - 1, w * 0.14, "#f7a900", "#fff05b");
+
+  ctx.restore();
+}
+
+function roundEllipse(x, y, rx, ry) {
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+}
+
+function drawStar(cx, cy, r, stroke, fill) {
+  const spikes = 5;
+  const outer = r;
+  const inner = r * 0.45;
+
+  ctx.beginPath();
+
+  for (let i = 0; i < spikes * 2; i++) {
+    const radius = i % 2 === 0 ? outer : inner;
+    const angle = -Math.PI / 2 + i * Math.PI / spikes;
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius * 0.65;
+
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+
+  ctx.closePath();
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  let sx = 0;
+  let sy = 0;
+
+  if (shakeTime > 0) {
+    sx = (Math.random() - 0.5) * 5;
+    sy = (Math.random() - 0.5) * 3;
+  }
+
+  ctx.save();
+  ctx.translate(sx, sy);
+
+  drawBackground();
+
+  for (const coin of stack) {
+    drawCoin(coin);
+  }
+
+  if (activeCoin && state !== GAME.over) {
+    drawCoin(activeCoin, true);
+  }
+
+  ctx.restore();
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+resize();
 resetGame();
-gameStarted = false;
-
-messageEl.innerHTML = `
-  동전 쌓기<br><br>
-  클릭 또는 스페이스바 시작
-`;
-
-gameLoop();
+loop();
 </script>
 </body>
 </html>
