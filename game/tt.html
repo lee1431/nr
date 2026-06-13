@@ -38,7 +38,6 @@ canvas {
   width: 100%;
   height: 100%;
   display: block;
-  background: linear-gradient(#24b8f4 0%, #bff4ff 72%, #6b3d15 72%, #3a1f0c 100%);
 }
 
 #hud {
@@ -49,13 +48,18 @@ canvas {
   color: white;
   font-size: 28px;
   font-weight: 900;
-  line-height: 1.35;
+  line-height: 1.3;
   text-shadow:
     -2px -2px 0 #1d4a66,
      2px -2px 0 #1d4a66,
     -2px  2px 0 #1d4a66,
      2px  2px 0 #1d4a66,
      0 4px 8px rgba(0,0,0,0.35);
+}
+
+#hud .small {
+  font-size: 19px;
+  line-height: 1.2;
 }
 
 #pauseBtn {
@@ -72,6 +76,7 @@ canvas {
   font-weight: 900;
   border: 0;
   box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+  cursor: pointer;
 }
 
 #message {
@@ -80,22 +85,25 @@ canvas {
   left: 50%;
   top: 44%;
   transform: translate(-50%, -50%);
-  width: 80%;
-  padding: 22px 18px;
+  width: 82%;
+  padding: 20px 18px;
   border-radius: 14px;
   text-align: center;
   color: white;
   font-size: 24px;
   font-weight: 900;
-  line-height: 1.55;
-  background: rgba(13, 45, 63, 0.75);
+  line-height: 1.5;
+  background: rgba(13, 45, 63, 0.72);
   box-shadow: 0 8px 18px rgba(0,0,0,0.25);
   text-shadow: 0 3px 5px rgba(0,0,0,0.45);
   user-select: none;
 }
 
-#message .yellow {
+.yellow {
   color: #ffe03b;
+}
+.green {
+  color: #7cff8d;
 }
 </style>
 </head>
@@ -106,14 +114,16 @@ canvas {
 
   <div id="hud">
     점수: <span id="score">0</span><br>
-    최고: <span id="best">0</span>
+    최고: <span id="best">0</span><br>
+    <span class="small">해독: <span id="decode">0</span>%</span>
   </div>
 
   <button id="pauseBtn" type="button">Ⅱ</button>
 
   <div id="message">
     타이밍을 맞춰 <span class="yellow">클릭 또는 스페이스!</span><br>
-    동전을 떨어뜨려 쌓아보세요!
+    동전을 떨어뜨려 쌓아보세요!<br>
+    <span class="green">하단에 숨겨진 코드가 조금씩 드러납니다</span>
   </div>
 </div>
 
@@ -123,6 +133,7 @@ const ctx = canvas.getContext("2d");
 
 const scoreEl = document.getElementById("score");
 const bestEl = document.getElementById("best");
+const decodeEl = document.getElementById("decode");
 const messageEl = document.getElementById("message");
 const pauseBtn = document.getElementById("pauseBtn");
 
@@ -147,7 +158,7 @@ let best = Number(localStorage.getItem("coinStackBest") || 0);
 let stack = [];
 let activeCoin = null;
 
-/* 동전 크기: 기존보다 거의 1/10 수준 */
+/* 작은 동전 */
 let coinW = 16;
 let coinH = 5;
 
@@ -157,11 +168,58 @@ let baseY = 0;
 let moveSpeed = 2.7;
 let fallSpeed = 0;
 let direction = 1;
-
-let perfectCount = 0;
 let shakeTime = 0;
 
+/* 하단 숨겨진 코드 공개 시스템 */
+const REVEAL_COLS = 40;
+const REVEAL_ROWS = 25;
+const TOTAL_REVEAL_CELLS = REVEAL_COLS * REVEAL_ROWS; // 1000
+
+let revealCells = [];
+let hiddenCellIndices = [];
+let decodePercent = 0;
+
+/* 성공할 때마다 공개할 양 */
+const REVEAL_PER_SUCCESS = 12;
+const REVEAL_PER_PERFECT = 24;
+
 bestEl.textContent = best;
+
+const hiddenCodeLines = [
+  "function createMovingCoin() {",
+  "  activeCoin = { x: W/2, y: H*0.19, w: coinW, h: coinH };",
+  "}",
+  "",
+  "function judgeLanding(topCoin) {",
+  "  const offset = Math.abs(activeCoin.x - topCoin.x);",
+  "  const allowed = coinW * 0.8;",
+  "  if (offset > allowed) return gameOver();",
+  "  score += 1;",
+  "  revealRandomCode(REVEAL_PER_SUCCESS);",
+  "}",
+  "",
+  "const secret = 'COIN STACK WEB GAME';",
+  "const mission = 'REVEAL THE HIDDEN CODE';",
+  "",
+  "for (let i = 0; i < 1000; i++) {",
+  "  // hidden fragment",
+  "}",
+  "",
+  "console.log('Nice stack!');",
+  "console.log('Keep going...');",
+  "",
+  "/*",
+  "  Hidden code area",
+  "  is revealed randomly",
+  "  whenever the player stacks coins.",
+  "*/",
+  "",
+  "function revealRandomCode(count) {",
+  "  // remove random cover pieces",
+  "}",
+  "",
+  "return 'SUCCESS';"
+];
 
 function resize() {
   const rect = canvas.getBoundingClientRect();
@@ -175,7 +233,6 @@ function resize() {
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  /* 매우 작은 동전 크기 */
   coinW = Math.max(14, Math.min(18, W * 0.04));
   coinH = Math.max(4, coinW * 0.32);
 
@@ -193,9 +250,39 @@ function resize() {
 
 window.addEventListener("resize", resize);
 
+function initRevealMask() {
+  revealCells = new Array(TOTAL_REVEAL_CELLS).fill(false);
+  hiddenCellIndices = [];
+
+  for (let i = 0; i < TOTAL_REVEAL_CELLS; i++) {
+    hiddenCellIndices.push(i);
+  }
+
+  updateDecodePercent();
+}
+
+function updateDecodePercent() {
+  const opened = revealCells.filter(Boolean).length;
+  decodePercent = Math.floor((opened / TOTAL_REVEAL_CELLS) * 100);
+  decodeEl.textContent = decodePercent;
+}
+
+function revealRandomCode(count) {
+  for (let i = 0; i < count; i++) {
+    if (hiddenCellIndices.length === 0) break;
+
+    const randomPos = Math.floor(Math.random() * hiddenCellIndices.length);
+    const pickedIndex = hiddenCellIndices[randomPos];
+
+    revealCells[pickedIndex] = true;
+    hiddenCellIndices.splice(randomPos, 1);
+  }
+
+  updateDecodePercent();
+}
+
 function resetGame() {
   score = 0;
-  perfectCount = 0;
   moveSpeed = 2.7;
   direction = 1;
   shakeTime = 0;
@@ -212,13 +299,15 @@ function resetGame() {
   ];
 
   createActiveCoin();
+  initRevealMask();
 
   state = GAME.ready;
 
   messageEl.style.display = "block";
   messageEl.innerHTML = `
     타이밍을 맞춰 <span class="yellow">클릭 또는 스페이스!</span><br>
-    동전을 떨어뜨려 쌓아보세요!
+    동전을 떨어뜨려 쌓아보세요!<br>
+    <span class="green">성공할 때마다 하단 코드가 랜덤 공개됩니다</span>
   `;
 }
 
@@ -348,12 +437,13 @@ function judgeLanding(topCoin) {
     return;
   }
 
+  let revealCount = REVEAL_PER_SUCCESS;
+
   if (offset <= perfect) {
-    perfectCount++;
     score += 2;
     shakeTime = 8;
+    revealCount = REVEAL_PER_PERFECT;
   } else {
-    perfectCount = 0;
     score += 1;
   }
 
@@ -364,6 +454,8 @@ function judgeLanding(topCoin) {
     localStorage.setItem("coinStackBest", best);
     bestEl.textContent = best;
   }
+
+  revealRandomCode(revealCount);
 
   stack.push({
     x: activeCoin.x,
@@ -386,10 +478,16 @@ function judgeLanding(topCoin) {
 function gameOver() {
   state = GAME.over;
 
+  let extra = "";
+  if (decodePercent >= 100) {
+    extra = `<br><span class="green">숨겨진 코드 해독 완료!</span>`;
+  }
+
   messageEl.style.display = "block";
   messageEl.innerHTML = `
     게임 오버<br>
-    점수: <span class="yellow">${score}</span><br><br>
+    점수: <span class="yellow">${score}</span><br>
+    해독률: <span class="green">${decodePercent}%</span>${extra}<br><br>
     클릭하여 재시작
   `;
 }
@@ -405,7 +503,7 @@ function drawBackground() {
   drawCloud(W * 0.12, H * 0.48, 0.8);
   drawCloud(W * 0.85, H * 0.54, 0.75);
 
-  ctx.fillStyle = "#805527";
+  ctx.fillStyle = "#8e642d";
   ctx.fillRect(0, H * 0.72, W, H * 0.035);
 
   const floorGrad = ctx.createLinearGradient(0, H * 0.755, 0, H);
@@ -413,6 +511,79 @@ function drawBackground() {
   floorGrad.addColorStop(1, "#2a1608");
   ctx.fillStyle = floorGrad;
   ctx.fillRect(0, H * 0.755, W, H * 0.245);
+
+  drawHiddenCodeZone();
+}
+
+function drawHiddenCodeZone() {
+  const zoneY = H * 0.755;
+  const zoneH = H * 0.245;
+  const zoneX = 0;
+  const zoneW = W;
+
+  const pad = 14;
+  const panelX = zoneX + pad;
+  const panelY = zoneY + pad;
+  const panelW = zoneW - pad * 2;
+  const panelH = zoneH - pad * 2;
+
+  ctx.save();
+
+  roundRect(panelX, panelY, panelW, panelH, 12);
+  ctx.fillStyle = "rgba(10, 12, 8, 0.72)";
+  ctx.fill();
+
+  roundRect(panelX, panelY, panelW, panelH, 12);
+  ctx.strokeStyle = "rgba(172, 255, 129, 0.16)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.beginPath();
+  roundRect(panelX, panelY, panelW, panelH, 12);
+  ctx.clip();
+
+  ctx.fillStyle = "#8bff7a";
+  ctx.font = "11px Consolas, Monaco, monospace";
+  ctx.textBaseline = "top";
+
+  const lineHeight = 12;
+  let textY = panelY + 8;
+
+  for (let i = 0; i < hiddenCodeLines.length; i++) {
+    ctx.fillText(hiddenCodeLines[i], panelX + 8, textY);
+    textY += lineHeight;
+    if (textY > panelY + panelH - 10) break;
+  }
+
+  ctx.strokeStyle = "rgba(130, 255, 130, 0.06)";
+  for (let y = panelY + 2; y < panelY + panelH; y += 4) {
+    ctx.beginPath();
+    ctx.moveTo(panelX, y);
+    ctx.lineTo(panelX + panelW, y);
+    ctx.stroke();
+  }
+
+  const cellW = panelW / REVEAL_COLS;
+  const cellH = panelH / REVEAL_ROWS;
+
+  for (let row = 0; row < REVEAL_ROWS; row++) {
+    for (let col = 0; col < REVEAL_COLS; col++) {
+      const idx = row * REVEAL_COLS + col;
+      if (revealCells[idx]) continue;
+
+      const x = panelX + col * cellW;
+      const y = panelY + row * cellH;
+
+      const coverGrad = ctx.createLinearGradient(x, y, x, y + cellH);
+      coverGrad.addColorStop(0, "rgba(88, 49, 20, 0.98)");
+      coverGrad.addColorStop(1, "rgba(48, 25, 9, 0.98)");
+
+      ctx.fillStyle = coverGrad;
+      ctx.fillRect(x, y, cellW + 0.7, cellH + 0.7);
+    }
+  }
+
+  ctx.restore();
 }
 
 function drawCloud(x, y, s) {
@@ -487,6 +658,19 @@ function drawCoin(coin, isActive = false) {
 function roundEllipse(x, y, rx, ry) {
   ctx.beginPath();
   ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+}
+
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
 }
 
 function draw() {
