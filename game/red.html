@@ -6,116 +6,159 @@
   <title>Fantasy Web MMORPG Prototype</title>
   <link rel="stylesheet" href="./assets/css/style.css" />
 </head>
+
 <body>
   <div id="app">
-    <div id="game-container"></div>
+    <!-- Phaser game canvas mount point -->
+    <div id="game-container" aria-label="게임 화면"></div>
 
     <!-- 상단 좌측 필드 정보 -->
-    <div class="panel top-left-panel">
-      <div class="panel-title">Verdant Plains</div>
+    <section class="panel top-left-panel" aria-label="필드 정보">
+      <div class="panel-title" id="field-name">Verdant Plains</div>
+
       <div class="panel-row">
-        <span class="green">Channel 1</span>
-        <span>10:24</span>
+        <span class="green" id="channel-name">Channel 1</span>
+        <span id="server-time">10:24</span>
       </div>
+
       <div class="panel-row">
         <span>Field Status:</span>
-        <span class="green">Safe</span>
+        <span class="green" id="field-status">Safe</span>
       </div>
-    </div>
+    </section>
 
     <!-- 우측 상단 미니맵 -->
-    <div class="panel minimap-panel">
-      <div class="panel-title">Verdant Plains</div>
+    <section class="panel minimap-panel" aria-label="미니맵">
+      <div class="panel-title" id="minimap-field-name">Verdant Plains</div>
+
       <div id="minimap">
         <div class="mini-path"></div>
-        <div class="mini-dot enemy" style="left: 22%; top: 28%;"></div>
-        <div class="mini-dot enemy" style="left: 75%; top: 22%;"></div>
-        <div class="mini-dot enemy" style="left: 70%; top: 68%;"></div>
-        <div id="mini-player"></div>
+
+        <!-- 추후 main.js에서 동적으로 생성해도 됨 -->
+        <div class="mini-dot enemy" style="--x: 22%; --y: 28%;" aria-label="적"></div>
+        <div class="mini-dot enemy" style="--x: 75%; --y: 22%;" aria-label="적"></div>
+        <div class="mini-dot enemy" style="--x: 70%; --y: 68%;" aria-label="적"></div>
+
+        <div id="mini-player" aria-label="플레이어 위치"></div>
       </div>
+
       <div class="mini-controls">
-        <button>+</button>
-        <button>-</button>
-        <button>⚙</button>
+        <button type="button" id="minimap-zoom-in" aria-label="미니맵 확대">+</button>
+        <button type="button" id="minimap-zoom-out" aria-label="미니맵 축소">-</button>
+        <button type="button" id="minimap-settings" aria-label="미니맵 설정">⚙</button>
       </div>
-    </div>
+    </section>
 
     <!-- 우측 퀘스트 -->
-    <div class="panel quest-panel">
+    <section class="panel quest-panel" aria-label="퀘스트 추적">
       <div class="panel-title">Quest Tracker</div>
-      <div class="quest-item">
-        <div class="quest-name">◆ The Beginning</div>
-        <div class="quest-desc">- Defeat Green Slimes (0/5)</div>
+
+      <div class="quest-item" id="active-quest">
+        <div class="quest-name" id="quest-name">◆ The Beginning</div>
+        <div class="quest-desc" id="quest-progress">- Defeat Green Slimes (0/5)</div>
       </div>
-    </div>
+    </section>
 
     <!-- 좌측 채팅 -->
-    <div class="panel chat-panel">
-      <div class="chat-tabs">
-        <button class="active">All</button>
-        <button>Party</button>
-        <button>Guild</button>
-        <button>System</button>
+    <section class="panel chat-panel" aria-label="채팅">
+      <div class="chat-tabs" role="tablist" aria-label="채팅 탭">
+        <button type="button" class="active" data-chat-tab="all" aria-pressed="true">All</button>
+        <button type="button" data-chat-tab="party" aria-pressed="false">Party</button>
+        <button type="button" data-chat-tab="guild" aria-pressed="false">Guild</button>
+        <button type="button" data-chat-tab="system" aria-pressed="false">System</button>
       </div>
-      <div class="chat-body">
+
+      <div class="chat-body" id="chat-body" aria-live="polite">
         <div>Welcome to Mythic Realms Online!</div>
         <div>Type /help for a list of commands.</div>
         <div class="green">You have joined Channel 1.</div>
         <div><span class="yellow">System:</span> Field is safe.</div>
         <div id="coord-line">X: 0 / Y: 0</div>
       </div>
+
       <div class="chat-input-row">
-        <input type="text" placeholder="Enter message..." />
-        <button>Send</button>
+        <label class="sr-only" for="chat-input">채팅 메시지</label>
+        <input id="chat-input" type="text" placeholder="Enter message..." autocomplete="off" />
+        <button type="button" id="chat-send-button">Send</button>
       </div>
-    </div>
+    </section>
 
     <!-- 하단 HUD -->
-    <div class="hud">
+    <section class="hud" aria-label="플레이어 HUD">
       <div class="portrait-wrap">
-        <div class="portrait">🙂</div>
+        <div class="portrait" id="player-portrait" aria-label="플레이어 초상화">🙂</div>
+
         <div class="player-info">
-          <div class="name-line">Lv. 1 Adventurer</div>
+          <div class="name-line" id="player-name-line">Lv. 1 Adventurer</div>
 
           <div class="stat-row">
             <span class="label">HP</span>
-            <div class="bar"><div class="fill hp" style="width:100%"></div></div>
+            <div class="bar" aria-hidden="true">
+              <div class="fill hp" id="hp-fill" style="width: 100%;"></div>
+            </div>
             <span class="value" id="hp-text">120 / 120</span>
           </div>
 
           <div class="stat-row">
             <span class="label">MP</span>
-            <div class="bar"><div class="fill mp" style="width:100%"></div></div>
-            <span class="value">60 / 60</span>
+            <div class="bar" aria-hidden="true">
+              <div class="fill mp" id="mp-fill" style="width: 100%;"></div>
+            </div>
+            <span class="value" id="mp-text">60 / 60</span>
           </div>
 
           <div class="stat-row">
             <span class="label">EXP</span>
-            <div class="bar"><div class="fill exp" style="width:20%"></div></div>
-            <span class="value">20 / 100 (20%)</span>
+            <div class="bar" aria-hidden="true">
+              <div class="fill exp" id="exp-fill" style="width: 20%;"></div>
+            </div>
+            <span class="value" id="exp-text">20 / 100 (20%)</span>
           </div>
         </div>
       </div>
 
-      <div class="skill-bar">
-        <div class="slot"><span class="num">1</span>⚔</div>
-        <div class="slot"><span class="num">2</span>⚡</div>
-        <div class="slot"><span class="num">3</span>🛡</div>
-        <div class="slot"><span class="num">4</span>🌀</div>
-        <div class="slot"><span class="num">5</span>👣</div>
-        <div class="slot"><span class="num">6</span>🔥</div>
-        <div class="slot"><span class="num">7</span>✴</div>
-        <div class="slot locked"><span class="num">8</span>🔒</div>
+      <div class="skill-bar" aria-label="스킬 슬롯">
+        <button type="button" class="slot" data-skill-key="1" aria-label="1번 스킬: 기본 공격">
+          <span class="num">1</span>⚔
+        </button>
+
+        <button type="button" class="slot" data-skill-key="2" aria-label="2번 스킬: 번개 공격">
+          <span class="num">2</span>⚡
+        </button>
+
+        <button type="button" class="slot" data-skill-key="3" aria-label="3번 스킬: 방어">
+          <span class="num">3</span>🛡
+        </button>
+
+        <button type="button" class="slot" data-skill-key="4" aria-label="4번 스킬: 소용돌이">
+          <span class="num">4</span>🌀
+        </button>
+
+        <button type="button" class="slot" data-skill-key="5" aria-label="5번 스킬: 이동기">
+          <span class="num">5</span>👣
+        </button>
+
+        <button type="button" class="slot" data-skill-key="6" aria-label="6번 스킬: 화염 공격">
+          <span class="num">6</span>🔥
+        </button>
+
+        <button type="button" class="slot" data-skill-key="7" aria-label="7번 스킬: 특수 공격">
+          <span class="num">7</span>✴
+        </button>
+
+        <button type="button" class="slot locked" data-skill-key="8" aria-label="8번 스킬: 잠김" disabled>
+          <span class="num">8</span>🔒
+        </button>
       </div>
 
-      <div class="menu-buttons">
-        <button>Inventory</button>
-        <button>Skills</button>
-        <button>Quests</button>
-        <button>Character</button>
-        <button>Options</button>
-      </div>
-    </div>
+      <nav class="menu-buttons" aria-label="게임 메뉴">
+        <button type="button" id="inventory-button">Inventory</button>
+        <button type="button" id="skills-button">Skills</button>
+        <button type="button" id="quests-button">Quests</button>
+        <button type="button" id="character-button">Character</button>
+        <button type="button" id="options-button">Options</button>
+      </nav>
+    </section>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
