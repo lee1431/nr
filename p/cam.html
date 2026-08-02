@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CCTV 4분할 모니터</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <style>
+    :root{--bg:#050807;--line:#26322d;--green:#72ff94}*{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:#d8e2dd;font-family:Arial,sans-serif}body{overflow:hidden}
+    .dashboard{height:100dvh;padding:14px;display:grid;grid-template-rows:44px minmax(0,1fr) 24px;gap:10px;background:radial-gradient(circle at 50% -20%,#16241e 0,#050807 42%)}
+    .topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 12px;border:1px solid var(--line);background:#060c09eb;box-shadow:inset 0 0 18px #000;letter-spacing:.12em;font-family:monospace}
+    .brand{font-weight:800;color:#effff3}.brand-mark{display:inline-block;width:8px;height:18px;margin-right:9px;vertical-align:middle;background:var(--green);box-shadow:0 0 12px var(--green)}
+    .system{color:var(--green);font-size:11px}.dot{display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 1.8s infinite}.topbar time{justify-self:end;font-size:12px;color:#9aaba2}
+    .grid{min-height:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:8px}
+    .cam{position:relative;min-width:0;min-height:0;overflow:hidden;border:1px solid #334039;background:#050706;box-shadow:inset 0 0 35px #000}.cam video{width:100%;height:100%;display:block;object-fit:cover;background:#050706}
+    .scan{pointer-events:none;position:absolute;inset:0;opacity:.12;background:repeating-linear-gradient(0deg,transparent 0 3px,#ffffff14 4px);mix-blend-mode:overlay}
+    .label{position:absolute;top:12px;left:12px;display:flex;gap:9px;align-items:center;padding:6px 9px;background:#010503b3;border-left:2px solid var(--green);font:11px monospace;letter-spacing:.09em}.label b{color:var(--green)}.label strong{color:#fff}
+    .status{position:absolute;top:13px;right:13px;padding:5px 7px;color:#d3ddd8;background:#000a;font:10px monospace}.status i{display:inline-block;width:6px;height:6px;margin-right:4px;border-radius:50%;background:#88918d}.status.live{color:#ffdfdf}.status.live i{background:#ff4747;box-shadow:0 0 7px #ff4747;animation:pulse 1.5s infinite}
+    .message{position:absolute;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none;color:#54625a;font-family:monospace}.message span{font-size:clamp(20px,3vw,42px);letter-spacing:.2em}.message small{margin-top:10px}
+    .full{position:absolute;right:12px;bottom:10px;width:34px;height:34px;border:1px solid #ffffff40;color:#fff;background:#0009;cursor:pointer;opacity:.55}.full:hover{opacity:1;border-color:var(--green);color:var(--green)}.cam:fullscreen{width:100vw;height:100vh}
+    footer{display:flex;justify-content:space-between;align-items:center;color:#536159;font:10px monospace;letter-spacing:.08em}@keyframes pulse{50%{opacity:.35}}
+    @media(max-width:720px){body{overflow:auto}.dashboard{height:auto;min-height:100dvh;grid-template-rows:42px auto 24px;padding:8px}.topbar{grid-template-columns:1fr auto}.system{display:none}.topbar time{font-size:10px}.grid{grid-template-columns:1fr;grid-template-rows:none}.cam{aspect-ratio:16/9}footer span:last-child{display:none}}
+  </style>
+</head>
+<body>
+  <main class="dashboard">
+    <header class="topbar"><div class="brand"><span class="brand-mark"></span>CCTV MONITOR</div><div class="system"><span class="dot"></span>SYSTEM ONLINE</div><time id="clock"></time></header>
+    <section class="grid" id="cameraGrid"></section>
+    <footer><span>4 CHANNELS</span><span>화면을 더블클릭하면 전체화면으로 전환됩니다</span></footer>
+  </main>
+  <script>
+    // 각 카메라의 이름과 HLS 주소만 이곳에서 수정하세요.
+    const cameras = [
+      {id:'CAM 01',name:'정문',url:'https://localflow.ddns.net/cam/stream.m3u8'},
+      {id:'CAM 02',name:'후문',url:'https://localflow.ddns.net/cam2/stream.m3u8'},
+      {id:'CAM 03',name:'작업장',url:'https://localflow.ddns.net/cam3/stream.m3u8'},
+      {id:'CAM 04',name:'주차장',url:'https://localflow.ddns.net/cam4/stream.m3u8'}
+    ];
+    const grid=document.getElementById('cameraGrid');
+    cameras.forEach(c=>{
+      const panel=document.createElement('article'); panel.className='cam';
+      panel.innerHTML=`<video autoplay muted playsinline></video><div class="scan"></div><div class="label"><b>${c.id}</b><strong>${c.name}</strong></div><div class="status"><i></i><span>연결 중</span></div><div class="message" hidden><span>NO SIGNAL</span><small>스트림 주소와 서버 상태를 확인하세요</small></div><button class="full" title="전체화면">⛶</button>`;
+      grid.appendChild(panel);
+      const video=panel.querySelector('video'),status=panel.querySelector('.status'),message=panel.querySelector('.message');
+      const setStatus=(text,live=false)=>{status.querySelector('span').textContent=text;status.classList.toggle('live',live);message.hidden=text!=='연결 끊김'};
+      video.addEventListener('playing',()=>setStatus('LIVE',true)); video.addEventListener('error',()=>setStatus('연결 끊김'));
+      if(video.canPlayType('application/vnd.apple.mpegurl')) video.src=c.url;
+      else if(window.Hls&&Hls.isSupported()){const hls=new Hls({liveSyncDurationCount:2,liveMaxLatencyDurationCount:5});hls.loadSource(c.url);hls.attachMedia(video);hls.on(Hls.Events.ERROR,(_,d)=>{if(d.fatal)setStatus('연결 끊김')})}
+      else setStatus('지원 안 됨');
+      const full=()=>panel.requestFullscreen?.(); panel.querySelector('.full').onclick=full; panel.ondblclick=full;
+    });
+    const clock=document.getElementById('clock');setInterval(()=>clock.textContent=new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeStyle:'medium',hour12:false}).format(new Date()),1000);
+  </script>
+</body>
+</html>
