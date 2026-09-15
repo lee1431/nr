@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PROJECT WALL</title>
-  <meta name="description" content="커뮤니티 구성원이 만든 웹페이지를 URL과 썸네일로 등록하는 프로젝트 월">
+  <meta name="description" content="커뮤니티 구성원이 만든 웹페이지를 URL로 등록하는 프로젝트 월">
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
@@ -126,6 +126,17 @@
       display: block;
       object-fit: cover;
       transition: transform .25s ease;
+    }
+
+    .no-image {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: #666;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
     }
 
     .card:hover .thumb img { transform: scale(1.025); }
@@ -257,7 +268,7 @@
     <header>
       <div class="brand">
         <h1>PROJECT WALL</h1>
-        <p>URL + 썸네일만 등록하면 자동으로 카드가 생성됩니다.</p>
+        <p>페이지 URL만 있으면 등록됩니다. 썸네일은 선택사항입니다.</p>
       </div>
       <div class="header-actions">
         <span id="counter">0 PROJECTS</span>
@@ -282,8 +293,8 @@
       </label>
 
       <label>
-        THUMBNAIL URL
-        <input id="thumbUrl" name="thumbnail" type="url" inputmode="url" placeholder="https://.../thumbnail.jpg" required maxlength="1000">
+        THUMBNAIL URL (OPTIONAL)
+        <input id="thumbUrl" name="thumbnail" type="url" inputmode="url" placeholder="비워두어도 됩니다" maxlength="1000">
       </label>
 
       <label class="honeypot" aria-hidden="true">
@@ -291,7 +302,7 @@
         <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
       </label>
 
-      <p class="hint">이미지 파일을 업로드하지 않습니다. GitHub 이미지 주소나 본인 서버의 이미지 URL을 그대로 넣으면 됩니다.</p>
+      <p class="hint">썸네일은 선택사항입니다. 비워두면 NO IMAGE 카드로 표시되고, 주소가 있으면 해당 이미지를 사용합니다.</p>
       <div class="form-actions">
         <button class="secondary" id="cancelForm" type="button">취소</button>
         <button class="primary" id="submitBtn" type="submit">등록</button>
@@ -301,8 +312,6 @@
   </dialog>
 
   <script>
-    // 1) Termux/Flask 서버를 띄운 뒤 아래 주소만 실제 API 주소로 바꾸면 됩니다.
-    // 예: https://example.com/community/api/projects
     const API_URL = 'https://mrdindoin.ddns.net/yame/api/community/projects';
 
     const grid = document.getElementById('projectGrid');
@@ -329,6 +338,14 @@
       }
     }
 
+    function addNoImage(thumb) {
+      thumb.replaceChildren();
+      const placeholder = document.createElement('div');
+      placeholder.className = 'no-image';
+      placeholder.textContent = 'NO IMAGE';
+      thumb.appendChild(placeholder);
+    }
+
     function makeCard(project) {
       const card = document.createElement('a');
       card.className = 'card';
@@ -339,21 +356,17 @@
       const thumb = document.createElement('div');
       thumb.className = 'thumb';
 
-      const img = document.createElement('img');
-      img.src = project.thumbnail;
-      img.alt = getHost(project.url);
-      img.loading = 'lazy';
-      img.referrerPolicy = 'no-referrer';
-      img.addEventListener('error', () => {
-        img.remove();
-        thumb.textContent = 'NO IMAGE';
-        thumb.style.display = 'grid';
-        thumb.style.placeItems = 'center';
-        thumb.style.color = '#666';
-        thumb.style.fontSize = '12px';
-        thumb.style.fontWeight = '800';
-      }, { once: true });
-      thumb.appendChild(img);
+      if (project.thumbnail) {
+        const img = document.createElement('img');
+        img.src = project.thumbnail;
+        img.alt = getHost(project.url);
+        img.loading = 'lazy';
+        img.referrerPolicy = 'no-referrer';
+        img.addEventListener('error', () => addNoImage(thumb), { once: true });
+        thumb.appendChild(img);
+      } else {
+        addNoImage(thumb);
+      }
 
       const info = document.createElement('div');
       info.className = 'info';
@@ -389,11 +402,6 @@
     }
 
     async function loadProjects() {
-      if (API_URL.includes('YOUR-BACKEND-DOMAIN')) {
-        grid.innerHTML = '<div class="empty">백엔드 API 주소가 아직 설정되지 않았습니다.<br>community.html의 API_URL 한 줄을 실제 Flask 주소로 바꾸면 바로 작동합니다.</div>';
-        return;
-      }
-
       try {
         const res = await fetch(API_URL, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -409,12 +417,6 @@
       e.preventDefault();
       formStatus.className = 'status';
       formStatus.textContent = '';
-
-      if (API_URL.includes('YOUR-BACKEND-DOMAIN')) {
-        formStatus.className = 'status bad';
-        formStatus.textContent = '먼저 community.html의 API_URL을 실제 백엔드 주소로 설정해야 합니다.';
-        return;
-      }
 
       const payload = {
         url: document.getElementById('pageUrl').value.trim(),
