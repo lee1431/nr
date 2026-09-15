@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROJECT WALL ADMIN</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    :root {
+      --bg: #101010;
+      --panel: #171717;
+      --panel2: #1d1d1d;
+      --line: #303030;
+      --grid: rgba(255,255,255,.045);
+      --text: #f3f3f3;
+      --muted: #8d8d8d;
+      --accent: #8cff7a;
+      --danger: #ff7676;
+      --warn: #ffd66b;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Pretendard, system-ui, sans-serif;
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 46px 0 80px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #eaeaea;
+      margin-bottom: 26px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(20px, 3vw, 30px);
+      letter-spacing: .2em;
+      font-weight: 900;
+    }
+
+    .subtitle { margin-top: 7px; color: var(--muted); font-size: 12px; }
+
+    .top-actions { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .count { color: var(--muted); font-size: 12px; font-weight: 800; }
+
+    .panel {
+      background: rgba(23,23,23,.94);
+      border: 1px solid var(--line);
+      padding: 18px;
+      margin-bottom: 22px;
+    }
+
+    .login-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid #3b3b3b;
+      background: #0f0f0f;
+      color: var(--text);
+      outline: none;
+      padding: 11px 12px;
+    }
+    input:focus { border-color: #888; }
+
+    .btn {
+      border: 1px solid #454545;
+      background: #222;
+      color: var(--text);
+      padding: 10px 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .btn:hover { border-color: #888; }
+    .btn.primary { background: #ededed; color: #111; border-color: #ededed; }
+    .btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+    .btn.danger { color: var(--danger); border-color: #633; background: #211; }
+    .btn.danger:hover { background: #321414; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .hint { color: var(--muted); font-size: 11px; line-height: 1.6; margin-top: 9px; }
+    .status { min-height: 18px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+    .status.good { color: var(--accent); }
+    .status.bad { color: var(--danger); }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .toolbar input { max-width: 420px; }
+
+    .list { display: grid; gap: 12px; }
+
+    .item {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 12px;
+    }
+
+    .thumb {
+      width: 150px;
+      aspect-ratio: 1 / 1;
+      background: #242424;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      color: #666;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .fields { min-width: 0; display: grid; gap: 10px; align-content: start; }
+    .field label { display: block; margin-bottom: 5px; color: #bbb; font-size: 10px; font-weight: 900; letter-spacing: .06em; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+    .empty {
+      min-height: 180px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line);
+      color: var(--muted);
+      text-align: center;
+      padding: 24px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 720px) {
+      .shell { padding-top: 28px; }
+      header { align-items: flex-start; flex-direction: column; }
+      .item { grid-template-columns: 92px 1fr; gap: 10px; }
+      .thumb { width: 92px; }
+      .login-row { grid-template-columns: 1fr; }
+      .btn { padding: 9px 11px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>PROJECT WALL ADMIN</h1>
+        <div class="subtitle">등록 페이지 수정 · 썸네일 추가/교체 · 삭제</div>
+      </div>
+      <div class="top-actions">
+        <span class="count" id="count">0 PROJECTS</span>
+        <a class="btn" href="./community.html" target="_blank" rel="noopener noreferrer">공개 페이지</a>
+        <button class="btn" id="logoutBtn" type="button">로그아웃</button>
+      </div>
+    </header>
+
+    <section class="panel" id="loginPanel">
+      <div class="login-row">
+        <input id="adminKey" type="password" autocomplete="current-password" placeholder="관리자 키 입력">
+        <button class="btn primary" id="loginBtn" type="button">관리자 접속</button>
+      </div>
+      <div class="hint">관리자 키는 GitHub 코드에 저장하지 않고 이 탭의 sessionStorage에만 보관합니다.</div>
+      <div class="status" id="loginStatus"></div>
+    </section>
+
+    <section id="adminPanel" class="hidden">
+      <div class="toolbar">
+        <input id="searchInput" type="search" placeholder="URL 또는 도메인 검색">
+        <button class="btn" id="reloadBtn" type="button">새로고침</button>
+      </div>
+      <div class="status" id="globalStatus"></div>
+      <div class="list" id="projectList"></div>
+    </section>
+  </div>
+
+  <script>
+    const API_URL = 'https://mrdindoin.ddns.net/yame/api/community/projects';
+    const ADMIN_CHECK_URL = 'https://mrdindoin.ddns.net/yame/api/community/admin/check';
+    const KEY_STORE = 'projectWallAdminKey';
+
+    const loginPanel = document.getElementById('loginPanel');
+    const adminPanel = document.getElementById('adminPanel');
+    const adminKeyInput = document.getElementById('adminKey');
+    const loginStatus = document.getElementById('loginStatus');
+    const globalStatus = document.getElementById('globalStatus');
+    const projectList = document.getElementById('projectList');
+    const count = document.getElementById('count');
+    const searchInput = document.getElementById('searchInput');
+
+    let adminKey = sessionStorage.getItem(KEY_STORE) || '';
+    let projects = [];
+
+    function authHeaders(extra = {}) {
+      return {
+        ...extra,
+        'X-Admin-Key': adminKey
+      };
+    }
+
+    function setStatus(el, text = '', type = '') {
+      el.className = `status ${type}`.trim();
+      el.textContent = text;
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '-';
+      return new Date(Number(ts) * 1000).toLocaleString('ko-KR');
+    }
+
+    function getHost(rawUrl) {
+      try { return new URL(rawUrl).hostname.replace(/^www\./, ''); }
+      catch { return rawUrl || '-'; }
+    }
+
+    function makeThumb(url, alt) {
+      const box = document.createElement('div');
+      box.className = 'thumb';
+
+      if (!url) {
+        box.textContent = 'NO IMAGE';
+        return box;
+      }
+
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = alt;
+      img.referrerPolicy = 'no-referrer';
+      img.addEventListener('error', () => {
+        box.replaceChildren();
+        box.textContent = 'IMAGE ERROR';
+      }, { once: true });
+      box.appendChild(img);
+      return box;
+    }
+
+    function render() {
+      const q = searchInput.value.trim().toLowerCase();
+      const filtered = projects.filter(p => {
+        if (!q) return true;
+        return `${p.url || ''} ${p.thumbnail || ''} ${getHost(p.url || '')}`.toLowerCase().includes(q);
+      });
+
+      count.textContent = `${projects.length} PROJECTS`;
+      projectList.replaceChildren();
+
+      if (!filtered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = projects.length ? '검색 결과가 없습니다.' : '등록된 프로젝트가 없습니다.';
+        projectList.appendChild(empty);
+        return;
+      }
+
+      for (const project of filtered) {
+        projectList.appendChild(makeItem(project));
+      }
+    }
+
+    function makeItem(project) {
+      const row = document.createElement('article');
+      row.className = 'item';
+      row.dataset.id = project.id;
+
+      const thumbWrap = makeThumb(project.thumbnail, getHost(project.url));
+
+      const fields = document.createElement('div');
+      fields.className = 'fields';
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.innerHTML = `<span>ID: ${project.id}</span><span>${getHost(project.url)}</span><span>${formatDate(project.created_at)}</span>`;
+
+      const urlField = document.createElement('div');
+      urlField.className = 'field';
+      urlField.innerHTML = '<label>PAGE URL</label>';
+      const urlInput = document.createElement('input');
+      urlInput.type = 'url';
+      urlInput.value = project.url || '';
+      urlInput.maxLength = 1000;
+      urlField.appendChild(urlInput);
+
+      const thumbField = document.createElement('div');
+      thumbField.className = 'field';
+      thumbField.innerHTML = '<label>THUMBNAIL URL — 비어 있으면 NO IMAGE</label>';
+      const thumbInput = document.createElement('input');
+      thumbInput.type = 'url';
+      thumbInput.value = project.thumbnail || '';
+      thumbInput.placeholder = 'https://.../thumbnail.jpg';
+      thumbInput.maxLength = 1000;
+      thumbField.appendChild(thumbInput);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.className = 'btn primary';
+      saveBtn.type = 'button';
+      saveBtn.textContent = '저장';
+
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn';
+      openBtn.type = 'button';
+      openBtn.textContent = '페이지 열기';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn danger';
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = '삭제';
+
+      const itemStatus = document.createElement('div');
+      itemStatus.className = 'status';
+
+      thumbInput.addEventListener('change', () => {
+        const newThumb = makeThumb(thumbInput.value.trim(), getHost(urlInput.value.trim()));
+        thumbWrap.replaceWith(newThumb);
+      });
+
+      openBtn.addEventListener('click', () => {
+        const url = urlInput.value.trim();
+        if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      });
+
+      saveBtn.addEventListener('click', async () => {
+        const pageUrl = urlInput.value.trim();
+        const thumbnail = thumbInput.value.trim();
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = '저장 중...';
+        setStatus(itemStatus, '');
+
+        try {
+          const res = await fetch(`${API_URL}/${encodeURIComponent(project.id)}`, {
+            method: 'PATCH',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({ url: pageUrl, thumbnail })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+          Object.assign(project, data);
+          setStatus(itemStatus, '저장되었습니다.', 'good');
+          await loadProjects(false);
+        } catch (err) {
+          if (String(err.message).includes('403')) logout('관리자 인증이 만료되었거나 올바르지 않습니다.');
+          setStatus(itemStatus, err.message || '저장에 실패했습니다.', 'bad');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '저장';
+        }
+      });
+
+      deleteBtn.addEventListener('click', async () => {
+        if (!confirm(`정말 삭제할까요?\n\n${project.url}`)) return;
+
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = '삭제 중...';
+        setStatus(itemStatus, '');
+
+        try {
+          const res = await fetch(`${API_URL}/${encodeURIComponent(project.id)}`, {
+            method: 'DELETE',
+            headers: authHeaders()
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+          projects = projects.filter(p => p.id !== project.id);
+          render();
+          setStatus(globalStatus, '삭제되었습니다.', 'good');
+        } catch (err) {
+          if (String(err.message).includes('403')) logout('관리자 인증이 만료되었거나 올바르지 않습니다.');
+          setStatus(itemStatus, err.message || '삭제에 실패했습니다.', 'bad');
+          deleteBtn.disabled = false;
+          deleteBtn.textContent = '삭제';
+        }
+      });
+
+      actions.append(saveBtn, openBtn, deleteBtn);
+      fields.append(meta, urlField, thumbField, actions, itemStatus);
+      row.append(thumbWrap, fields);
+      return row;
+    }
+
+    async function checkAdmin() {
+      const res = await fetch(ADMIN_CHECK_URL, {
+        method: 'GET',
+        headers: authHeaders(),
+        cache: 'no-store'
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      return data;
+    }
+
+    async function loadProjects(showMessage = true) {
+      if (showMessage) setStatus(globalStatus, '불러오는 중...');
+      const res = await fetch(API_URL, { cache: 'no-store' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      projects = Array.isArray(data) ? data : (data.projects || []);
+      render();
+      if (showMessage) setStatus(globalStatus, '');
+    }
+
+    async function login() {
+      adminKey = adminKeyInput.value.trim();
+      if (!adminKey) {
+        setStatus(loginStatus, '관리자 키를 입력하세요.', 'bad');
+        return;
+      }
+
+      setStatus(loginStatus, '확인 중...');
+      document.getElementById('loginBtn').disabled = true;
+
+      try {
+        await checkAdmin();
+        sessionStorage.setItem(KEY_STORE, adminKey);
+        loginPanel.classList.add('hidden');
+        adminPanel.classList.remove('hidden');
+        setStatus(loginStatus, '');
+        await loadProjects();
+      } catch (err) {
+        sessionStorage.removeItem(KEY_STORE);
+        adminKey = '';
+        setStatus(loginStatus, err.message || '관리자 인증에 실패했습니다.', 'bad');
+      } finally {
+        document.getElementById('loginBtn').disabled = false;
+      }
+    }
+
+    function logout(message = '') {
+      sessionStorage.removeItem(KEY_STORE);
+      adminKey = '';
+      adminKeyInput.value = '';
+      adminPanel.classList.add('hidden');
+      loginPanel.classList.remove('hidden');
+      if (message) setStatus(loginStatus, message, 'bad');
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', login);
+    adminKeyInput.addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+    document.getElementById('logoutBtn').addEventListener('click', () => logout());
+    document.getElementById('reloadBtn').addEventListener('click', () => loadProjects().catch(err => setStatus(globalStatus, err.message, 'bad')));
+    searchInput.addEventListener('input', render);
+
+    if (adminKey) {
+      adminKeyInput.value = adminKey;
+      login();
+    }
+  </script>
+</body>
+</html>
