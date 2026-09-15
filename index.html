@@ -3,91 +3,127 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>야메프로그래밍</title>
-	<meta name="description" content="커뮤니티 구성원이 만든 웹페이지를 URL로 등록하는 프로젝트 보드">
-	<meta name="keywords" content="야메프로그래밍, 프로젝트, 아카이브, 웹앱, 취미">
-	<meta name="author" content="YAME">
-	<link rel="canonical" href="./">
+  <title>야메프로그래밍 | YAME.STORE</title>
+  <meta name="description" content="AI로 만든 웹페이지와 작은 프로젝트를 URL로 등록하고 함께 구경하는 야메프로그래밍 프로젝트 월">
+  <meta name="keywords" content="야메프로그래밍, YAME, 프로젝트, 아카이브, 웹앱, AI, 바이브코딩">
+  <meta name="author" content="YAME">
+  <link rel="canonical" href="https://yame.store/">
 
-	<meta property="og:type" content="website">
-	<meta property="og:url" content="https://yame.store/">
-	<meta property="og:title" content="YAME ARCHIVE">
-	<meta property="og:description" content="야메프로그래밍 프로젝트 리스트">
-	<meta property="og:image" content="https://yame.store/assets/img/yame.png">
-	<meta property="og:site_name" content="YAME ARCHIVE">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yame.store/">
+  <meta property="og:title" content="YAME.STORE">
+  <meta property="og:description" content="야매로 만들고, 제대로 써먹자. 한국형 AI 메이커 프로젝트 월">
+  <meta property="og:image" content="https://yame.store/assets/img/yame.png">
+  <meta property="og:site_name" content="YAME.STORE">
 
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-	<meta name="apple-mobile-web-app-title" content="STANCE">
-	<link rel="apple-touch-icon" href="./assets/img/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="YAME.STORE">
+  <link rel="apple-touch-icon" href="./assets/img/icon-192.png">
+  <meta name="theme-color" content="#ffffff">
 
-	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-	<meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
     :root {
-      --bg: #101010;
-      --panel: #171717;
-      --panel-2: #1f1f1f;
-      --line: #303030;
-      --grid: rgba(255,255,255,.045);
-      --text: #f3f3f3;
-      --muted: #8d8d8d;
-      --accent: #8cff7a;
-      --danger: #ff7676;
+      --bg: #ffffff;
+      --soft: #f7faff;
+      --panel: #ffffff;
+      --line: #cfd9e6;
+      --line-soft: #e7edf4;
+      --text: #172131;
+      --muted: #768296;
+      --navy: #1d3f70;
+      --accent: #2f6fe4;
+      --accent-soft: #edf4ff;
+      --danger: #c94b55;
+      --success: #27765f;
+      --shadow: 0 14px 34px rgba(28, 53, 88, .06);
     }
 
     * { box-sizing: border-box; }
-    html { color-scheme: dark; }
+    html { color-scheme: light; scroll-behavior: smooth; }
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Pretendard, system-ui, sans-serif;
+      font-family: Pretendard, system-ui, -apple-system, sans-serif;
       color: var(--text);
-      background-color: var(--bg);
-      background-image:
-        linear-gradient(var(--grid) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-      background-size: 24px 24px;
+      background:
+        radial-gradient(circle at 86% 0%, rgba(47, 111, 228, .045), transparent 28rem),
+        var(--bg);
+      letter-spacing: -.01em;
     }
 
     button, input { font: inherit; }
     button { cursor: pointer; }
+    a { color: inherit; }
+
+    .top-note {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line-soft);
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      background: rgba(255,255,255,.92);
+    }
+
+    .top-note b { color: var(--navy); }
 
     .shell {
-      width: min(1180px, calc(100% - 32px));
+      width: min(1080px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 54px 0 80px;
+      padding: 0 0 80px;
     }
 
     header {
+      min-height: 76px;
       display: flex;
       justify-content: space-between;
       gap: 24px;
-      align-items: end;
-      padding: 0 2px 16px;
-      border-bottom: 2px solid #eaeaea;
-      margin-bottom: 34px;
+      align-items: center;
+      border-bottom: 1.5px solid var(--line);
     }
 
-    .brand h1 {
-      margin: 0;
-      font-size: clamp(20px, 3vw, 30px);
-      letter-spacing: .25em;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--navy);
+      color: #fff;
+      font-size: 19px;
       font-weight: 900;
     }
 
-    .brand p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 13px;
+    .brand-copy h1 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 20px;
+      letter-spacing: -.04em;
+      font-weight: 900;
+    }
+
+    .brand-copy p {
+      margin: 4px 0 0;
+      color: #98a3b3;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .08em;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 10px;
       flex-shrink: 0;
     }
 
@@ -95,46 +131,295 @@
       color: var(--muted);
       font-size: 12px;
       font-weight: 800;
-      letter-spacing: .08em;
+    }
+
+    .primary,
+    .secondary {
+      min-height: 42px;
+      border-radius: 12px;
+      padding: 0 15px;
+      font-weight: 800;
+      transition: .18s ease;
     }
 
     .primary {
-      border: 1px solid #eaeaea;
-      background: #eaeaea;
-      color: #111;
-      font-weight: 800;
-      padding: 10px 14px;
+      border: 1.5px solid var(--navy);
+      background: var(--navy);
+      color: #fff;
     }
 
-    .primary:hover { background: var(--accent); border-color: var(--accent); }
+    .primary:hover {
+      transform: translateY(-1px);
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .secondary {
+      border: 1.5px solid var(--line);
+      background: #fff;
+      color: var(--text);
+    }
+
+    .secondary:hover { border-color: #aebfd3; }
+
+    .hero {
+      padding: 72px 0 56px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1.5px solid #d7e5fa;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--navy);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .eyebrow::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .hero h2 {
+      margin: 19px 0 17px;
+      font-size: clamp(42px, 6.8vw, 72px);
+      line-height: 1.02;
+      letter-spacing: -.07em;
+      font-weight: 900;
+      color: #111c2b;
+    }
+
+    .hero h2 em {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: 700;
+      font-style: italic;
+      color: var(--navy);
+      letter-spacing: -.035em;
+    }
+
+    .hero-copy > p {
+      margin: 0;
+      max-width: 590px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.78;
+    }
+
+    .hero-copy > p b { color: var(--navy); }
+
+    .hero-buttons {
+      margin-top: 26px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .soft-btn {
+      min-height: 42px;
+      border: 1.5px solid #d8e6f8;
+      border-radius: 12px;
+      padding: 0 15px;
+      background: var(--accent-soft);
+      color: var(--navy);
+      font-weight: 800;
+    }
+
+    .featured {
+      min-width: 0;
+      border: 1.5px solid var(--line);
+      border-radius: 22px;
+      padding: 16px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .featured-visual {
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      position: relative;
+      border: 1.5px solid #cad8e8;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #f4f8ff, #cfe0ff 52%, #8eb5f4);
+    }
+
+    .featured-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .featured-placeholder {
+      width: 100%;
+      height: 100%;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: var(--navy);
+    }
+
+    .featured-placeholder small {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .06em;
+    }
+
+    .featured-placeholder strong {
+      max-width: 330px;
+      font-size: 34px;
+      line-height: 1;
+      letter-spacing: -.055em;
+    }
+
+    .featured-badge {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      z-index: 2;
+      padding: 6px 9px;
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      color: var(--navy);
+      font-size: 10px;
+      font-weight: 900;
+      backdrop-filter: blur(7px);
+    }
+
+    .featured-info {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 3px 2px;
+    }
+
+    .featured-host {
+      min-width: 0;
+      font-size: 15px;
+      font-weight: 900;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .featured-url {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .featured-link {
+      flex: 0 0 auto;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 62px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 17px 18px;
+      border: 1.5px solid var(--line);
+      border-radius: 15px;
+      background: #fff;
+    }
+
+    .stat span {
+      display: block;
+      color: #8d99aa;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 6px;
+      color: var(--navy);
+      font-size: 21px;
+      letter-spacing: -.04em;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: end;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1.5px solid var(--line);
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 27px;
+      letter-spacing: -.05em;
+    }
+
+    .section-head h3 em {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: italic;
+      font-weight: 700;
+      color: #6d83a3;
+    }
+
+    .section-head p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 18px;
+      gap: 16px;
     }
 
     .card {
       display: block;
+      min-width: 0;
       color: inherit;
       text-decoration: none;
       background: var(--panel);
-      border: 1px solid var(--line);
-      min-width: 0;
+      border: 1.5px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
       transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
 
     .card:hover {
-      transform: translateY(-5px);
-      border-color: #757575;
-      box-shadow: 0 12px 30px rgba(0,0,0,.32);
+      transform: translateY(-4px);
+      border-color: #9db0c8;
+      box-shadow: var(--shadow);
     }
 
     .thumb {
       aspect-ratio: 1 / 1;
       overflow: hidden;
-      background: #242424;
-      border-bottom: 1px solid var(--line);
+      background: linear-gradient(145deg, #f4f8ff, #dce8f8);
+      border-bottom: 1.5px solid var(--line);
       position: relative;
     }
 
@@ -149,28 +434,48 @@
     .no-image {
       width: 100%;
       height: 100%;
-      display: grid;
-      place-items: center;
-      color: #666;
-      font-size: 12px;
-      font-weight: 800;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      color: var(--navy);
+    }
+
+    .no-image::before {
+      content: 'YAME';
+      padding: 5px 8px;
+      border: 1px solid #bfd0e5;
+      border-radius: 999px;
+      background: rgba(255,255,255,.7);
+      font-size: 9px;
+      font-weight: 900;
       letter-spacing: .08em;
+    }
+
+    .no-image::after {
+      content: 'NO IMAGE';
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: -.03em;
     }
 
     .card:hover .thumb img { transform: scale(1.025); }
 
-    .info { padding: 12px 12px 13px; }
+    .info { padding: 13px 13px 14px; }
+
     .host {
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 900;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
     .url {
       margin-top: 5px;
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -178,67 +483,95 @@
 
     .empty, .loading, .error-box {
       grid-column: 1 / -1;
-      min-height: 200px;
+      min-height: 210px;
       display: grid;
       place-items: center;
       text-align: center;
-      border: 1px dashed var(--line);
+      border: 1.5px dashed var(--line);
+      border-radius: 18px;
       color: var(--muted);
+      background: var(--soft);
       padding: 24px;
       line-height: 1.7;
     }
 
     .error-box { color: var(--danger); }
 
-    dialog {
-      width: min(520px, calc(100% - 28px));
-      border: 1px solid #4a4a4a;
-      background: #151515;
-      color: var(--text);
-      padding: 0;
-      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+    .bottom-note {
+      margin-top: 52px;
+      padding: 22px 0 0;
+      border-top: 1.5px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      color: #95a0b0;
+      font-size: 11px;
     }
 
-    dialog::backdrop { background: rgba(0,0,0,.72); }
+    dialog {
+      width: min(520px, calc(100% - 28px));
+      border: 1.5px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+      color: var(--text);
+      padding: 0;
+      box-shadow: 0 28px 80px rgba(29, 63, 112, .18);
+    }
+
+    dialog::backdrop {
+      background: rgba(20, 36, 58, .38);
+      backdrop-filter: blur(7px);
+    }
 
     .modal-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 18px 20px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1.5px solid var(--line);
     }
 
-    .modal-head strong { letter-spacing: .08em; }
+    .modal-head strong {
+      color: var(--navy);
+      font-size: 17px;
+      letter-spacing: -.02em;
+    }
+
     .icon-btn {
-      width: 34px;
-      height: 34px;
-      border: 1px solid var(--line);
-      background: transparent;
+      width: 36px;
+      height: 36px;
+      border: 1.5px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
       color: var(--text);
       font-size: 20px;
     }
 
     form { padding: 20px; }
+
     label {
       display: block;
       margin: 0 0 16px;
+      color: #566478;
       font-size: 12px;
       font-weight: 800;
-      color: #cfcfcf;
     }
 
     input[type="url"] {
       width: 100%;
       margin-top: 8px;
       padding: 12px 13px;
-      border: 1px solid #3b3b3b;
-      background: #0f0f0f;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
       color: var(--text);
       outline: none;
     }
 
-    input[type="url"]:focus { border-color: #8b8b8b; }
+    input[type="url"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(47, 111, 228, .08);
+    }
 
     .hint {
       margin: -3px 0 18px;
@@ -254,56 +587,141 @@
       margin-top: 22px;
     }
 
-    .secondary {
-      border: 1px solid #3d3d3d;
-      background: transparent;
-      color: var(--text);
-      padding: 10px 14px;
-    }
-
     .status {
       min-height: 20px;
       margin-top: 12px;
       font-size: 12px;
       color: var(--muted);
     }
-    .status.bad { color: var(--danger); }
-    .status.good { color: var(--accent); }
 
-    .honeypot { position: absolute !important; left: -9999px !important; opacity: 0 !important; }
+    .status.bad { color: var(--danger); }
+    .status.good { color: var(--success); }
+
+    .honeypot {
+      position: absolute !important;
+      left: -9999px !important;
+      opacity: 0 !important;
+    }
+
+    @media (max-width: 800px) {
+      .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 50px; }
+      .stats { grid-template-columns: repeat(3, 1fr); }
+    }
 
     @media (max-width: 620px) {
-      .shell { width: min(100% - 22px, 1180px); padding-top: 30px; }
-      header { align-items: flex-start; flex-direction: column; margin-bottom: 22px; }
-      .header-actions { width: 100%; justify-content: space-between; }
+      .shell { width: min(100% - 22px, 1080px); }
+      .top-note { font-size: 11px; }
+      header { min-height: 68px; gap: 12px; }
+      .brand-mark { width: 36px; height: 36px; }
+      .brand-copy h1 { font-size: 17px; }
+      .brand-copy p { display: none; }
+      #counter { display: none; }
+      .primary, .secondary, .soft-btn { min-height: 40px; padding: 0 12px; }
+      .hero { padding: 44px 0 38px; }
+      .hero h2 { font-size: 43px; }
+      .hero-copy > p { font-size: 14px; }
+      .featured-visual { aspect-ratio: 4 / 3; }
+      .featured-placeholder strong { font-size: 29px; }
+      .stats { grid-template-columns: 1fr; margin-bottom: 46px; }
+      .section-head { align-items: flex-start; flex-direction: column; }
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
       .info { padding: 10px; }
+      .bottom-note { flex-direction: column; gap: 6px; }
     }
   </style>
 </head>
 <body>
+  <div class="top-note">잘 만들 필요 없습니다. <b>일단 만들고, 올리고, 고치면 됩니다.</b></div>
+
   <div class="shell">
     <header>
-      <div class="brand">
-        <h1>PROJECT WALL</h1>
-        <p>페이지 URL만 있으면 등록됩니다. 썸네일은 선택사항입니다.</p>
-      </div>
+      <a class="brand" href="./" aria-label="YAME.STORE 홈">
+        <span class="brand-mark">야</span>
+        <span class="brand-copy">
+          <h1>YAME.STORE</h1>
+          <p>KOREAN MAKER PROJECT WALL</p>
+        </span>
+      </a>
+
       <div class="header-actions">
         <span id="counter">0 PROJECTS</span>
-        <button class="primary" id="openForm" type="button">내 페이지 등록</button>
+        <button class="primary" id="openForm" type="button">+ 내 페이지 등록</button>
       </div>
     </header>
 
-    <main class="grid" id="projectGrid" aria-live="polite">
-      <div class="loading">PROJECTS LOADING...</div>
-    </main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">한국형 AI 메이커 프로젝트 월</span>
+        <h2>야매로 만들고,<br><em>제대로 써먹자.</em></h2>
+        <p>
+          거창한 서비스가 아니어도 됩니다. 계산기 하나, 게임 하나, 동네 정보 페이지 하나까지.
+          <b>직접 만든 웹페이지를 링크 하나로 올리고 서로 구경하는 공간</b>입니다.
+        </p>
+        <div class="hero-buttons">
+          <button class="primary" type="button" id="scrollProjects">작품 구경하기 →</button>
+          <button class="soft-btn" type="button" id="openFormHero">내 작품 올리기</button>
+        </div>
+      </div>
+
+      <article class="featured" id="featuredCard" aria-live="polite">
+        <div class="featured-visual" id="featuredVisual">
+          <span class="featured-badge">금주의 야매작품</span>
+          <div class="featured-placeholder">
+            <small>FEATURED PROJECT</small>
+            <strong>이번 주 작품을 불러오는 중입니다.</strong>
+          </div>
+        </div>
+        <div class="featured-info">
+          <div style="min-width:0">
+            <div class="featured-host" id="featuredHost">PROJECT LOADING...</div>
+            <div class="featured-url" id="featuredUrl">잠시만 기다려주세요.</div>
+          </div>
+          <a class="featured-link" id="featuredLink" href="#">열기 ↗</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="stats" aria-label="프로젝트 현황">
+      <div class="stat">
+        <span>등록 프로젝트</span>
+        <strong id="statProjects">0개</strong>
+      </div>
+      <div class="stat">
+        <span>등록 방법</span>
+        <strong>URL 하나</strong>
+      </div>
+      <div class="stat">
+        <span>이번 주 한마디</span>
+        <strong>일단 올려</strong>
+      </div>
+    </section>
+
+    <section id="projects">
+      <div class="section-head">
+        <div>
+          <h3>PROJECT <em>Wall</em></h3>
+          <p>커뮤니티 구성원이 직접 만든 페이지입니다. 카드를 누르면 새 창에서 열립니다.</p>
+        </div>
+        <button class="secondary" id="openFormSection" type="button">페이지 등록</button>
+      </div>
+
+      <main class="grid" id="projectGrid" aria-live="polite">
+        <div class="loading">PROJECTS LOADING...</div>
+      </main>
+    </section>
+
+    <footer class="bottom-note">
+      <span>© 2026 YAME.STORE · 야메프로그래밍</span>
+      <span>MAKE · UPLOAD · USE</span>
+    </footer>
   </div>
 
   <dialog id="registerDialog">
     <div class="modal-head">
-      <strong>페이지 등록</strong>
+      <strong>내 페이지 등록</strong>
       <button class="icon-btn" id="closeDialog" type="button" aria-label="닫기">×</button>
     </div>
+
     <form id="registerForm">
       <label>
         PAGE URL
@@ -320,7 +738,8 @@
         <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
       </label>
 
-      <p class="hint">썸네일은 선택사항입니다. 비워두면 NO IMAGE 카드로 표시되고, 주소가 있으면 해당 이미지를 사용합니다.</p>
+      <p class="hint">썸네일은 선택사항입니다. 비워두면 YAME 기본 카드로 표시됩니다.</p>
+
       <div class="form-actions">
         <button class="secondary" id="cancelForm" type="button">취소</button>
         <button class="primary" id="submitBtn" type="submit">등록</button>
@@ -334,14 +753,29 @@
 
     const grid = document.getElementById('projectGrid');
     const counter = document.getElementById('counter');
+    const statProjects = document.getElementById('statProjects');
     const dialog = document.getElementById('registerDialog');
     const form = document.getElementById('registerForm');
     const formStatus = document.getElementById('formStatus');
     const submitBtn = document.getElementById('submitBtn');
+    const featuredVisual = document.getElementById('featuredVisual');
+    const featuredHost = document.getElementById('featuredHost');
+    const featuredUrl = document.getElementById('featuredUrl');
+    const featuredLink = document.getElementById('featuredLink');
 
-    document.getElementById('openForm').addEventListener('click', () => dialog.showModal());
+    function openDialog() {
+      dialog.showModal();
+      requestAnimationFrame(() => document.getElementById('pageUrl').focus());
+    }
+
+    document.getElementById('openForm').addEventListener('click', openDialog);
+    document.getElementById('openFormHero').addEventListener('click', openDialog);
+    document.getElementById('openFormSection').addEventListener('click', openDialog);
     document.getElementById('closeDialog').addEventListener('click', () => dialog.close());
     document.getElementById('cancelForm').addEventListener('click', () => dialog.close());
+    document.getElementById('scrollProjects').addEventListener('click', () => {
+      document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
+    });
 
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) dialog.close();
@@ -360,7 +794,6 @@
       thumb.replaceChildren();
       const placeholder = document.createElement('div');
       placeholder.className = 'no-image';
-      placeholder.textContent = 'NO IMAGE';
       thumb.appendChild(placeholder);
     }
 
@@ -402,9 +835,64 @@
       return card;
     }
 
+    function getWeeklyProject(projects) {
+      if (!projects.length) return null;
+      const now = new Date();
+      const start = new Date(now.getFullYear(), 0, 1);
+      const day = Math.floor((now - start) / 86400000);
+      const week = Math.floor((day + start.getDay()) / 7);
+      return projects[week % projects.length];
+    }
+
+    function renderFeatured(projects) {
+      const project = getWeeklyProject(projects);
+
+      if (!project) {
+        featuredHost.textContent = '첫 작품을 기다리고 있습니다.';
+        featuredUrl.textContent = '아직 등록된 페이지가 없습니다.';
+        featuredLink.removeAttribute('href');
+        return;
+      }
+
+      featuredHost.textContent = getHost(project.url);
+      featuredUrl.textContent = project.url;
+      featuredLink.href = project.url;
+      featuredLink.target = '_blank';
+      featuredLink.rel = 'ugc noopener noreferrer';
+
+      featuredVisual.replaceChildren();
+
+      const badge = document.createElement('span');
+      badge.className = 'featured-badge';
+      badge.textContent = '금주의 야매작품';
+      featuredVisual.appendChild(badge);
+
+      if (project.thumbnail) {
+        const img = document.createElement('img');
+        img.src = project.thumbnail;
+        img.alt = getHost(project.url);
+        img.referrerPolicy = 'no-referrer';
+        img.addEventListener('error', () => {
+          featuredVisual.replaceChildren(badge);
+          const placeholder = document.createElement('div');
+          placeholder.className = 'featured-placeholder';
+          placeholder.innerHTML = '<small>FEATURED PROJECT</small><strong>이번 주 야매작품.</strong>';
+          featuredVisual.appendChild(placeholder);
+        }, { once: true });
+        featuredVisual.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'featured-placeholder';
+        placeholder.innerHTML = '<small>FEATURED PROJECT</small><strong>이번 주 야매작품.</strong>';
+        featuredVisual.appendChild(placeholder);
+      }
+    }
+
     function renderProjects(projects) {
       grid.replaceChildren();
       counter.textContent = `${projects.length} PROJECTS`;
+      statProjects.textContent = `${projects.length}개`;
+      renderFeatured(projects);
 
       if (!projects.length) {
         const empty = document.createElement('div');
