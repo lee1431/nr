@@ -1,244 +1,474 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <title>STANCE | Project Collection</title>
-    
-    <meta name="description" content="STANCE의 프로젝트 아카이브. URL QR 변환, 게임, 갤러리 등 다양한 웹 애플리케이션 컬렉션입니다.">
-    <meta name="keywords" content="STANCE, 프로젝트, 아카이브, 웹앱, 취미">
-    <meta name="author" content="STANCE">
-    <link rel="canonical" href="./">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>야메프로그래밍</title>
+	<meta name="description" content="커뮤니티 구성원이 만든 웹페이지를 URL로 등록하는 프로젝트 보드">
+	<meta name="keywords" content="야메프로그래밍, 프로젝트, 아카이브, 웹앱, 취미">
+	<meta name="author" content="YAME">
+	<link rel="canonical" href="./">
 
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="./">
-    <meta property="og:title" content="STANCE ARCHIVE">
-    <meta property="og:description" content="STANCE의 프로젝트 리스트">
-    <meta property="og:image" content="./assets/img/img.png">
-    <meta property="og:site_name" content="STANCE ARCHIVE">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="./">
+	<meta property="og:title" content="STANCE ARCHIVE">
+	<meta property="og:description" content="야메프로그래밍 프로젝트 리스트">
+	<meta property="og:image" content="./assets/img/yame.png">
+	<meta property="og:site_name" content="YAME ARCHIVE">
 
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="STANCE">
-    <link rel="apple-touch-icon" href="./assets/img/icon-192.png">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="apple-mobile-web-app-title" content="STANCE">
+	<link rel="apple-touch-icon" href="./assets/img/icon-192.png">
 
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+	<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    :root {
+      --bg: #101010;
+      --panel: #171717;
+      --panel-2: #1f1f1f;
+      --line: #303030;
+      --grid: rgba(255,255,255,.045);
+      --text: #f3f3f3;
+      --muted: #8d8d8d;
+      --accent: #8cff7a;
+      --danger: #ff7676;
+    }
 
-        :root {
-            --grid-line: rgba(0, 0, 0, 0.06);
-            --accent: #2ecc71;
-            --bg-main: #ffffff;
-            --text-dark: #1a1a1a;
-            --text-light: #888;
-        }
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Pretendard, system-ui, sans-serif;
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: var(--bg-main);
-            background-image: 
-                linear-gradient(var(--grid-line) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-            background-size: 25px 25px;
-            padding: env(safe-area-inset-top) 20px 60px; /* 상단 안전영역 및 여백 */
-            color: var(--text-dark);
-            min-height: 100vh;
-        }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
 
-        header {
-            max-width: 1200px;
-            margin: 40px auto 50px;
-            padding: 0 5px 15px;
-            border-bottom: 3px solid var(--text-dark);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-        }
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 54px 0 80px;
+    }
 
-        header h1 {
-            font-size: 1.4rem;
-            letter-spacing: 0.3em;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: end;
+      padding: 0 2px 16px;
+      border-bottom: 2px solid #eaeaea;
+      margin-bottom: 34px;
+    }
 
-        .stats { font-size: 0.9rem; color: var(--text-light); font-weight: 600; }
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(20px, 3vw, 30px);
+      letter-spacing: .25em;
+      font-weight: 900;
+    }
 
-        /* 프로젝트 그리드 */
-        .archive-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    .brand p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
-        /* 카드 스타일 */
-        .card {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            background: #fff;
-            border: 1px solid #ddd;
-            position: relative;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
-            border-color: var(--text-dark);
-            z-index: 5;
-        }
+    #counter {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
 
-        .badge {
-            position: absolute;
-            top: 10px; left: 10px;
-            width: 22px; height: 22px;
-            background: var(--accent);
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 700;
-            z-index: 10;
-        }
+    .primary {
+      border: 1px solid #eaeaea;
+      background: #eaeaea;
+      color: #111;
+      font-weight: 800;
+      padding: 10px 14px;
+    }
 
-        .img-box {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            overflow: hidden;
-            background: #f8f8f8;
-            border-bottom: 1px solid #eee;
-        }
+    .primary:hover { background: var(--accent); border-color: var(--accent); }
 
-        .img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            image-rendering: pixelated; /* 픽셀 아트 최적화 */
-            transition: transform 0.3s ease;
-        }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 18px;
+    }
 
-        .card:hover .img-box img { transform: scale(1.05); }
+    .card {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      min-width: 0;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
 
-        .info {
-            padding: 12px;
-            background: #fff;
-            text-align: center;
-        }
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: #757575;
+      box-shadow: 0 12px 30px rgba(0,0,0,.32);
+    }
 
-        .info .title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: -0.01em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .thumb {
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #242424;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
 
-        /* 다크모드 */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --grid-line: rgba(255, 255, 255, 0.05);
-                --bg-main: #111;
-                --text-dark: #eee;
-            }
-            .card { background: #1a1a1a; border-color: #333; }
-            .info { background: #1a1a1a; }
-            .img-box { background: #222; border-bottom-color: #333; }
-        }
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform .25s ease;
+    }
 
-        /* 모바일 대응 */
-        @media (max-width: 480px) {
-            .archive-container {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 12px;
-            }
-            header h1 { font-size: 1.1rem; letter-spacing: 0.1em; }
-        }
-    </style>
+    .no-image {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: #666;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+
+    .card:hover .thumb img { transform: scale(1.025); }
+
+    .info { padding: 12px 12px 13px; }
+    .host {
+      font-size: 13px;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .url {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .empty, .loading, .error-box {
+      grid-column: 1 / -1;
+      min-height: 200px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px dashed var(--line);
+      color: var(--muted);
+      padding: 24px;
+      line-height: 1.7;
+    }
+
+    .error-box { color: var(--danger); }
+
+    dialog {
+      width: min(520px, calc(100% - 28px));
+      border: 1px solid #4a4a4a;
+      background: #151515;
+      color: var(--text);
+      padding: 0;
+      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,.72); }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-head strong { letter-spacing: .08em; }
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      font-size: 20px;
+    }
+
+    form { padding: 20px; }
+    label {
+      display: block;
+      margin: 0 0 16px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #cfcfcf;
+    }
+
+    input[type="url"] {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px 13px;
+      border: 1px solid #3b3b3b;
+      background: #0f0f0f;
+      color: var(--text);
+      outline: none;
+    }
+
+    input[type="url"]:focus { border-color: #8b8b8b; }
+
+    .hint {
+      margin: -3px 0 18px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .secondary {
+      border: 1px solid #3d3d3d;
+      background: transparent;
+      color: var(--text);
+      padding: 10px 14px;
+    }
+
+    .status {
+      min-height: 20px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .status.bad { color: var(--danger); }
+    .status.good { color: var(--accent); }
+
+    .honeypot { position: absolute !important; left: -9999px !important; opacity: 0 !important; }
+
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 22px, 1180px); padding-top: 30px; }
+      header { align-items: flex-start; flex-direction: column; margin-bottom: 22px; }
+      .header-actions { width: 100%; justify-content: space-between; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .info { padding: 10px; }
+    }
+  </style>
 </head>
 <body>
-
+  <div class="shell">
     <header>
-        <h1>STANCE ARCHIVE</h1>
-        <a href="./p/dashboard.html" target="_blank" rel="noopener noreferrer"><div class="stats" id="counter">0 PROJECTS</div></a>
+      <div class="brand">
+        <h1>PROJECT WALL</h1>
+        <p>페이지 URL만 있으면 등록됩니다. 썸네일은 선택사항입니다.</p>
+      </div>
+      <div class="header-actions">
+        <span id="counter">0 PROJECTS</span>
+        <button class="primary" id="openForm" type="button">내 페이지 등록</button>
+      </div>
     </header>
 
-    <main class="archive-container">
-        <a href="./p/qrc.html" class="card" target="_blank" rel="noopener noreferrer">
-            <div class="img-box"><img src="./assets/img/utq.png" alt="Url To QR" loading="lazy"></div>
-            <div class="info"><div class="title">Url To QR</div></div>
-        </a>
-
-        <a href="./p/dotg.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/dotg.png" alt="Dot G" loading="lazy"></div>
-            <div class="info"><div class="title">Dot G</div></div>
-        </a>
-
-        <a href="./p/ssa.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/ssa.png" alt="Sunset Apex '90" loading="lazy"></div>
-            <div class="info"><div class="title">Sunset Apex '90</div></div>
-        </a>
-
-        <a href="https://llsshh.com/games/fishpz.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/pixel_fish.png" alt="어류퍼즐" loading="lazy"></div>
-            <div class="info"><div class="title">어류퍼즐 (Puzzle)</div></div>
-        </a>
-
-        <a href="./p/img.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/img.png" alt="IMG" loading="lazy"></div>
-            <div class="info"><div class="title">IMG Gallery</div></div>
-        </a>
-
-        <a href="./p/3tore.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/3tore.png" alt="IMG" loading="lazy"></div>
-            <div class="info"><div class="title">3D V Shop</div></div>
-        </a>
-
-        <a href="https://llsshh.com/games/ipz.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/ipz.png" alt="IMG" loading="lazy"></div>
-            <div class="info"><div class="title">3x3</div></div>
-        </a>
-
-        <a href="https://llsshh.com/games/jpz.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/jpz.png" alt="IMG" loading="lazy"></div>
-            <div class="info"><div class="title">JigSaw</div></div>
-        </a>
-        
-        <a href="./templates/index.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/tmp.png" alt="IMG" loading="lazy"></div>
-            <div class="info"><div class="title">Web Templates</div></div>
-        </a>
-
-        <a href="./p/gallery.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/ju.png" alt="IMG" loading="lazy"></div>
-            <div class="info"><div class="title">(주)그럴수도</div></div>
-        </a>
-
-        <a href="./p/emd.html" class="card" target="_blank" rel="noopener noreferrer">            
-            <div class="img-box"><img src="./assets/img/emd.png" alt="IMG" loading="lazy"></div>
-            <div class="info"><div class="title">에망시</div></div>
-        </a>
-
-        
+    <main class="grid" id="projectGrid" aria-live="polite">
+      <div class="loading">PROJECTS LOADING...</div>
     </main>
+  </div>
 
-    <script>
-        // 프로젝트 개수 자동 업데이트
-        document.addEventListener('DOMContentLoaded', () => {
-            const count = document.querySelectorAll('.card').length;
-            document.getElementById('counter').innerText = `${count} PROJECTS`;
+  <dialog id="registerDialog">
+    <div class="modal-head">
+      <strong>페이지 등록</strong>
+      <button class="icon-btn" id="closeDialog" type="button" aria-label="닫기">×</button>
+    </div>
+    <form id="registerForm">
+      <label>
+        PAGE URL
+        <input id="pageUrl" name="url" type="url" inputmode="url" placeholder="https://username.github.io/project/" required maxlength="500">
+      </label>
+
+      <label>
+        THUMBNAIL URL (OPTIONAL)
+        <input id="thumbUrl" name="thumbnail" type="url" inputmode="url" placeholder="비워두어도 됩니다" maxlength="1000">
+      </label>
+
+      <label class="honeypot" aria-hidden="true">
+        COMPANY
+        <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
+      </label>
+
+      <p class="hint">썸네일은 선택사항입니다. 비워두면 NO IMAGE 카드로 표시되고, 주소가 있으면 해당 이미지를 사용합니다.</p>
+      <div class="form-actions">
+        <button class="secondary" id="cancelForm" type="button">취소</button>
+        <button class="primary" id="submitBtn" type="submit">등록</button>
+      </div>
+      <div class="status" id="formStatus"></div>
+    </form>
+  </dialog>
+
+  <script>
+    const API_URL = 'https://mrdindoin.ddns.net/yame/api/community/projects';
+
+    const grid = document.getElementById('projectGrid');
+    const counter = document.getElementById('counter');
+    const dialog = document.getElementById('registerDialog');
+    const form = document.getElementById('registerForm');
+    const formStatus = document.getElementById('formStatus');
+    const submitBtn = document.getElementById('submitBtn');
+
+    document.getElementById('openForm').addEventListener('click', () => dialog.showModal());
+    document.getElementById('closeDialog').addEventListener('click', () => dialog.close());
+    document.getElementById('cancelForm').addEventListener('click', () => dialog.close());
+
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+
+    function getHost(rawUrl) {
+      try {
+        const host = new URL(rawUrl).hostname.replace(/^www\./, '');
+        return host || rawUrl;
+      } catch {
+        return rawUrl;
+      }
+    }
+
+    function addNoImage(thumb) {
+      thumb.replaceChildren();
+      const placeholder = document.createElement('div');
+      placeholder.className = 'no-image';
+      placeholder.textContent = 'NO IMAGE';
+      thumb.appendChild(placeholder);
+    }
+
+    function makeCard(project) {
+      const card = document.createElement('a');
+      card.className = 'card';
+      card.href = project.url;
+      card.target = '_blank';
+      card.rel = 'ugc noopener noreferrer';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+
+      if (project.thumbnail) {
+        const img = document.createElement('img');
+        img.src = project.thumbnail;
+        img.alt = getHost(project.url);
+        img.loading = 'lazy';
+        img.referrerPolicy = 'no-referrer';
+        img.addEventListener('error', () => addNoImage(thumb), { once: true });
+        thumb.appendChild(img);
+      } else {
+        addNoImage(thumb);
+      }
+
+      const info = document.createElement('div');
+      info.className = 'info';
+
+      const host = document.createElement('div');
+      host.className = 'host';
+      host.textContent = getHost(project.url);
+
+      const url = document.createElement('div');
+      url.className = 'url';
+      url.textContent = project.url;
+
+      info.append(host, url);
+      card.append(thumb, info);
+      return card;
+    }
+
+    function renderProjects(projects) {
+      grid.replaceChildren();
+      counter.textContent = `${projects.length} PROJECTS`;
+
+      if (!projects.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = '아직 등록된 페이지가 없습니다. 첫 페이지를 등록해보세요.';
+        grid.appendChild(empty);
+        return;
+      }
+
+      for (const project of projects) {
+        grid.appendChild(makeCard(project));
+      }
+    }
+
+    async function loadProjects() {
+      try {
+        const res = await fetch(API_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        renderProjects(Array.isArray(data) ? data : data.projects || []);
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = '<div class="error-box">프로젝트 목록을 불러오지 못했습니다.<br>API 주소와 CORS 설정을 확인하세요.</div>';
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formStatus.className = 'status';
+      formStatus.textContent = '';
+
+      const payload = {
+        url: document.getElementById('pageUrl').value.trim(),
+        thumbnail: document.getElementById('thumbUrl').value.trim(),
+        company: document.getElementById('company').value
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '등록 중...';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
-    </script>
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        form.reset();
+        formStatus.className = 'status good';
+        formStatus.textContent = '등록되었습니다.';
+        await loadProjects();
+        setTimeout(() => dialog.close(), 500);
+      } catch (err) {
+        formStatus.className = 'status bad';
+        formStatus.textContent = err.message || '등록에 실패했습니다.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '등록';
+      }
+    });
+
+    loadProjects();
+  </script>
 </body>
 </html>
