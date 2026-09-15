@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROJECT WALL</title>
+  <meta name="description" content="커뮤니티 구성원이 만든 웹페이지를 URL과 썸네일로 등록하는 프로젝트 월">
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    :root {
+      --bg: #101010;
+      --panel: #171717;
+      --panel-2: #1f1f1f;
+      --line: #303030;
+      --grid: rgba(255,255,255,.045);
+      --text: #f3f3f3;
+      --muted: #8d8d8d;
+      --accent: #8cff7a;
+      --danger: #ff7676;
+    }
+
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Pretendard, system-ui, sans-serif;
+      color: var(--text);
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 54px 0 80px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: end;
+      padding: 0 2px 16px;
+      border-bottom: 2px solid #eaeaea;
+      margin-bottom: 34px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(20px, 3vw, 30px);
+      letter-spacing: .25em;
+      font-weight: 900;
+    }
+
+    .brand p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    #counter {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+
+    .primary {
+      border: 1px solid #eaeaea;
+      background: #eaeaea;
+      color: #111;
+      font-weight: 800;
+      padding: 10px 14px;
+    }
+
+    .primary:hover { background: var(--accent); border-color: var(--accent); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      display: block;
+      color: inherit;
+      text-decoration: none;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      min-width: 0;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: #757575;
+      box-shadow: 0 12px 30px rgba(0,0,0,.32);
+    }
+
+    .thumb {
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #242424;
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform .25s ease;
+    }
+
+    .card:hover .thumb img { transform: scale(1.025); }
+
+    .info { padding: 12px 12px 13px; }
+    .host {
+      font-size: 13px;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .url {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .empty, .loading, .error-box {
+      grid-column: 1 / -1;
+      min-height: 200px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px dashed var(--line);
+      color: var(--muted);
+      padding: 24px;
+      line-height: 1.7;
+    }
+
+    .error-box { color: var(--danger); }
+
+    dialog {
+      width: min(520px, calc(100% - 28px));
+      border: 1px solid #4a4a4a;
+      background: #151515;
+      color: var(--text);
+      padding: 0;
+      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,.72); }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-head strong { letter-spacing: .08em; }
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      font-size: 20px;
+    }
+
+    form { padding: 20px; }
+    label {
+      display: block;
+      margin: 0 0 16px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #cfcfcf;
+    }
+
+    input[type="url"] {
+      width: 100%;
+      margin-top: 8px;
+      padding: 12px 13px;
+      border: 1px solid #3b3b3b;
+      background: #0f0f0f;
+      color: var(--text);
+      outline: none;
+    }
+
+    input[type="url"]:focus { border-color: #8b8b8b; }
+
+    .hint {
+      margin: -3px 0 18px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .secondary {
+      border: 1px solid #3d3d3d;
+      background: transparent;
+      color: var(--text);
+      padding: 10px 14px;
+    }
+
+    .status {
+      min-height: 20px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .status.bad { color: var(--danger); }
+    .status.good { color: var(--accent); }
+
+    .honeypot { position: absolute !important; left: -9999px !important; opacity: 0 !important; }
+
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 22px, 1180px); padding-top: 30px; }
+      header { align-items: flex-start; flex-direction: column; margin-bottom: 22px; }
+      .header-actions { width: 100%; justify-content: space-between; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .info { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <h1>PROJECT WALL</h1>
+        <p>URL + 썸네일만 등록하면 자동으로 카드가 생성됩니다.</p>
+      </div>
+      <div class="header-actions">
+        <span id="counter">0 PROJECTS</span>
+        <button class="primary" id="openForm" type="button">내 페이지 등록</button>
+      </div>
+    </header>
+
+    <main class="grid" id="projectGrid" aria-live="polite">
+      <div class="loading">PROJECTS LOADING...</div>
+    </main>
+  </div>
+
+  <dialog id="registerDialog">
+    <div class="modal-head">
+      <strong>페이지 등록</strong>
+      <button class="icon-btn" id="closeDialog" type="button" aria-label="닫기">×</button>
+    </div>
+    <form id="registerForm">
+      <label>
+        PAGE URL
+        <input id="pageUrl" name="url" type="url" inputmode="url" placeholder="https://username.github.io/project/" required maxlength="500">
+      </label>
+
+      <label>
+        THUMBNAIL URL
+        <input id="thumbUrl" name="thumbnail" type="url" inputmode="url" placeholder="https://.../thumbnail.jpg" required maxlength="1000">
+      </label>
+
+      <label class="honeypot" aria-hidden="true">
+        COMPANY
+        <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
+      </label>
+
+      <p class="hint">이미지 파일을 업로드하지 않습니다. GitHub 이미지 주소나 본인 서버의 이미지 URL을 그대로 넣으면 됩니다.</p>
+      <div class="form-actions">
+        <button class="secondary" id="cancelForm" type="button">취소</button>
+        <button class="primary" id="submitBtn" type="submit">등록</button>
+      </div>
+      <div class="status" id="formStatus"></div>
+    </form>
+  </dialog>
+
+  <script>
+    // 1) Termux/Flask 서버를 띄운 뒤 아래 주소만 실제 API 주소로 바꾸면 됩니다.
+    // 예: https://example.com/community/api/projects
+    const API_URL = 'https://YOUR-BACKEND-DOMAIN.example.com/api/community/projects';
+
+    const grid = document.getElementById('projectGrid');
+    const counter = document.getElementById('counter');
+    const dialog = document.getElementById('registerDialog');
+    const form = document.getElementById('registerForm');
+    const formStatus = document.getElementById('formStatus');
+    const submitBtn = document.getElementById('submitBtn');
+
+    document.getElementById('openForm').addEventListener('click', () => dialog.showModal());
+    document.getElementById('closeDialog').addEventListener('click', () => dialog.close());
+    document.getElementById('cancelForm').addEventListener('click', () => dialog.close());
+
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+
+    function getHost(rawUrl) {
+      try {
+        const host = new URL(rawUrl).hostname.replace(/^www\./, '');
+        return host || rawUrl;
+      } catch {
+        return rawUrl;
+      }
+    }
+
+    function makeCard(project) {
+      const card = document.createElement('a');
+      card.className = 'card';
+      card.href = project.url;
+      card.target = '_blank';
+      card.rel = 'ugc noopener noreferrer';
+
+      const thumb = document.createElement('div');
+      thumb.className = 'thumb';
+
+      const img = document.createElement('img');
+      img.src = project.thumbnail;
+      img.alt = getHost(project.url);
+      img.loading = 'lazy';
+      img.referrerPolicy = 'no-referrer';
+      img.addEventListener('error', () => {
+        img.remove();
+        thumb.textContent = 'NO IMAGE';
+        thumb.style.display = 'grid';
+        thumb.style.placeItems = 'center';
+        thumb.style.color = '#666';
+        thumb.style.fontSize = '12px';
+        thumb.style.fontWeight = '800';
+      }, { once: true });
+      thumb.appendChild(img);
+
+      const info = document.createElement('div');
+      info.className = 'info';
+
+      const host = document.createElement('div');
+      host.className = 'host';
+      host.textContent = getHost(project.url);
+
+      const url = document.createElement('div');
+      url.className = 'url';
+      url.textContent = project.url;
+
+      info.append(host, url);
+      card.append(thumb, info);
+      return card;
+    }
+
+    function renderProjects(projects) {
+      grid.replaceChildren();
+      counter.textContent = `${projects.length} PROJECTS`;
+
+      if (!projects.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = '아직 등록된 페이지가 없습니다. 첫 페이지를 등록해보세요.';
+        grid.appendChild(empty);
+        return;
+      }
+
+      for (const project of projects) {
+        grid.appendChild(makeCard(project));
+      }
+    }
+
+    async function loadProjects() {
+      if (API_URL.includes('YOUR-BACKEND-DOMAIN')) {
+        grid.innerHTML = '<div class="empty">백엔드 API 주소가 아직 설정되지 않았습니다.<br>community.html의 API_URL 한 줄을 실제 Flask 주소로 바꾸면 바로 작동합니다.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(API_URL, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        renderProjects(Array.isArray(data) ? data : data.projects || []);
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = '<div class="error-box">프로젝트 목록을 불러오지 못했습니다.<br>API 주소와 CORS 설정을 확인하세요.</div>';
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formStatus.className = 'status';
+      formStatus.textContent = '';
+
+      if (API_URL.includes('YOUR-BACKEND-DOMAIN')) {
+        formStatus.className = 'status bad';
+        formStatus.textContent = '먼저 community.html의 API_URL을 실제 백엔드 주소로 설정해야 합니다.';
+        return;
+      }
+
+      const payload = {
+        url: document.getElementById('pageUrl').value.trim(),
+        thumbnail: document.getElementById('thumbUrl').value.trim(),
+        company: document.getElementById('company').value
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '등록 중...';
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        form.reset();
+        formStatus.className = 'status good';
+        formStatus.textContent = '등록되었습니다.';
+        await loadProjects();
+        setTimeout(() => dialog.close(), 500);
+      } catch (err) {
+        formStatus.className = 'status bad';
+        formStatus.textContent = err.message || '등록에 실패했습니다.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '등록';
+      }
+    });
+
+    loadProjects();
+  </script>
+</body>
+</html>
