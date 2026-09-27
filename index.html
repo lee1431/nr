@@ -750,6 +750,12 @@
 
   <script>
     const API_URL = 'https://mrdindoin.ddns.net/yame/api/community/projects';
+    const STATIC_PROJECTS = [
+      {
+        url: 'https://llsshh.com/apps/three-picks/',
+        thumbnail: 'https://llsshh.com/apps/three-picks/thumbnail.svg'
+      }
+    ];
 
     const grid = document.getElementById('projectGrid');
     const counter = document.getElementById('counter');
@@ -912,7 +918,9 @@
         const res = await fetch(API_URL, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        renderProjects(Array.isArray(data) ? data : data.projects || []);
+        const apiProjects = Array.isArray(data) ? data : data.projects || [];
+        const merged = [...STATIC_PROJECTS, ...apiProjects.filter(p => !STATIC_PROJECTS.some(s => s.url === p.url))];
+        renderProjects(merged);
       } catch (err) {
         console.error(err);
         grid.innerHTML = '<div class="error-box">프로젝트 목록을 불러오지 못했습니다.<br>API 주소와 CORS 설정을 확인하세요.</div>';
