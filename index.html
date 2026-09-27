@@ -632,7 +632,8 @@
     .gpt-chat-head{display:flex;justify-content:space-between;gap:16px;align-items:end;margin-bottom:14px}
     .gpt-chat-title{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--navy);text-transform:uppercase}
     .gpt-chat-sub{font-size:12px;color:#888}
-    .chat-log{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto;padding:12px;background:#f7f7f4;border-radius:14px}
+    .chat-log{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;padding:12px;background:#f7f7f4;border-radius:14px}
+    .chat-day{position:sticky;top:0;align-self:center;z-index:1;margin:8px 0 2px;padding:5px 10px;border-radius:999px;background:#e9e9e3;color:#666;font-size:11px;font-weight:800}
     .chat-row{display:flex;flex-direction:column;gap:4px;max-width:86%}
     .chat-row.user{align-self:flex-end;align-items:flex-end}
     .chat-row.assistant{align-self:flex-start}
@@ -945,6 +946,33 @@
     const GPT_CHAT_BASE = 'https://mrdindoin.ddns.net/uvb';
     const GPT_CHAT_APP = 'yame-chat';
     const GPT_CHAT_ITEMS = GPT_CHAT_BASE + '/v1/apps/' + encodeURIComponent(GPT_CHAT_APP) + '/items';
+    const CHAT_RETENTION_DAYS = 30;
+
+    function getItemDate(item) {
+      const msg = item && item.data ? item.data : item;
+      if (msg && msg.sent_at) {
+        const d = new Date(msg.sent_at);
+        if (!Number.isNaN(d.getTime())) return d;
+      }
+      if (item && Number.isFinite(item.created_at)) {
+        return new Date(item.created_at * 1000);
+      }
+      return null;
+    }
+
+    function formatChatDay(date) {
+      return new Intl.DateTimeFormat('ko-KR', {
+        year:'numeric', month:'2-digit', day:'2-digit',
+        weekday:'short', timeZone:'Asia/Seoul'
+      }).format(date);
+    }
+
+    function formatChatTime(date) {
+      return new Intl.DateTimeFormat('ko-KR', {
+        hour:'2-digit', minute:'2-digit', second:'2-digit',
+        hour12:false, timeZone:'Asia/Seoul'
+      }).format(date);
+    }
 
     function renderChat(messages) {
       const log = document.getElementById('gptChatLog');
@@ -953,28 +981,35 @@
       if (!list.length) {
         const empty = document.createElement('div');
         empty.className = 'chat-row assistant';
-        empty.innerHTML = '<div class="chat-meta">🤖 1호 지피티 사원</div><div class="chat-bubble">아직 로그가 없습니다. 첫 메시지를 남겨보세요. 👀</div>';
+        empty.innerHTML = '<div class="chat-meta">🤖 1호 지피티 사원</div><div class="chat-bubble">최근 30일 채팅 로그가 없습니다. 첫 메시지를 남겨보세요. 👀</div>';
         log.appendChild(empty);
         return;
       }
+
+      let lastDay = '';
       for (const item of list) {
         const msg = item && item.data ? item.data : item;
         const role = msg.role === 'user' ? 'user' : 'assistant';
+        const date = getItemDate(item);
+        const dayKey = date ? new Intl.DateTimeFormat('en-CA', {
+          year:'numeric', month:'2-digit', day:'2-digit', timeZone:'Asia/Seoul'
+        }).format(date) : '';
+
+        if (dayKey && dayKey !== lastDay) {
+          const day = document.createElement('div');
+          day.className = 'chat-day';
+          day.textContent = formatChatDay(date);
+          log.appendChild(day);
+          lastDay = dayKey;
+        }
+
         const row = document.createElement('div');
         row.className = 'chat-row ' + role;
 
         const meta = document.createElement('div');
         meta.className = 'chat-meta';
         const who = role === 'user' ? '👤 사장' : '🤖 1호 지피티 사원';
-        let timeText = '';
-        if (item && Number.isFinite(item.created_at)) {
-          const d = new Date(item.created_at * 1000);
-          timeText = new Intl.DateTimeFormat('ko-KR', {
-            month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit',
-            timeZone:'Asia/Seoul'
-          }).format(d);
-        }
-        meta.textContent = who + (timeText ? ' · ' + timeText : '');
+        meta.textContent = who + (date ? ' · ' + formatChatTime(date) : '');
 
         const bubble = document.createElement('div');
         bubble.className = 'chat-bubble';
@@ -998,13 +1033,40 @@
       return json.data || json;
     }
 
+    async function loadRecentChatItems() {
+      const cutoff = Date.now() - CHAT_RETENTION_DAYS * 86400000;
+      const collected = [];
+      const pageSize = 100;
+      const maxPages = 20;
+
+      for (let page = 1; page <= maxPages; page++) {
+        const data = await uvbChatRequest(`?page=${page}&page_size=${pageSize}&order=desc`);
+        const batch = Array.isArray(data.items) ? data.items : [];
+        if (!batch.length) break;
+
+        for (const item of batch) {
+          const date = getItemDate(item);
+          if (date && date.getTime() >= cutoff) collected.push(item);
+        }
+
+        const oldest = getItemDate(batch[batch.length - 1]);
+        if ((oldest && oldest.getTime() < cutoff) || !data.has_more) break;
+      }
+
+      collected.sort((a, b) => {
+        const da = getItemDate(a)?.getTime() || 0;
+        const db = getItemDate(b)?.getTime() || 0;
+        return da - db;
+      });
+      return collected;
+    }
+
     async function loadWorkerChat() {
       const status = document.getElementById('gptChatStatus');
       try {
-        const data = await uvbChatRequest('?page=1&page_size=100&order=desc');
-        const items = Array.isArray(data.items) ? data.items.slice().reverse() : [];
+        const items = await loadRecentChatItems();
         renderChat(items);
-        status.textContent = '답장은 매시간 한 번씩 확인합니다.';
+        status.textContent = `최근 ${CHAT_RETENTION_DAYS}일 로그 · 답장은 매시간 한 번씩 확인합니다.`;
       } catch (err) {
         console.error(err);
         status.textContent = 'UVB 채팅 연결을 확인하는 중입니다.';
@@ -1019,10 +1081,20 @@
       if (!text) return;
       status.textContent = '메시지 남기는 중...';
       try {
+        const now = new Date();
+        const seoulDate = new Intl.DateTimeFormat('en-CA', {
+          year:'numeric', month:'2-digit', day:'2-digit', timeZone:'Asia/Seoul'
+        }).format(now);
         await uvbChatRequest('', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role: 'user', text })
+          body: JSON.stringify({
+            role: 'user',
+            text,
+            sent_at: now.toISOString(),
+            date_key: seoulDate,
+            source: 'yame.store'
+          })
         });
         input.value = '';
         status.textContent = '남겼습니다. 다음 시간에 1호 사원이 확인합니다. ⏰';
