@@ -910,26 +910,70 @@
 
     async function loadProjects() {
       try {
-        const res = await fetch(STANCE_APPS_API, {
-          cache: 'no-store',
-          headers: { 'Accept': 'application/vnd.github+json' }
-        });
-        if (!res.ok) throw new Error(`GitHub HTTP ${res.status}`);
+        const [stanceRes, apiRes] = await Promise.allSettled([
+          fetch(STANCE_APPS_API, {
+            cache: 'no-store',
+            headers: { 'Accept': 'application/vnd.github+json' }
+          }),
+          fetch(API_URL, { cache: 'no-store' })
+        ]);
 
-        const entries = await res.json();
-        const projects = (Array.isArray(entries) ? entries : [])
-          .filter(entry => entry && entry.type === 'dir' && entry.name)
-          .map(entry => ({
-            slug: entry.name,
-            url: `https://llsshh.com/apps/${encodeURIComponent(entry.name)}/`,
-            thumbnail: `https://llsshh.com/apps/${encodeURIComponent(entry.name)}/thumbnail.svg`
-          }))
-          .sort((a, b) => a.slug.localeCompare(b.slug));
+        let stanceProjects = [];
+        let externalProjects = [];
+
+        if (stanceRes.status === 'fulfilled' && stanceRes.value.ok) {
+          const entries = await stanceRes.value.json();
+          stanceProjects = (Array.isArray(entries) ? entries : [])
+            .filter(entry => entry && entry.type === 'dir' && entry.name)
+            .map(entry => ({
+              slug: entry.name,
+              url: `https://llsshh.com/apps/${encodeURIComponent(entry.name)}/`,
+              thumbnail: `https://llsshh.com/apps/${encodeURIComponent(entry.name)}/thumbnail.svg`,
+              source: 'stance'
+            }));
+        } else {
+          console.warn('stance/apps load failed', stanceRes);
+        }
+
+        if (apiRes.status === 'fulfilled' && apiRes.value.ok) {
+          const data = await apiRes.value.json();
+          const list = Array.isArray(data) ? data : (data.projects || []);
+          externalProjects = list
+            .filter(p => p && p.url)
+            .map(p => ({
+              url: p.url,
+              thumbnail: p.thumbnail || '',
+              company: p.company || '',
+              source: 'external'
+            }));
+        } else {
+          console.warn('external project API load failed', apiRes);
+        }
+
+        const byUrl = new Map();
+
+        for (const project of stanceProjects) {
+          byUrl.set(project.url, project);
+        }
+
+        for (const project of externalProjects) {
+          if (!byUrl.has(project.url)) {
+            byUrl.set(project.url, project);
+          }
+        }
+
+        const projects = [...byUrl.values()].sort((a, b) =>
+          a.url.localeCompare(b.url)
+        );
+
+        if (!projects.length && stanceProjects.length === 0 && externalProjects.length === 0) {
+          throw new Error('No project sources available');
+        }
 
         renderProjects(projects);
       } catch (err) {
         console.error(err);
-        grid.innerHTML = '<div class="error-box">stance/apps 목록을 불러오지 못했습니다.<br>GitHub API 상태를 확인하세요.</div>';
+        grid.innerHTML = '<div class="error-box">프로젝트 목록을 불러오지 못했습니다.<br>stance/apps 또는 외부 프로젝트 API 상태를 확인하세요.</div>';
         counter.textContent = 'LOAD FAILED';
         statProjects.textContent = '-';
       }
