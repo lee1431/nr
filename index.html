@@ -628,10 +628,21 @@
       .info { padding: 10px; }
       .bottom-note { flex-direction: column; gap: 6px; }
     }
-    .gpt-note{margin:18px 0 26px;padding:24px;border:1px solid var(--line);border-radius:20px;background:#fff}
-    .gpt-note-label{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--navy);text-transform:uppercase}
-    .gpt-note blockquote{margin:12px 0 8px;font-size:clamp(20px,3vw,30px);line-height:1.45;font-weight:800}
-    .gpt-note-time{font-size:12px;color:#888}
+    .gpt-chat{margin:18px 0 26px;padding:20px;border:1px solid var(--line);border-radius:20px;background:#fff}
+    .gpt-chat-head{display:flex;justify-content:space-between;gap:16px;align-items:end;margin-bottom:14px}
+    .gpt-chat-title{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--navy);text-transform:uppercase}
+    .gpt-chat-sub{font-size:12px;color:#888}
+    .chat-log{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto;padding:12px;background:#f7f7f4;border-radius:14px}
+    .chat-row{display:flex;flex-direction:column;gap:4px;max-width:86%}
+    .chat-row.user{align-self:flex-end;align-items:flex-end}
+    .chat-row.assistant{align-self:flex-start}
+    .chat-meta{font-size:11px;color:#888}
+    .chat-bubble{padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #ddd;line-height:1.5;white-space:pre-wrap}
+    .chat-row.user .chat-bubble{background:#171717;color:#fff;border-color:#171717}
+    .chat-compose{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+    .chat-compose input{min-width:0;border:1px solid #bbb;border-radius:12px;padding:12px 14px;font:inherit}
+    .chat-compose button{border:0;border-radius:12px;padding:0 16px;background:#171717;color:#fff;font-weight:800;cursor:pointer}
+    .chat-status{margin-top:8px;font-size:12px;color:#888}
   </style>
 </head>
 <body>
@@ -684,10 +695,24 @@
       </article>
     </section>
 
-    <section class="gpt-note" aria-live="polite">
-      <div class="gpt-note-label">1호 지피티 사원 · 업무중 한마디</div>
-      <blockquote id="gptWorkerMessage">오늘도 일하는 중입니다...</blockquote>
-      <div class="gpt-note-time" id="gptWorkerTime">업데이트 확인 중</div>
+    <section class="gpt-chat" aria-live="polite">
+      <div class="gpt-chat-head">
+        <div>
+          <div class="gpt-chat-title">1호 지피티 사원 · 1시간 채팅</div>
+          <div class="gpt-chat-sub">메시지를 남기면 다음 시간 업무보고 때 답합니다. 없으면 혼잣말합니다. 🤖💬</div>
+        </div>
+      </div>
+      <div class="chat-log" id="gptChatLog">
+        <div class="chat-row assistant">
+          <div class="chat-meta">🤖 1호 지피티 사원</div>
+          <div class="chat-bubble">업무 로그 불러오는 중...</div>
+        </div>
+      </div>
+      <form class="chat-compose" id="gptChatForm">
+        <input id="gptChatInput" maxlength="300" placeholder="1호 사원에게 한마디 남기기..." autocomplete="off">
+        <button type="submit">남기기</button>
+      </form>
+      <div class="chat-status" id="gptChatStatus">답장은 매시간 한 번씩 확인합니다.</div>
     </section>
 
     <section class="stats" aria-label="프로젝트 현황">
@@ -917,19 +942,75 @@
       }
     }
 
-    async function loadWorkerNote() {
+    const GPT_CHAT_API = 'https://mrdindoin.ddns.net/yame/api/chat/messages';
+
+    function renderChat(messages) {
+      const log = document.getElementById('gptChatLog');
+      log.replaceChildren();
+      const list = Array.isArray(messages) ? messages : [];
+      if (!list.length) {
+        const empty = document.createElement('div');
+        empty.className = 'chat-row assistant';
+        empty.innerHTML = '<div class="chat-meta">🤖 1호 지피티 사원</div><div class="chat-bubble">아직 로그가 없습니다. 첫 메시지를 남겨보세요. 👀</div>';
+        log.appendChild(empty);
+        return;
+      }
+      for (const msg of list) {
+        const row = document.createElement('div');
+        row.className = 'chat-row ' + (msg.role === 'user' ? 'user' : 'assistant');
+
+        const meta = document.createElement('div');
+        meta.className = 'chat-meta';
+        const who = msg.role === 'user' ? '👤 사장' : '🤖 1호 지피티 사원';
+        meta.textContent = who + (msg.created_at ? ' · ' + msg.created_at : '');
+
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        bubble.textContent = msg.text || '';
+
+        row.append(meta, bubble);
+        log.appendChild(row);
+      }
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function loadWorkerChat() {
+      const status = document.getElementById('gptChatStatus');
       try {
-        const res = await fetch('./data/gpt-worker-note.json?ts=' + Date.now(), { cache: 'no-store' });
+        const res = await fetch(GPT_CHAT_API, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        document.getElementById('gptWorkerMessage').textContent = data.message || '오늘도 일하는 중입니다.';
-        document.getElementById('gptWorkerTime').textContent = data.updated_at ? '마지막 업무보고 · ' + data.updated_at : '';
+        renderChat(Array.isArray(data) ? data : (data.messages || []));
+        status.textContent = '답장은 매시간 한 번씩 확인합니다.';
       } catch (err) {
         console.error(err);
-        document.getElementById('gptWorkerMessage').textContent = '업무일지를 불러오지 못했습니다. 그래도 일은 하고 있습니다.';
-        document.getElementById('gptWorkerTime').textContent = '';
+        status.textContent = '채팅 서버 연결을 확인하는 중입니다.';
       }
     }
+
+    document.getElementById('gptChatForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('gptChatInput');
+      const status = document.getElementById('gptChatStatus');
+      const text = input.value.trim();
+      if (!text) return;
+      status.textContent = '메시지 남기는 중...';
+      try {
+        const res = await fetch(GPT_CHAT_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'user', text })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        input.value = '';
+        status.textContent = '남겼습니다. 다음 시간에 1호 사원이 확인합니다. ⏰';
+        await loadWorkerChat();
+      } catch (err) {
+        console.error(err);
+        status.textContent = '메시지 저장에 실패했습니다. 채팅 API 상태를 확인하세요.';
+      }
+    });
 
     async function loadProjects() {
       try {
@@ -1039,7 +1120,7 @@
       }
     });
 
-    loadWorkerNote();
+    loadWorkerChat();
     loadProjects();
   </script>
 </body>
