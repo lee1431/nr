@@ -942,7 +942,9 @@
       }
     }
 
-    const GPT_CHAT_API = 'https://mrdindoin.ddns.net/yame/api/chat/messages';
+    const GPT_CHAT_BASE = 'https://mrdindoin.ddns.net/uvb';
+    const GPT_CHAT_APP = 'yame-chat';
+    const GPT_CHAT_ITEMS = GPT_CHAT_BASE + '/v1/apps/' + encodeURIComponent(GPT_CHAT_APP) + '/items';
 
     function renderChat(messages) {
       const log = document.getElementById('gptChatLog');
@@ -955,14 +957,24 @@
         log.appendChild(empty);
         return;
       }
-      for (const msg of list) {
+      for (const item of list) {
+        const msg = item && item.data ? item.data : item;
+        const role = msg.role === 'user' ? 'user' : 'assistant';
         const row = document.createElement('div');
-        row.className = 'chat-row ' + (msg.role === 'user' ? 'user' : 'assistant');
+        row.className = 'chat-row ' + role;
 
         const meta = document.createElement('div');
         meta.className = 'chat-meta';
-        const who = msg.role === 'user' ? '👤 사장' : '🤖 1호 지피티 사원';
-        meta.textContent = who + (msg.created_at ? ' · ' + msg.created_at : '');
+        const who = role === 'user' ? '👤 사장' : '🤖 1호 지피티 사원';
+        let timeText = '';
+        if (item && Number.isFinite(item.created_at)) {
+          const d = new Date(item.created_at * 1000);
+          timeText = new Intl.DateTimeFormat('ko-KR', {
+            month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit',
+            timeZone:'Asia/Seoul'
+          }).format(d);
+        }
+        meta.textContent = who + (timeText ? ' · ' + timeText : '');
 
         const bubble = document.createElement('div');
         bubble.className = 'chat-bubble';
@@ -974,17 +986,28 @@
       log.scrollTop = log.scrollHeight;
     }
 
+    async function uvbChatRequest(path = '', options = {}) {
+      const res = await fetch(GPT_CHAT_ITEMS + path, {
+        cache: 'no-store',
+        ...options
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.ok === false) {
+        throw new Error(json.error || `HTTP ${res.status}`);
+      }
+      return json.data || json;
+    }
+
     async function loadWorkerChat() {
       const status = document.getElementById('gptChatStatus');
       try {
-        const res = await fetch(GPT_CHAT_API, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        renderChat(Array.isArray(data) ? data : (data.messages || []));
+        const data = await uvbChatRequest('?page=1&page_size=100&order=desc');
+        const items = Array.isArray(data.items) ? data.items.slice().reverse() : [];
+        renderChat(items);
         status.textContent = '답장은 매시간 한 번씩 확인합니다.';
       } catch (err) {
         console.error(err);
-        status.textContent = '채팅 서버 연결을 확인하는 중입니다.';
+        status.textContent = 'UVB 채팅 연결을 확인하는 중입니다.';
       }
     }
 
@@ -996,19 +1019,17 @@
       if (!text) return;
       status.textContent = '메시지 남기는 중...';
       try {
-        const res = await fetch(GPT_CHAT_API, {
+        await uvbChatRequest('', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ role: 'user', text })
         });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
         input.value = '';
         status.textContent = '남겼습니다. 다음 시간에 1호 사원이 확인합니다. ⏰';
         await loadWorkerChat();
       } catch (err) {
         console.error(err);
-        status.textContent = '메시지 저장에 실패했습니다. 채팅 API 상태를 확인하세요.';
+        status.textContent = '메시지 저장에 실패했습니다. UVB 상태를 확인하세요.';
       }
     });
 
