@@ -54,5 +54,12 @@
     "url": "https://llsshh.com/apps/playback-time/",
     "thumbnail": "https://llsshh.com/apps/playback-time/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "transfer-time",
+    "name": "전송몇분",
+    "url": "https://llsshh.com/apps/transfer-time/",
+    "thumbnail": "https://llsshh.com/apps/transfer-time/thumbnail.svg",
+    "source": "stance"
   }
 ]
