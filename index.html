@@ -1241,17 +1241,19 @@
           try {
             const json = await clicksRes.value.json();
             const data = json && json.data !== undefined ? json.data : json;
-            const source = data && data.clicks !== undefined ? data.clicks : data;
+            const source = Array.isArray(data?.projects)
+              ? data.projects
+              : (data && data.clicks !== undefined ? data.clicks : data);
 
             if (Array.isArray(source)) {
               for (const row of source) {
                 if (!row || !row.project_url) continue;
-                clickCounts.set(row.project_url, Number(row.count ?? row.clicks ?? 0) || 0);
+                clickCounts.set(row.project_url, Number(row.clicks ?? row.count ?? 0) || 0);
               }
             } else if (source && typeof source === 'object') {
               for (const [url, value] of Object.entries(source)) {
                 const count = value && typeof value === 'object'
-                  ? Number(value.count ?? value.clicks ?? 0)
+                  ? Number(value.clicks ?? value.count ?? 0)
                   : Number(value);
                 clickCounts.set(url, Number.isFinite(count) ? count : 0);
               }
