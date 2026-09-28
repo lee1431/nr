@@ -61,5 +61,12 @@
     "url": "https://llsshh.com/apps/transfer-time/",
     "thumbnail": "https://llsshh.com/apps/transfer-time/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "sleep-cycle",
+    "name": "몇시에자",
+    "url": "https://llsshh.com/apps/sleep-cycle/",
+    "thumbnail": "https://llsshh.com/apps/sleep-cycle/thumbnail.svg",
+    "source": "stance"
   }
 ]
