@@ -797,6 +797,43 @@
     const API_URL = 'https://mrdindoin.ddns.net/yame/api/community/projects';
     const STANCE_APPS_API = 'https://api.github.com/repos/lee1431/stance/contents/apps';
 
+    // Access-log signal only: no JSON item is created and no response is needed.
+    // Count event=project_click, grouped by project_url; event_id identifies a click.
+    const PROJECT_CLICK_LOG_URL = 'https://localflow.ddns.net/uvb/';
+
+    function recordProjectClick(projectUrl, placement) {
+      try {
+        const project = new URL(projectUrl);
+        if (!['https:', 'http:'].includes(project.protocol)) return;
+        const request = new URL(PROJECT_CLICK_LOG_URL);
+        request.searchParams.set('event', 'project_click');
+        request.searchParams.set('project_url', project.href);
+        request.searchParams.set('placement', placement);
+        request.searchParams.set('event_id', typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2));
+        // One best-effort GET; no retry, redirect, preflight, or navigation delay.
+        fetch(request.href, {
+          method: 'GET', mode: 'no-cors', credentials: 'omit',
+          cache: 'no-store', keepalive: true, redirect: 'error',
+          referrerPolicy: 'no-referrer'
+        }).catch(() => {});
+      } catch {
+        // Analytics must never prevent opening a project.
+      }
+    }
+
+    function handleProjectOpen(event) {
+      if (event.type === 'click' ? event.button !== 0 : event.button !== 1) return;
+      if (!(event.target instanceof Element)) return;
+      const link = event.target.closest('#projectGrid a.card, #featuredLink');
+      if (!link || !link.getAttribute('href') || link.getAttribute('href') === '#') return;
+      recordProjectClick(link.href, link.id === 'featuredLink' ? 'featured' : 'card');
+    }
+
+    document.addEventListener('click', handleProjectOpen);
+    document.addEventListener('auxclick', handleProjectOpen);
+
     const grid = document.getElementById('projectGrid');
     const counter = document.getElementById('counter');
     const statProjects = document.getElementById('statProjects');
