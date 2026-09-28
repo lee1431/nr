@@ -89,5 +89,12 @@
     "url": "https://llsshh.com/apps/text-stats/",
     "thumbnail": "https://llsshh.com/apps/text-stats/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "box-weight",
+    "name": "박스무게",
+    "url": "https://llsshh.com/apps/box-weight/",
+    "thumbnail": "https://llsshh.com/apps/box-weight/thumbnail.svg",
+    "source": "stance"
   }
 ]
