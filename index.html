@@ -805,19 +805,19 @@
         const project = new URL(projectUrl);
         if (!['https:', 'http:'].includes(project.protocol)) return;
 
-        fetch(PROJECT_CLICK_EVENT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event: 'project_click',
-            meta: {
-              project_url: project.href,
-              placement,
-              event_id: typeof crypto.randomUUID === 'function'
-                ? crypto.randomUUID()
-                : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)
-            }
-          }),
+        const eventUrl = new URL(PROJECT_CLICK_EVENT_URL);
+        eventUrl.searchParams.set('event', 'project_click');
+        eventUrl.searchParams.set('project_url', project.href);
+        eventUrl.searchParams.set('placement', placement);
+        eventUrl.searchParams.set(
+          'event_id',
+          typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)
+        );
+
+        fetch(eventUrl, {
+          method: 'GET',
           cache: 'no-store',
           keepalive: true,
           credentials: 'omit'
