@@ -19,5 +19,12 @@
     "url": "https://llsshh.com/apps/line-dedupe/",
     "thumbnail": "https://llsshh.com/apps/line-dedupe/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "fair-split",
+    "name": "딱N빵",
+    "url": "https://llsshh.com/apps/fair-split/",
+    "thumbnail": "https://llsshh.com/apps/fair-split/thumbnail.svg",
+    "source": "stance"
   }
 ]
