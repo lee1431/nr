@@ -75,5 +75,12 @@
     "url": "https://llsshh.com/apps/fuel-cost/",
     "thumbnail": "https://llsshh.com/apps/fuel-cost/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "workday-date",
+    "name": "영업일끝",
+    "url": "https://llsshh.com/apps/workday-date/",
+    "thumbnail": "https://llsshh.com/apps/workday-date/thumbnail.svg",
+    "source": "stance"
   }
 ]
