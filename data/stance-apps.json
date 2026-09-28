@@ -96,5 +96,12 @@
     "url": "https://llsshh.com/apps/box-weight/",
     "thumbnail": "https://llsshh.com/apps/box-weight/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "password-maker",
+    "name": "암호뚝딱",
+    "url": "https://llsshh.com/apps/password-maker/",
+    "thumbnail": "https://llsshh.com/apps/password-maker/thumbnail.svg",
+    "source": "stance"
   }
 ]
