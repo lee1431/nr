@@ -47,5 +47,12 @@
     "url": "https://llsshh.com/apps/stacked-discount/",
     "thumbnail": "https://llsshh.com/apps/stacked-discount/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "playback-time",
+    "name": "배속끝",
+    "url": "https://llsshh.com/apps/playback-time/",
+    "thumbnail": "https://llsshh.com/apps/playback-time/thumbnail.svg",
+    "source": "stance"
   }
 ]
