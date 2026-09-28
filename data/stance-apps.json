@@ -82,5 +82,12 @@
     "url": "https://llsshh.com/apps/workday-date/",
     "thumbnail": "https://llsshh.com/apps/workday-date/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "text-stats",
+    "name": "글자몇개",
+    "url": "https://llsshh.com/apps/text-stats/",
+    "thumbnail": "https://llsshh.com/apps/text-stats/thumbnail.svg",
+    "source": "stance"
   }
 ]
