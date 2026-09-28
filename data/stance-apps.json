@@ -103,5 +103,12 @@
     "url": "https://llsshh.com/apps/password-maker/",
     "thumbnail": "https://llsshh.com/apps/password-maker/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "json-pretty",
+    "name": "JSON정리",
+    "url": "https://llsshh.com/apps/json-pretty/",
+    "thumbnail": "https://llsshh.com/apps/json-pretty/thumbnail.svg",
+    "source": "stance"
   }
 ]
