@@ -33,5 +33,12 @@
     "url": "https://llsshh.com/apps/date-gap/",
     "thumbnail": "https://llsshh.com/apps/date-gap/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "aspect-fit",
+    "name": "비율맞춤",
+    "url": "https://llsshh.com/apps/aspect-fit/",
+    "thumbnail": "https://llsshh.com/apps/aspect-fit/thumbnail.svg",
+    "source": "stance"
   }
 ]
