@@ -5,5 +5,12 @@
     "url": "https://llsshh.com/apps/unit-price/",
     "thumbnail": "https://llsshh.com/apps/unit-price/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "time-sum",
+    "name": "시간모아",
+    "url": "https://llsshh.com/apps/time-sum/",
+    "thumbnail": "https://llsshh.com/apps/time-sum/thumbnail.svg",
+    "source": "stance"
   }
 ]
