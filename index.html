@@ -1132,12 +1132,13 @@
 
     async function loadProjects() {
       try {
-        const [stanceRes, apiRes] = await Promise.allSettled([
+        const [stanceRes, apiRes, catalogRes] = await Promise.allSettled([
           fetch(STANCE_APPS_API, {
             cache: 'no-store',
             headers: { 'Accept': 'application/vnd.github+json' }
           }),
-          fetch(API_URL, { cache: 'no-store' })
+          fetch(API_URL, { cache: 'no-store' }),
+          fetch('./data/stance-apps.json', { cache: 'no-store' })
         ]);
 
         let stanceProjects = [];
@@ -1173,9 +1174,17 @@
         }
 
         const byUrl = new Map();
+        if (catalogRes.status === 'fulfilled' && catalogRes.value.ok) {
+          try {
+            const catalog = await catalogRes.value.json();
+            for (const project of (Array.isArray(catalog) ? catalog : [])) {
+              if (project && project.url) byUrl.set(project.url, project);
+            }
+          } catch (err) { console.warn('static catalog load failed', err); }
+        }
 
         for (const project of stanceProjects) {
-          byUrl.set(project.url, project);
+          if (!byUrl.has(project.url)) byUrl.set(project.url, project);
         }
 
         for (const project of externalProjects) {
