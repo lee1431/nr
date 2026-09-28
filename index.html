@@ -54,7 +54,7 @@
       letter-spacing: -.01em;
     }
 
-    button, input { font: inherit; }
+    button, input, select { font: inherit; }
     button { cursor: pointer; }
     a { color: inherit; }
 
@@ -636,11 +636,17 @@
     .chat-day{position:sticky;top:0;align-self:center;z-index:1;margin:8px 0 2px;padding:5px 10px;border-radius:999px;background:#e9e9e3;color:#666;font-size:11px;font-weight:800}
     .chat-row{display:flex;flex-direction:column;gap:4px;max-width:86%}
     .chat-row.user{align-self:flex-end;align-items:flex-end}
-    .chat-row.assistant{align-self:flex-start}
+    .chat-row.assistant{align-self:flex-start;align-items:flex-start}
+    .chat-bubble{overflow-wrap:anywhere}
+    .chat-row.assistant .chat-bubble{background:var(--accent-soft);border-color:#d7e5fa}
     .chat-meta{font-size:11px;color:#888}
     .chat-bubble{padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #ddd;line-height:1.5;white-space:pre-wrap}
     .chat-row.user .chat-bubble{background:#171717;color:#fff;border-color:#171717}
-    .chat-compose{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+    .chat-compose{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;margin-top:10px;padding:0}
+    .chat-compose select{min-width:0;border:1px solid #bbb;border-radius:12px;padding:10px;background:#fff;color:var(--text)}
+    .chat-compose :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .chat-compose button:disabled{opacity:.55;cursor:wait}
+    @media(max-width:620px){.chat-compose{grid-template-columns:minmax(0,1fr) auto}.chat-compose select{grid-column:1 / -1}.chat-row{max-width:92%}}
     .chat-compose input{min-width:0;border:1px solid #bbb;border-radius:12px;padding:12px 14px;font:inherit}
     .chat-compose button{border:0;border-radius:12px;padding:0 16px;background:#171717;color:#fff;font-weight:800;cursor:pointer}
     .chat-status{margin-top:8px;font-size:12px;color:#888}
@@ -700,7 +706,7 @@
       <div class="gpt-chat-head">
         <div>
           <div class="gpt-chat-title">1호 지피티 사원 · 1시간 채팅</div>
-          <div class="gpt-chat-sub">메시지를 남기면 다음 시간 업무보고 때 답합니다. 없으면 혼잣말합니다. 🤖💬</div>
+          <div class="gpt-chat-sub">유저는 오른쪽, 1호 사원은 왼쪽에 표시됩니다. 사원은 매시 30분에 대화를 확인합니다. 🤖💬</div>
         </div>
       </div>
       <div class="chat-log" id="gptChatLog">
@@ -710,10 +716,14 @@
         </div>
       </div>
       <form class="chat-compose" id="gptChatForm">
-        <input id="gptChatInput" maxlength="300" placeholder="1호 사원에게 한마디 남기기..." autocomplete="off">
+        <select id="gptChatRole" aria-label="작성자 선택">
+          <option value="user">유저 (나)</option>
+          <option value="assistant">1호 사원 (GPT)</option>
+        </select>
+        <input id="gptChatInput" aria-label="채팅 메시지" maxlength="300" placeholder="1호 사원에게 한마디 남기기..." autocomplete="off">
         <button type="submit">남기기</button>
       </form>
-      <div class="chat-status" id="gptChatStatus">답장은 매시간 한 번씩 확인합니다.</div>
+      <div class="chat-status" id="gptChatStatus">사원은 매시 30분에 대화를 확인합니다.</div>
     </section>
 
     <section class="stats" aria-label="프로젝트 현황">
@@ -1008,7 +1018,7 @@
 
         const meta = document.createElement('div');
         meta.className = 'chat-meta';
-        const who = role === 'user' ? '👤 사장' : '🤖 1호 지피티 사원';
+        const who = role === 'user' ? '👤 유저' : '🤖 1호 지피티 사원';
         meta.textContent = who + (date ? ' · ' + formatChatTime(date) : '');
 
         const bubble = document.createElement('div');
@@ -1066,19 +1076,30 @@
       try {
         const items = await loadRecentChatItems();
         renderChat(items);
-        status.textContent = `최근 ${CHAT_RETENTION_DAYS}일 로그 · 답장은 매시간 한 번씩 확인합니다.`;
+        status.textContent = `최근 ${CHAT_RETENTION_DAYS}일 로그 · 사원은 매시 30분에 대화를 확인합니다.`;
       } catch (err) {
         console.error(err);
         status.textContent = 'UVB 채팅 연결을 확인하는 중입니다.';
       }
     }
 
+    document.getElementById('gptChatRole').addEventListener('change', (e) => {
+      document.getElementById('gptChatInput').placeholder = e.target.value === 'assistant'
+        ? '1호 사원으로 답변 남기기...' : '1호 사원에게 한마디 남기기...';
+    });
+
     document.getElementById('gptChatForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const input = document.getElementById('gptChatInput');
       const status = document.getElementById('gptChatStatus');
       const text = input.value.trim();
-      if (!text) return;
+      const roleSelect = document.getElementById('gptChatRole');
+      const sendButton = e.currentTarget.querySelector('button[type="submit"]');
+      if (!text || sendButton.disabled) return;
+      const role = roleSelect.value === 'assistant' ? 'assistant' : 'user';
+      sendButton.disabled = true;
+      roleSelect.disabled = true;
+      input.disabled = true;
       status.textContent = '메시지 남기는 중...';
       try {
         const now = new Date();
@@ -1089,7 +1110,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            role: 'user',
+            role,
             text,
             sent_at: now.toISOString(),
             date_key: seoulDate,
@@ -1097,11 +1118,15 @@
           })
         });
         input.value = '';
-        status.textContent = '남겼습니다. 다음 시간에 1호 사원이 확인합니다. ⏰';
+        status.textContent = role === 'assistant' ? '1호 사원 답변을 남겼습니다.' : '남겼습니다. 매시 30분에 1호 사원이 확인합니다. ⏰';
         await loadWorkerChat();
       } catch (err) {
         console.error(err);
-        status.textContent = '메시지 저장에 실패했습니다. UVB 상태를 확인하세요.';
+        status.textContent = '메시지 저장을 확인하지 못했습니다. 새로고침으로 등록 여부를 확인한 후 다시 시도하세요.';
+      } finally {
+        sendButton.disabled = false;
+        roleSelect.disabled = false;
+        input.disabled = false;
       }
     });
 
