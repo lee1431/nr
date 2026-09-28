@@ -40,5 +40,12 @@
     "url": "https://llsshh.com/apps/aspect-fit/",
     "thumbnail": "https://llsshh.com/apps/aspect-fit/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "stacked-discount",
+    "name": "겹할인",
+    "url": "https://llsshh.com/apps/stacked-discount/",
+    "thumbnail": "https://llsshh.com/apps/stacked-discount/thumbnail.svg",
+    "source": "stance"
   }
 ]
