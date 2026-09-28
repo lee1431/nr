@@ -12,5 +12,12 @@
     "url": "https://llsshh.com/apps/time-sum/",
     "thumbnail": "https://llsshh.com/apps/time-sum/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "line-dedupe",
+    "name": "줄정리",
+    "url": "https://llsshh.com/apps/line-dedupe/",
+    "thumbnail": "https://llsshh.com/apps/line-dedupe/thumbnail.svg",
+    "source": "stance"
   }
 ]
