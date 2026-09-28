@@ -26,5 +26,12 @@
     "url": "https://llsshh.com/apps/fair-split/",
     "thumbnail": "https://llsshh.com/apps/fair-split/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "date-gap",
+    "name": "날짜틈",
+    "url": "https://llsshh.com/apps/date-gap/",
+    "thumbnail": "https://llsshh.com/apps/date-gap/thumbnail.svg",
+    "source": "stance"
   }
 ]
