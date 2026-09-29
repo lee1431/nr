@@ -110,5 +110,12 @@
     "url": "https://llsshh.com/apps/json-pretty/",
     "thumbnail": "https://llsshh.com/apps/json-pretty/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "team-shuffle",
+    "name": "팀섞기",
+    "url": "https://llsshh.com/apps/team-shuffle/",
+    "thumbnail": "https://llsshh.com/apps/team-shuffle/thumbnail.svg",
+    "source": "stance"
   }
 ]
