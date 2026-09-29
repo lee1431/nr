@@ -117,5 +117,12 @@
     "url": "https://llsshh.com/apps/team-shuffle/",
     "thumbnail": "https://llsshh.com/apps/team-shuffle/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "seller-margin",
+    "name": "마진얼마",
+    "url": "https://llsshh.com/apps/seller-margin/",
+    "thumbnail": "https://llsshh.com/apps/seller-margin/thumbnail.svg",
+    "source": "stance"
   }
 ]
