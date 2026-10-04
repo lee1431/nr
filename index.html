@@ -4,22 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>야메프로그래밍 | YAME.STORE</title>
-  <meta name="description" content="AI로 만든 웹페이지와 작은 프로젝트를 URL로 등록하고 함께 구경하는 야메프로그래밍 프로젝트 월">
-  <meta name="keywords" content="야메프로그래밍, YAME, 프로젝트, 아카이브, 웹앱, AI, 바이브코딩">
+  <meta name="description" content="만들고 싶은 프로그램을 등록하고, 추첨된 프로젝트를 GPT 사원과 함께 실제 프로그램으로 만드는 YAME.STORE">
+  <meta name="keywords" content="야메프로그래밍, YAME, 프로젝트, AI, 바이브코딩, 프로그램 제작">
   <meta name="author" content="YAME">
   <link rel="canonical" href="https://yame.store/">
-
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://yame.store/">
   <meta property="og:title" content="YAME.STORE">
-  <meta property="og:description" content="야매로 만들고, 제대로 써먹자. 한국형 AI 메이커 프로젝트 월">
+  <meta property="og:description" content="등록하고, 뽑고, 만들고, 계속 고칩니다.">
   <meta property="og:image" content="https://yame.store/assets/img/yame.png">
   <meta property="og:site_name" content="YAME.STORE">
-
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="YAME.STORE">
-  <link rel="apple-touch-icon" href="./assets/img/icon-192.png">
   <meta name="theme-color" content="#ffffff">
 
   <style>
@@ -38,6 +32,7 @@
       --accent-soft: #edf4ff;
       --danger: #c94b55;
       --success: #27765f;
+      --warning: #9a6a17;
       --shadow: 0 14px 34px rgba(28, 53, 88, .06);
     }
 
@@ -53,8 +48,7 @@
         var(--bg);
       letter-spacing: -.01em;
     }
-
-    button, input, select { font: inherit; }
+    button, input, textarea { font: inherit; }
     button { cursor: pointer; }
     a { color: inherit; }
 
@@ -66,13 +60,12 @@
       font-size: 12px;
       background: rgba(255,255,255,.92);
     }
-
     .top-note b { color: var(--navy); }
 
     .shell {
       width: min(1080px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 0 0 80px;
+      padding-bottom: 80px;
     }
 
     header {
@@ -83,14 +76,14 @@
       align-items: center;
       border-bottom: 1.5px solid var(--line);
     }
-
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
       min-width: 0;
+      color: inherit;
+      text-decoration: none;
     }
-
     .brand-mark {
       width: 40px;
       height: 40px;
@@ -103,7 +96,6 @@
       font-size: 19px;
       font-weight: 900;
     }
-
     .brand-copy h1 {
       margin: 0;
       color: var(--navy);
@@ -111,7 +103,6 @@
       letter-spacing: -.04em;
       font-weight: 900;
     }
-
     .brand-copy p {
       margin: 4px 0 0;
       color: #98a3b3;
@@ -119,7 +110,6 @@
       font-weight: 800;
       letter-spacing: .08em;
     }
-
     .header-actions {
       display: flex;
       align-items: center;
@@ -127,49 +117,39 @@
       flex-shrink: 0;
     }
 
-    #counter {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .primary,
-    .secondary {
+    .primary, .secondary, .soft-btn {
       min-height: 42px;
       border-radius: 12px;
       padding: 0 15px;
       font-weight: 800;
       transition: .18s ease;
     }
-
     .primary {
       border: 1.5px solid var(--navy);
       background: var(--navy);
       color: #fff;
     }
-
-    .primary:hover {
-      transform: translateY(-1px);
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-
+    .primary:hover { transform: translateY(-1px); background: var(--accent); border-color: var(--accent); }
+    .primary:disabled, .secondary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
     .secondary {
       border: 1.5px solid var(--line);
       background: #fff;
       color: var(--text);
     }
-
     .secondary:hover { border-color: #aebfd3; }
-
-    .hero {
-      padding: 72px 0 56px;
-      display: grid;
-      grid-template-columns: 1.05fr .95fr;
-      gap: 48px;
-      align-items: center;
+    .soft-btn {
+      border: 1.5px solid #d8e6f8;
+      background: var(--accent-soft);
+      color: var(--navy);
     }
 
+    .hero {
+      padding: 64px 0 38px;
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 40px;
+      align-items: center;
+    }
     .eyebrow {
       display: inline-flex;
       align-items: center;
@@ -182,7 +162,6 @@
       font-size: 12px;
       font-weight: 900;
     }
-
     .eyebrow::before {
       content: '';
       width: 7px;
@@ -190,7 +169,6 @@
       border-radius: 50%;
       background: var(--accent);
     }
-
     .hero h2 {
       margin: 19px 0 17px;
       font-size: clamp(42px, 6.8vw, 72px);
@@ -199,7 +177,6 @@
       font-weight: 900;
       color: #111c2b;
     }
-
     .hero h2 em {
       font-family: Georgia, 'Times New Roman', serif;
       font-weight: 700;
@@ -207,161 +184,49 @@
       color: var(--navy);
       letter-spacing: -.035em;
     }
-
     .hero-copy > p {
       margin: 0;
-      max-width: 590px;
+      max-width: 620px;
       color: var(--muted);
       font-size: 16px;
       line-height: 1.78;
     }
-
     .hero-copy > p b { color: var(--navy); }
+    .hero-buttons { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
 
-    .hero-buttons {
-      margin-top: 26px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .soft-btn {
-      min-height: 42px;
-      border: 1.5px solid #d8e6f8;
-      border-radius: 12px;
-      padding: 0 15px;
-      background: var(--accent-soft);
-      color: var(--navy);
-      font-weight: 800;
-    }
-
-    .featured {
-      min-width: 0;
+    .process-card {
       border: 1.5px solid var(--line);
       border-radius: 22px;
-      padding: 16px;
+      padding: 22px;
       background: #fff;
       box-shadow: var(--shadow);
     }
-
-    .featured-visual {
-      aspect-ratio: 16 / 10;
-      overflow: hidden;
-      position: relative;
-      border: 1.5px solid #cad8e8;
-      border-radius: 16px;
-      background: linear-gradient(145deg, #f4f8ff, #cfe0ff 52%, #8eb5f4);
-    }
-
-    .featured-visual img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .featured-placeholder {
-      width: 100%;
-      height: 100%;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      color: var(--navy);
-    }
-
-    .featured-placeholder small {
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .06em;
-    }
-
-    .featured-placeholder strong {
-      max-width: 330px;
-      font-size: 34px;
-      line-height: 1;
-      letter-spacing: -.055em;
-    }
-
-    .featured-badge {
-      position: absolute;
-      left: 14px;
-      top: 14px;
-      z-index: 2;
-      padding: 6px 9px;
-      border: 1px solid rgba(255,255,255,.7);
-      border-radius: 999px;
-      background: rgba(255,255,255,.9);
-      color: var(--navy);
-      font-size: 10px;
-      font-weight: 900;
-      backdrop-filter: blur(7px);
-    }
-
-    .featured-info {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 14px 3px 2px;
-    }
-
-    .featured-host {
-      min-width: 0;
-      font-size: 15px;
-      font-weight: 900;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .featured-url {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .featured-link {
-      flex: 0 0 auto;
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 900;
-      text-decoration: none;
-    }
-
-    .stats {
+    .process-card small { color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; }
+    .process-card h3 { margin: 10px 0 18px; color: var(--navy); font-size: 25px; letter-spacing: -.04em; }
+    .process-list { display: grid; gap: 10px; }
+    .process-step {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 34px minmax(0, 1fr);
       gap: 10px;
-      margin-bottom: 62px;
+      align-items: center;
+      padding: 11px 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: 14px;
+      background: var(--soft);
     }
-
-    .stat {
-      min-width: 0;
-      padding: 17px 18px;
-      border: 1.5px solid var(--line);
-      border-radius: 15px;
+    .process-step b {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
       background: #fff;
-    }
-
-    .stat span {
-      display: block;
-      color: #8d99aa;
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .stat strong {
-      display: block;
-      margin-top: 6px;
+      border: 1px solid var(--line);
       color: var(--navy);
-      font-size: 21px;
-      letter-spacing: -.04em;
     }
+    .process-step span { font-size: 13px; line-height: 1.5; }
 
+    .section { margin-top: 38px; }
     .section-head {
       display: flex;
       justify-content: space-between;
@@ -371,243 +236,143 @@
       margin-bottom: 20px;
       border-bottom: 1.5px solid var(--line);
     }
+    .section-head h3 { margin: 0; font-size: 27px; letter-spacing: -.05em; }
+    .section-head h3 em { font-family: Georgia, 'Times New Roman', serif; font-style: italic; color: #6d83a3; }
+    .section-head p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
 
-    .section-head h3 {
-      margin: 0;
-      font-size: 27px;
-      letter-spacing: -.05em;
-    }
-
-    .section-head h3 em {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-style: italic;
-      font-weight: 700;
-      color: #6d83a3;
-    }
-
-    .section-head p {
-      margin: 7px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .grid {
+    .lottery-layout {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr);
       gap: 16px;
     }
-
-    .card {
-      display: block;
-      min-width: 0;
-      color: inherit;
-      text-decoration: none;
-      background: var(--panel);
-      border: 1.5px solid var(--line);
-      border-radius: 18px;
-      overflow: hidden;
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: #9db0c8;
-      box-shadow: var(--shadow);
-    }
-
-    .thumb {
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-      background: linear-gradient(145deg, #f4f8ff, #dce8f8);
-      border-bottom: 1.5px solid var(--line);
-      position: relative;
-    }
-
-    .thumb img {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: cover;
-      transition: transform .25s ease;
-    }
-
-    .no-image {
-      width: 100%;
-      height: 100%;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: space-between;
-      color: var(--navy);
-    }
-
-    .no-image::before {
-      content: 'YAME';
-      padding: 5px 8px;
-      border: 1px solid #bfd0e5;
-      border-radius: 999px;
-      background: rgba(255,255,255,.7);
-      font-size: 9px;
-      font-weight: 900;
-      letter-spacing: .08em;
-    }
-
-    .no-image::after {
-      content: 'NO IMAGE';
-      font-size: 18px;
-      font-weight: 900;
-      letter-spacing: -.03em;
-    }
-
-    .card:hover .thumb img { transform: scale(1.025); }
-
-    .info { padding: 13px 13px 14px; }
-
-    .host {
-      font-size: 13px;
-      font-weight: 900;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .url {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 10px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .empty, .loading, .error-box {
-      grid-column: 1 / -1;
-      min-height: 210px;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      border: 1.5px dashed var(--line);
-      border-radius: 18px;
-      color: var(--muted);
-      background: var(--soft);
-      padding: 24px;
-      line-height: 1.7;
-    }
-
-    .error-box { color: var(--danger); }
-
-    .bottom-note {
-      margin-top: 52px;
-      padding: 22px 0 0;
-      border-top: 1.5px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      color: #95a0b0;
-      font-size: 11px;
-    }
-
-    dialog {
-      width: min(520px, calc(100% - 28px));
+    .panel {
       border: 1.5px solid var(--line);
       border-radius: 20px;
       background: #fff;
-      color: var(--text);
-      padding: 0;
-      box-shadow: 0 28px 80px rgba(29, 63, 112, .18);
+      padding: 18px;
+      min-width: 0;
     }
-
-    dialog::backdrop {
-      background: rgba(20, 36, 58, .38);
-      backdrop-filter: blur(7px);
-    }
-
-    .modal-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 20px;
-      border-bottom: 1.5px solid var(--line);
-    }
-
-    .modal-head strong {
-      color: var(--navy);
-      font-size: 17px;
-      letter-spacing: -.02em;
-    }
-
-    .icon-btn {
-      width: 36px;
-      height: 36px;
-      border: 1.5px solid var(--line);
-      border-radius: 11px;
-      background: #fff;
-      color: var(--text);
-      font-size: 20px;
-    }
-
-    form { padding: 20px; }
-
-    label {
-      display: block;
-      margin: 0 0 16px;
-      color: #566478;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    input[type="url"] {
-      width: 100%;
-      margin-top: 8px;
-      padding: 12px 13px;
-      border: 1.5px solid var(--line);
-      border-radius: 12px;
-      background: #fff;
-      color: var(--text);
-      outline: none;
-    }
-
-    input[type="url"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(47, 111, 228, .08);
-    }
-
-    .hint {
-      margin: -3px 0 18px;
+    .panel-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .panel-title strong { color: var(--navy); font-size: 15px; }
+    .count-pill {
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid var(--line-soft);
       color: var(--muted);
       font-size: 11px;
-      line-height: 1.6;
+      font-weight: 800;
     }
-
-    .form-actions {
+    .candidate-list { display: grid; gap: 8px; max-height: 390px; overflow: auto; }
+    .candidate {
       display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 22px;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: 13px;
+      background: var(--soft);
     }
-
-    .status {
-      min-height: 20px;
-      margin-top: 12px;
-      font-size: 12px;
+    .candidate-index {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 9px;
+      background: #fff;
+      border: 1px solid var(--line);
       color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
     }
+    .candidate-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 800; }
+    .candidate-private { margin-top: 12px; color: var(--muted); font-size: 11px; line-height: 1.6; }
 
+    .active-card {
+      min-height: 210px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1.5px solid #c5d8f5;
+      border-radius: 18px;
+      padding: 18px;
+      background: linear-gradient(145deg, #f8fbff, #edf4ff);
+    }
+    .active-label { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .08em; }
+    .active-card h4 { margin: 10px 0 8px; font-size: 26px; line-height: 1.15; letter-spacing: -.05em; color: var(--navy); }
+    .active-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .active-status { margin-top: 16px; display: inline-flex; width: fit-content; padding: 7px 10px; border-radius: 999px; background: #fff; border: 1px solid #d5e2f5; color: var(--navy); font-size: 11px; font-weight: 900; }
+    .lottery-actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .lottery-note { margin-top: 8px; min-height: 18px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .lottery-note.bad { color: var(--danger); }
+    .lottery-note.good { color: var(--success); }
+
+    .gpt-chat { margin-top: 18px; padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: #fff; }
+    .gpt-chat-head { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 14px; }
+    .gpt-chat-title { font-size: 12px; font-weight: 900; letter-spacing: .08em; color: var(--navy); text-transform: uppercase; }
+    .gpt-chat-sub { margin-top: 5px; font-size: 12px; color: #888; line-height: 1.55; }
+    .chat-project-badge { padding: 6px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--navy); font-size: 11px; font-weight: 900; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .chat-log { display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow: auto; padding: 12px; background: #f7f7f4; border-radius: 14px; }
+    .chat-day { position: sticky; top: 0; align-self: center; z-index: 1; margin: 8px 0 2px; padding: 5px 10px; border-radius: 999px; background: #e9e9e3; color: #666; font-size: 11px; font-weight: 800; }
+    .chat-row { display: flex; flex-direction: column; gap: 4px; max-width: 86%; }
+    .chat-row.user { align-self: flex-end; align-items: flex-end; }
+    .chat-row.assistant { align-self: flex-start; align-items: flex-start; }
+    .chat-bubble { overflow-wrap: anywhere; padding: 10px 12px; border-radius: 14px; background: #fff; border: 1px solid #ddd; line-height: 1.5; white-space: pre-wrap; }
+    .chat-row.assistant .chat-bubble { background: var(--accent-soft); border-color: #d7e5fa; }
+    .chat-row.user .chat-bubble { background: #171717; color: #fff; border-color: #171717; }
+    .chat-meta { font-size: 11px; color: #888; }
+    .chat-compose { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-top: 10px; padding: 0; }
+    .chat-compose input { min-width: 0; border: 1px solid #bbb; border-radius: 12px; padding: 12px 14px; font: inherit; }
+    .chat-compose button { border: 0; border-radius: 12px; padding: 0 16px; background: #171717; color: #fff; font-weight: 800; }
+    .chat-compose button:disabled, .chat-compose input:disabled { opacity: .55; cursor: not-allowed; }
+    .chat-status { margin-top: 8px; min-height: 18px; font-size: 12px; color: #888; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 34px 0 62px; }
+    .stat { min-width: 0; padding: 17px 18px; border: 1.5px solid var(--line); border-radius: 15px; background: #fff; }
+    .stat span { display: block; color: #8d99aa; font-size: 11px; font-weight: 800; }
+    .stat strong { display: block; margin-top: 6px; color: var(--navy); font-size: 21px; letter-spacing: -.04em; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+    .card { display: block; min-width: 0; color: inherit; text-decoration: none; background: var(--panel); border: 1.5px solid var(--line); border-radius: 18px; overflow: hidden; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+    .card:hover { transform: translateY(-4px); border-color: #9db0c8; box-shadow: var(--shadow); }
+    .thumb { aspect-ratio: 1 / 1; overflow: hidden; background: linear-gradient(145deg, #f4f8ff, #dce8f8); border-bottom: 1.5px solid var(--line); position: relative; }
+    .thumb img { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .25s ease; }
+    .card:hover .thumb img { transform: scale(1.025); }
+    .no-image { width: 100%; height: 100%; padding: 18px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; color: var(--navy); }
+    .no-image::before { content: 'YAME'; padding: 5px 8px; border: 1px solid #bfd0e5; border-radius: 999px; background: rgba(255,255,255,.7); font-size: 9px; font-weight: 900; letter-spacing: .08em; }
+    .no-image::after { content: 'PROJECT'; font-size: 18px; font-weight: 900; letter-spacing: -.03em; }
+    .info { padding: 13px 13px 14px; }
+    .host { font-size: 13px; font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .url { margin-top: 5px; color: var(--muted); font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .empty, .loading, .error-box { grid-column: 1 / -1; min-height: 160px; display: grid; place-items: center; text-align: center; border: 1.5px dashed var(--line); border-radius: 18px; color: var(--muted); background: var(--soft); padding: 24px; line-height: 1.7; }
+    .error-box { color: var(--danger); }
+
+    .bottom-note { margin-top: 52px; padding: 22px 0 0; border-top: 1.5px solid var(--line); display: flex; justify-content: space-between; gap: 20px; color: #95a0b0; font-size: 11px; }
+
+    dialog { width: min(620px, calc(100% - 28px)); border: 1.5px solid var(--line); border-radius: 20px; background: #fff; color: var(--text); padding: 0; box-shadow: 0 28px 80px rgba(29, 63, 112, .18); }
+    dialog::backdrop { background: rgba(20, 36, 58, .38); backdrop-filter: blur(7px); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1.5px solid var(--line); }
+    .modal-head strong { color: var(--navy); font-size: 17px; letter-spacing: -.02em; }
+    .icon-btn { width: 36px; height: 36px; border: 1.5px solid var(--line); border-radius: 11px; background: #fff; color: var(--text); font-size: 20px; }
+    .register-form { padding: 20px; }
+    .register-form label { display: block; margin: 0 0 16px; color: #566478; font-size: 12px; font-weight: 800; }
+    .register-form input[type="text"], .register-form textarea { width: 100%; margin-top: 8px; padding: 12px 13px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; color: var(--text); outline: none; resize: vertical; }
+    .register-form input:focus, .register-form textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47,111,228,.08); }
+    .register-form textarea { min-height: 180px; line-height: 1.65; }
+    .hint { margin: -3px 0 18px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+    .status { min-height: 20px; margin-top: 12px; font-size: 12px; color: var(--muted); }
     .status.bad { color: var(--danger); }
     .status.good { color: var(--success); }
+    .honeypot { position: absolute !important; left: -9999px !important; opacity: 0 !important; }
 
-    .honeypot {
-      position: absolute !important;
-      left: -9999px !important;
-      opacity: 0 !important;
-    }
-
-    @media (max-width: 800px) {
+    @media (max-width: 820px) {
       .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 50px; }
-      .stats { grid-template-columns: repeat(3, 1fr); }
+      .lottery-layout { grid-template-columns: 1fr; }
     }
-
     @media (max-width: 620px) {
       .shell { width: min(100% - 22px, 1080px); }
       .top-note { font-size: 11px; }
@@ -615,45 +380,24 @@
       .brand-mark { width: 36px; height: 36px; }
       .brand-copy h1 { font-size: 17px; }
       .brand-copy p { display: none; }
-      #counter { display: none; }
+      .header-actions .secondary { display: none; }
       .primary, .secondary, .soft-btn { min-height: 40px; padding: 0 12px; }
-      .hero { padding: 44px 0 38px; }
+      .hero { padding: 44px 0 28px; }
       .hero h2 { font-size: 43px; }
       .hero-copy > p { font-size: 14px; }
-      .featured-visual { aspect-ratio: 4 / 3; }
-      .featured-placeholder strong { font-size: 29px; }
-      .stats { grid-template-columns: 1fr; margin-bottom: 46px; }
       .section-head { align-items: flex-start; flex-direction: column; }
+      .stats { grid-template-columns: 1fr; margin-bottom: 46px; }
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
       .info { padding: 10px; }
       .bottom-note { flex-direction: column; gap: 6px; }
+      .chat-row { max-width: 92%; }
+      .gpt-chat-head { align-items: flex-start; flex-direction: column; }
+      .chat-project-badge { max-width: 100%; }
     }
-    .gpt-chat{margin:18px 0 26px;padding:20px;border:1px solid var(--line);border-radius:20px;background:#fff}
-    .gpt-chat-head{display:flex;justify-content:space-between;gap:16px;align-items:end;margin-bottom:14px}
-    .gpt-chat-title{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--navy);text-transform:uppercase}
-    .gpt-chat-sub{font-size:12px;color:#888}
-    .chat-log{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;padding:12px;background:#f7f7f4;border-radius:14px}
-    .chat-day{position:sticky;top:0;align-self:center;z-index:1;margin:8px 0 2px;padding:5px 10px;border-radius:999px;background:#e9e9e3;color:#666;font-size:11px;font-weight:800}
-    .chat-row{display:flex;flex-direction:column;gap:4px;max-width:86%}
-    .chat-row.user{align-self:flex-end;align-items:flex-end}
-    .chat-row.assistant{align-self:flex-start;align-items:flex-start}
-    .chat-bubble{overflow-wrap:anywhere}
-    .chat-row.assistant .chat-bubble{background:var(--accent-soft);border-color:#d7e5fa}
-    .chat-meta{font-size:11px;color:#888}
-    .chat-bubble{padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #ddd;line-height:1.5;white-space:pre-wrap}
-    .chat-row.user .chat-bubble{background:#171717;color:#fff;border-color:#171717}
-    .chat-compose{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;margin-top:10px;padding:0}
-    .chat-compose select{min-width:0;border:1px solid #bbb;border-radius:12px;padding:10px;background:#fff;color:var(--text)}
-    .chat-compose :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-    .chat-compose button:disabled{opacity:.55;cursor:wait}
-    @media(max-width:620px){.chat-compose{grid-template-columns:minmax(0,1fr) auto}.chat-compose select{grid-column:1 / -1}.chat-row{max-width:92%}}
-    .chat-compose input{min-width:0;border:1px solid #bbb;border-radius:12px;padding:12px 14px;font:inherit}
-    .chat-compose button{border:0;border-radius:12px;padding:0 16px;background:#171717;color:#fff;font-weight:800;cursor:pointer}
-    .chat-status{margin-top:8px;font-size:12px;color:#888}
   </style>
 </head>
 <body>
-  <div class="top-note">잘 만들 필요 없습니다. <b>일단 만들고, 올리고, 고치면 됩니다.</b></div>
+  <div class="top-note">한 번 뽑은 프로젝트는 <b>하나의 앱으로 만들고, 이후에도 같은 프로젝트를 계속 수정합니다.</b></div>
 
   <div class="shell">
     <header>
@@ -661,95 +405,116 @@
         <span class="brand-mark">야</span>
         <span class="brand-copy">
           <h1>YAME.STORE</h1>
-          <p>KOREAN MAKER PROJECT WALL</p>
+          <p>ONE PROJECT · ONE BUILD · MODIFY</p>
         </span>
       </a>
-
       <div class="header-actions">
-        <span id="counter">0 PROJECTS</span>
-        <button class="primary" id="openForm" type="button">+ 내 페이지 등록</button>
+        <button class="secondary" id="scrollWall" type="button">완성작 보기</button>
+        <button class="primary" id="openApply" type="button">+ 프로젝트 신청</button>
       </div>
     </header>
 
     <section class="hero">
       <div class="hero-copy">
-        <span class="eyebrow">한국형 AI 메이커 프로젝트 월</span>
-        <h2>야매로 만들고,<br><em>제대로 써먹자.</em></h2>
+        <span class="eyebrow">GPT 사원 프로젝트 제작소</span>
+        <h2>등록하고, 뽑고,<br><em>실제로 만든다.</em></h2>
         <p>
-          <b>1호 지피티 사원의 업무 결과를 보는 페이지입니다.</b>
+          만들고 싶은 프로그램을 등록해 주세요. <b>신청 목록에는 제목만 공개</b>되고 상세 내용은 표시하지 않습니다.
+          여러 프로젝트가 접수되면 하나를 무작위로 뽑고, 당첨된 프로젝트만 1호 GPT 사원과 상세 요구사항 대화를 이어갑니다.
         </p>
         <div class="hero-buttons">
-          <button class="primary" type="button" id="scrollProjects">작품 구경하기 →</button>
-          <button class="soft-btn" type="button" id="openFormHero">내 작품 올리기</button>
+          <button class="primary" id="openApplyHero" type="button">프로젝트 신청하기</button>
+          <button class="soft-btn" id="scrollLottery" type="button">추첨 현황 보기 →</button>
         </div>
       </div>
 
-      <article class="featured" id="featuredCard" aria-live="polite">
-        <div class="featured-visual" id="featuredVisual">
-          <span class="featured-badge">금주의 야매작품</span>
-          <div class="featured-placeholder">
-            <small>FEATURED PROJECT</small>
-            <strong>이번 주 작품을 불러오는 중입니다.</strong>
-          </div>
+      <aside class="process-card">
+        <small>HOW IT WORKS</small>
+        <h3>한 프로젝트를 끝까지.</h3>
+        <div class="process-list">
+          <div class="process-step"><b>1</b><span>제목과 상세 설명으로 프로젝트를 신청합니다.</span></div>
+          <div class="process-step"><b>2</b><span>대기 프로젝트 중 하나를 무작위로 추첨합니다.</span></div>
+          <div class="process-step"><b>3</b><span>1호 사원이 당첨 프로젝트의 요구사항을 정리합니다.</span></div>
+          <div class="process-step"><b>4</b><span>2호 사원이 최종 명세를 바탕으로 제작하고 같은 프로젝트를 계속 수정합니다.</span></div>
         </div>
-        <div class="featured-info">
-          <div style="min-width:0">
-            <div class="featured-host" id="featuredHost">PROJECT LOADING...</div>
-            <div class="featured-url" id="featuredUrl">잠시만 기다려주세요.</div>
-          </div>
-          <a class="featured-link" id="featuredLink" href="#">열기 ↗</a>
-        </div>
-      </article>
+      </aside>
     </section>
 
-    <section class="gpt-chat" aria-live="polite">
+    <section class="section" id="lotterySection">
+      <div class="section-head">
+        <div>
+          <h3>PROJECT <em>Lottery</em></h3>
+          <p>대기 목록에는 프로젝트 제목만 표시합니다. 상세 신청 내용은 목록 화면에 출력하지 않습니다.</p>
+        </div>
+        <button class="secondary" id="refreshLottery" type="button">새로고침</button>
+      </div>
+
+      <div class="lottery-layout">
+        <div class="panel">
+          <div class="panel-title">
+            <strong>추첨 대기 프로젝트</strong>
+            <span class="count-pill" id="candidateCount">0개</span>
+          </div>
+          <div class="candidate-list" id="candidateList">
+            <div class="loading">신청 프로젝트를 불러오는 중입니다.</div>
+          </div>
+          <div class="candidate-private">※ 공개 목록에는 제목만 표시됩니다. 상세 설명은 당첨 이후 프로젝트 대화에 사용됩니다.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title"><strong>현재 선택 프로젝트</strong></div>
+          <div class="active-card" id="activeProjectCard">
+            <div>
+              <div class="active-label">ACTIVE PROJECT</div>
+              <h4 id="activeProjectTitle">아직 선택된 프로젝트가 없습니다.</h4>
+              <p id="activeProjectText">대기 프로젝트가 있으면 추첨으로 하나를 선택할 수 있습니다.</p>
+            </div>
+            <span class="active-status" id="activeProjectStatus">대기 중</span>
+          </div>
+          <div class="lottery-actions">
+            <button class="primary" id="drawLottery" type="button">🎲 프로젝트 추첨</button>
+          </div>
+          <div class="lottery-note" id="lotteryStatus"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="gpt-chat" id="projectChat" aria-live="polite">
       <div class="gpt-chat-head">
         <div>
-          <div class="gpt-chat-title">1호 지피티 사원 · 1시간 채팅</div>
-          <div class="gpt-chat-sub">유저는 오른쪽, 1호 사원은 왼쪽에 표시됩니다. 사원은 매시 30분에 대화를 확인합니다. 🤖💬</div>
+          <div class="gpt-chat-title">1호 GPT 사원 · 프로젝트 요구사항 대화</div>
+          <div class="gpt-chat-sub">추첨된 프로젝트에 대해서만 대화를 이어갑니다. 상세히 적을수록 더 좋은 결과물을 얻을 수 있습니다.</div>
         </div>
+        <div class="chat-project-badge" id="chatProjectBadge">프로젝트 미선택</div>
       </div>
+
       <div class="chat-log" id="gptChatLog">
         <div class="chat-row assistant">
-          <div class="chat-meta">🤖 1호 지피티 사원</div>
-          <div class="chat-bubble">업무 로그 불러오는 중...</div>
+          <div class="chat-meta">🤖 1호 GPT 사원</div>
+          <div class="chat-bubble">프로젝트가 선택되면 이곳에서 요구사항 대화를 시작합니다.</div>
         </div>
       </div>
+
       <form class="chat-compose" id="gptChatForm">
-        <select id="gptChatRole" aria-label="작성자 선택">
-          <option value="user">유저 (나)</option>
-          <option value="assistant">1호 사원 (GPT)</option>
-        </select>
-        <input id="gptChatInput" aria-label="채팅 메시지" maxlength="300" placeholder="1호 사원에게 한마디 남기기..." autocomplete="off">
-        <button type="submit">남기기</button>
+        <input id="gptChatInput" aria-label="채팅 메시지" maxlength="600" placeholder="선택된 프로젝트에 대해 상세히 설명해 주세요." autocomplete="off" disabled>
+        <button id="gptChatSubmit" type="submit" disabled>남기기</button>
       </form>
-      <div class="chat-status" id="gptChatStatus">사원은 매시 30분에 대화를 확인합니다.</div>
+      <div class="chat-status" id="gptChatStatus">추첨된 프로젝트가 없습니다.</div>
     </section>
 
     <section class="stats" aria-label="프로젝트 현황">
-      <div class="stat">
-        <span>등록 프로젝트</span>
-        <strong id="statProjects">0개</strong>
-      </div>
-      <div class="stat">
-        <span>등록 방법</span>
-        <strong>URL 하나</strong>
-      </div>
-      <div class="stat">
-        <span>이번 주 한마디</span>
-        <strong>일단 올려</strong>
-      </div>
+      <div class="stat"><span>추첨 대기</span><strong id="statWaiting">0개</strong></div>
+      <div class="stat"><span>현재 프로젝트</span><strong id="statActive">없음</strong></div>
+      <div class="stat"><span>완성 프로젝트</span><strong id="statProjects">0개</strong></div>
     </section>
 
     <section id="projects">
       <div class="section-head">
         <div>
           <h3>PROJECT <em>Wall</em></h3>
-          <p>커뮤니티 구성원이 직접 만든 페이지입니다. 카드를 누르면 새 창에서 열립니다.</p>
+          <p>이미 만들어진 YAME 프로젝트입니다. 카드를 누르면 새 창에서 열립니다.</p>
         </div>
-        <button class="secondary" id="openFormSection" type="button">페이지 등록</button>
       </div>
-
       <main class="grid" id="projectGrid" aria-live="polite">
         <div class="loading">PROJECTS LOADING...</div>
       </main>
@@ -757,25 +522,24 @@
 
     <footer class="bottom-note">
       <span>© 2026 YAME.STORE · 야메프로그래밍</span>
-      <span>MAKE · UPLOAD · USE</span>
+      <span>APPLY · LOTTERY · BUILD · MODIFY</span>
     </footer>
   </div>
 
-  <dialog id="registerDialog">
+  <dialog id="applyDialog">
     <div class="modal-head">
-      <strong>내 페이지 등록</strong>
-      <button class="icon-btn" id="closeDialog" type="button" aria-label="닫기">×</button>
+      <strong>프로젝트 신청</strong>
+      <button class="icon-btn" id="closeApply" type="button" aria-label="닫기">×</button>
     </div>
-
-    <form id="registerForm">
+    <form class="register-form" id="applyForm">
       <label>
-        PAGE URL
-        <input id="pageUrl" name="url" type="url" inputmode="url" placeholder="https://username.github.io/project/" required maxlength="500">
+        프로젝트 제목
+        <input id="projectTitle" name="title" type="text" maxlength="80" placeholder="예: 낚시 포인트 기록 앱" required>
       </label>
 
       <label>
-        THUMBNAIL URL (OPTIONAL)
-        <input id="thumbUrl" name="thumbnail" type="url" inputmode="url" placeholder="비워두어도 됩니다" maxlength="1000">
+        만들고 싶은 프로그램에 대해 설명해 주세요.
+        <textarea id="projectDescription" name="description" maxlength="4000" placeholder="누가 사용하는지, 어떤 상황에서 무엇을 입력하고 어떤 결과를 얻고 싶은지 가능한 한 상세히 적어 주세요." required></textarea>
       </label>
 
       <label class="honeypot" aria-hidden="true">
@@ -783,97 +547,563 @@
         <input id="company" name="company" type="text" tabindex="-1" autocomplete="off">
       </label>
 
-      <p class="hint">썸네일은 선택사항입니다. 비워두면 YAME 기본 카드로 표시됩니다.</p>
+      <p class="hint">신청 목록에는 제목만 공개됩니다. 상세 설명은 당첨된 프로젝트의 요구사항 정리에 사용됩니다.</p>
 
       <div class="form-actions">
-        <button class="secondary" id="cancelForm" type="button">취소</button>
-        <button class="primary" id="submitBtn" type="submit">등록</button>
+        <button class="secondary" id="cancelApply" type="button">취소</button>
+        <button class="primary" id="submitApply" type="submit">추첨 목록에 등록</button>
       </div>
-      <div class="status" id="formStatus"></div>
+      <div class="status" id="applyStatus"></div>
     </form>
   </dialog>
 
   <script>
-    const API_URL = 'https://mrdindoin.ddns.net/yame/api/community/projects';
-    const STANCE_APPS_API = 'https://api.github.com/repos/lee1431/stance/contents/apps';
+    const UVB_BASE = 'https://localflow.ddns.net/uvb';
+    const PROJECT_APP = 'yame-projects';
+    const CHAT_APP = 'yame-chat';
+    const PROJECT_ITEMS = `${UVB_BASE}/v1/apps/${encodeURIComponent(PROJECT_APP)}/items`;
+    const CHAT_ITEMS = `${UVB_BASE}/v1/apps/${encodeURIComponent(CHAT_APP)}/items`;
 
+    const COMMUNITY_API = 'https://mrdindoin.ddns.net/yame/api/community/projects';
+    const STANCE_APPS_API = 'https://api.github.com/repos/lee1431/stance/contents/apps';
     const PROJECT_CLICK_EVENT_URL = 'https://localflow.ddns.net/uvb/v1/apps/yame-stats/event';
     const PROJECT_CLICK_STATS_URL = 'https://localflow.ddns.net/uvb/v1/apps/yame-stats/clicks';
+
+    const ACTIVE_STATUSES = new Set([
+      'selected', 'requirements_collecting', 'questioning', 'spec_ready',
+      'developing', 'modification_ready', 'modifying'
+    ]);
+
+    const candidateList = document.getElementById('candidateList');
+    const candidateCount = document.getElementById('candidateCount');
+    const activeProjectTitle = document.getElementById('activeProjectTitle');
+    const activeProjectText = document.getElementById('activeProjectText');
+    const activeProjectStatus = document.getElementById('activeProjectStatus');
+    const lotteryStatus = document.getElementById('lotteryStatus');
+    const drawLotteryBtn = document.getElementById('drawLottery');
+    const statWaiting = document.getElementById('statWaiting');
+    const statActive = document.getElementById('statActive');
+    const chatProjectBadge = document.getElementById('chatProjectBadge');
+    const gptChatInput = document.getElementById('gptChatInput');
+    const gptChatSubmit = document.getElementById('gptChatSubmit');
+    const gptChatStatus = document.getElementById('gptChatStatus');
+    const gptChatLog = document.getElementById('gptChatLog');
+
+    let projectItems = [];
+    let activeProject = null;
+
+    function nowIso() {
+      return new Date().toISOString();
+    }
+
+    function koreaDateKey() {
+      return new Intl.DateTimeFormat('en-CA', {
+        year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul'
+      }).format(new Date());
+    }
+
+    function randomId(prefix) {
+      if (crypto && typeof crypto.randomUUID === 'function') {
+        return `${prefix}_${crypto.randomUUID().replaceAll('-', '')}`;
+      }
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+    }
+
+    function secureRandomIndex(length) {
+      if (length <= 1) return 0;
+      if (crypto && typeof crypto.getRandomValues === 'function') {
+        const max = 0x100000000;
+        const limit = max - (max % length);
+        const array = new Uint32Array(1);
+        do crypto.getRandomValues(array); while (array[0] >= limit);
+        return array[0] % length;
+      }
+      return Math.floor(Math.random() * length);
+    }
+
+    async function requestJson(url, options = {}) {
+      const res = await fetch(url, { cache: 'no-store', credentials: 'omit', ...options });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false) {
+        throw new Error(data?.error || data?.message || `HTTP ${res.status}`);
+      }
+      return data;
+    }
+
+    function unwrapItems(payload) {
+      if (Array.isArray(payload)) return payload;
+      if (Array.isArray(payload?.items)) return payload.items;
+      if (Array.isArray(payload?.data?.items)) return payload.data.items;
+      return [];
+    }
+
+    async function listAllItems(baseUrl, pageSize = 100) {
+      const all = [];
+      for (let page = 1; page <= 20; page += 1) {
+        const join = baseUrl.includes('?') ? '&' : '?';
+        const payload = await requestJson(`${baseUrl}${join}page=${page}&page_size=${pageSize}&order=desc`);
+        const items = unwrapItems(payload);
+        all.push(...items);
+        const hasMore = Boolean(payload?.data?.has_more ?? payload?.has_more);
+        if (!hasMore || items.length === 0) break;
+      }
+      return all;
+    }
+
+    function itemData(item) {
+      return item && typeof item.data === 'object' && item.data ? item.data : item || {};
+    }
+
+    function itemTime(item) {
+      const d = itemData(item);
+      const raw = d.selected_at || d.updated_at || d.submitted_at || d.created_at;
+      const parsed = raw ? Date.parse(raw) : NaN;
+      if (!Number.isNaN(parsed)) return parsed;
+      if (Number.isFinite(item?.updated_at)) return item.updated_at * 1000;
+      if (Number.isFinite(item?.created_at)) return item.created_at * 1000;
+      return 0;
+    }
+
+    function findActiveProject(items) {
+      return items
+        .filter(item => ACTIVE_STATUSES.has(itemData(item).status))
+        .sort((a, b) => itemTime(b) - itemTime(a))[0] || null;
+    }
+
+    function waitingProjects(items) {
+      return items.filter(item => itemData(item).status === 'lottery_waiting');
+    }
+
+    function statusText(status) {
+      const map = {
+        selected: '추첨 완료 · 대화 시작',
+        requirements_collecting: '요구사항 수집 중',
+        questioning: '추가 답변 대기',
+        spec_ready: '명세 확정 · 개발 대기',
+        developing: '2호 사원 개발 중',
+        deployed: '최초 빌드 완료',
+        modification_ready: '수정 개발 대기',
+        modifying: '수정 개발 중',
+        lottery_waiting: '추첨 대기'
+      };
+      return map[status] || status || '상태 확인 중';
+    }
+
+    function renderLottery() {
+      const waiting = waitingProjects(projectItems);
+      activeProject = findActiveProject(projectItems);
+
+      candidateCount.textContent = `${waiting.length}개`;
+      statWaiting.textContent = `${waiting.length}개`;
+      candidateList.replaceChildren();
+
+      if (!waiting.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = '현재 추첨 대기 프로젝트가 없습니다.';
+        candidateList.appendChild(empty);
+      } else {
+        waiting.forEach((item, index) => {
+          const data = itemData(item);
+          const row = document.createElement('div');
+          row.className = 'candidate';
+
+          const number = document.createElement('span');
+          number.className = 'candidate-index';
+          number.textContent = String(index + 1);
+
+          const title = document.createElement('div');
+          title.className = 'candidate-title';
+          title.textContent = data.title || '제목 없는 프로젝트';
+
+          row.append(number, title);
+          candidateList.appendChild(row);
+        });
+      }
+
+      if (activeProject) {
+        const data = itemData(activeProject);
+        activeProjectTitle.textContent = data.title || '선택 프로젝트';
+        activeProjectText.textContent = '이 프로젝트를 기준으로 1호 사원과 요구사항을 정리하고, 2호 사원이 같은 프로젝트를 계속 개발합니다.';
+        activeProjectStatus.textContent = statusText(data.status);
+        statActive.textContent = data.title || '진행 중';
+        chatProjectBadge.textContent = data.title || '선택 프로젝트';
+        gptChatInput.disabled = false;
+        gptChatSubmit.disabled = false;
+        gptChatStatus.textContent = '선택된 프로젝트에 대한 메시지만 저장됩니다.';
+      } else {
+        activeProjectTitle.textContent = '아직 선택된 프로젝트가 없습니다.';
+        activeProjectText.textContent = waiting.length ? '추첨 버튼으로 대기 프로젝트 중 하나를 선택합니다.' : '프로젝트 신청을 기다리고 있습니다.';
+        activeProjectStatus.textContent = '대기 중';
+        statActive.textContent = '없음';
+        chatProjectBadge.textContent = '프로젝트 미선택';
+        gptChatInput.disabled = true;
+        gptChatSubmit.disabled = true;
+        gptChatStatus.textContent = '추첨된 프로젝트가 없습니다.';
+      }
+
+      drawLotteryBtn.disabled = Boolean(activeProject) || waiting.length === 0;
+    }
+
+    async function loadLottery() {
+      lotteryStatus.className = 'lottery-note';
+      lotteryStatus.textContent = '';
+      try {
+        projectItems = await listAllItems(PROJECT_ITEMS);
+        renderLottery();
+        await loadWorkerChat();
+      } catch (err) {
+        candidateList.innerHTML = '<div class="error-box">프로젝트 신청 목록을 불러오지 못했습니다.</div>';
+        lotteryStatus.className = 'lottery-note bad';
+        lotteryStatus.textContent = err.message || '목록 조회 실패';
+      }
+    }
+
+    async function patchProject(item, patch) {
+      if (!item?.id) throw new Error('프로젝트 item.id가 없습니다.');
+      const current = itemData(item);
+      const next = { ...current, ...patch, updated_at: nowIso() };
+      return requestJson(`${PROJECT_ITEMS}/${encodeURIComponent(item.id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(next)
+      });
+    }
+
+    async function postChatMessage(payload) {
+      return requestJson(CHAT_ITEMS, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    async function drawLottery() {
+      drawLotteryBtn.disabled = true;
+      lotteryStatus.className = 'lottery-note';
+      lotteryStatus.textContent = '추첨 전 최신 상태를 확인하는 중...';
+
+      try {
+        projectItems = await listAllItems(PROJECT_ITEMS);
+        const existingActive = findActiveProject(projectItems);
+        if (existingActive) {
+          activeProject = existingActive;
+          renderLottery();
+          lotteryStatus.className = 'lottery-note bad';
+          lotteryStatus.textContent = '이미 진행 중인 프로젝트가 있어 새 추첨을 하지 않았습니다.';
+          await loadWorkerChat();
+          return;
+        }
+
+        const waiting = waitingProjects(projectItems);
+        if (!waiting.length) throw new Error('추첨할 프로젝트가 없습니다.');
+
+        const winner = waiting[secureRandomIndex(waiting.length)];
+        const data = itemData(winner);
+        const selectedAt = nowIso();
+        const selectionToken = randomId('pick');
+
+        await patchProject(winner, {
+          status: 'selected',
+          selected_at: selectedAt,
+          selection_token: selectionToken,
+          lottery_date: koreaDateKey()
+        });
+
+        await postChatMessage({
+          role: 'user',
+          text: `프로젝트 신청 내용\n제목: ${data.title || ''}\n\n${data.description || ''}`.trim(),
+          project_id: data.project_id,
+          project_title: data.title || '',
+          sent_at: selectedAt,
+          date_key: koreaDateKey(),
+          source: 'project-selection'
+        });
+
+        lotteryStatus.className = 'lottery-note good';
+        lotteryStatus.textContent = `「${data.title || '프로젝트'}」가 선택되었습니다.`;
+        await loadLottery();
+        document.getElementById('projectChat').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        lotteryStatus.className = 'lottery-note bad';
+        lotteryStatus.textContent = err.message || '추첨에 실패했습니다.';
+        await loadLottery().catch(() => {});
+      }
+    }
+
+    function getItemDate(item) {
+      const msg = itemData(item);
+      if (msg?.sent_at) {
+        const d = new Date(msg.sent_at);
+        if (!Number.isNaN(d.getTime())) return d;
+      }
+      if (Number.isFinite(item?.created_at)) return new Date(item.created_at * 1000);
+      return null;
+    }
+
+    function formatChatDay(date) {
+      return new Intl.DateTimeFormat('ko-KR', {
+        year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', timeZone: 'Asia/Seoul'
+      }).format(date);
+    }
+
+    function formatChatTime(date) {
+      return new Intl.DateTimeFormat('ko-KR', {
+        hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Seoul'
+      }).format(date);
+    }
+
+    function renderChat(items) {
+      gptChatLog.replaceChildren();
+
+      if (!activeProject) {
+        const empty = document.createElement('div');
+        empty.className = 'chat-row assistant';
+        empty.innerHTML = '<div class="chat-meta">🤖 1호 GPT 사원</div><div class="chat-bubble">프로젝트가 선택되면 이곳에서 요구사항 대화를 시작합니다.</div>';
+        gptChatLog.appendChild(empty);
+        return;
+      }
+
+      const activeId = itemData(activeProject).project_id;
+      const filtered = items
+        .filter(item => itemData(item).project_id === activeId)
+        .sort((a, b) => (getItemDate(a)?.getTime() || 0) - (getItemDate(b)?.getTime() || 0));
+
+      if (!filtered.length) {
+        const empty = document.createElement('div');
+        empty.className = 'chat-row assistant';
+        empty.innerHTML = '<div class="chat-meta">🤖 1호 GPT 사원</div><div class="chat-bubble">선택된 프로젝트의 첫 대화를 기다리고 있습니다.</div>';
+        gptChatLog.appendChild(empty);
+        return;
+      }
+
+      let lastDay = '';
+      for (const item of filtered) {
+        const msg = itemData(item);
+        const role = msg.role === 'user' ? 'user' : 'assistant';
+        const date = getItemDate(item);
+        const dayKey = date ? new Intl.DateTimeFormat('en-CA', {
+          year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul'
+        }).format(date) : '';
+
+        if (dayKey && dayKey !== lastDay) {
+          const day = document.createElement('div');
+          day.className = 'chat-day';
+          day.textContent = formatChatDay(date);
+          gptChatLog.appendChild(day);
+          lastDay = dayKey;
+        }
+
+        const row = document.createElement('div');
+        row.className = `chat-row ${role}`;
+
+        const meta = document.createElement('div');
+        meta.className = 'chat-meta';
+        const who = role === 'user' ? '👤 유저' : '🤖 1호 GPT 사원';
+        meta.textContent = who + (date ? ` · ${formatChatTime(date)}` : '');
+
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        bubble.textContent = msg.text || '';
+
+        row.append(meta, bubble);
+        gptChatLog.appendChild(row);
+      }
+
+      gptChatLog.scrollTop = gptChatLog.scrollHeight;
+    }
+
+    async function loadWorkerChat() {
+      if (!activeProject) {
+        renderChat([]);
+        return;
+      }
+      try {
+        const items = await listAllItems(CHAT_ITEMS);
+        renderChat(items);
+      } catch (err) {
+        gptChatStatus.textContent = err.message || '채팅을 불러오지 못했습니다.';
+      }
+    }
+
+    document.getElementById('gptChatForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!activeProject) return;
+
+      const text = gptChatInput.value.trim();
+      if (!text) return;
+
+      const data = itemData(activeProject);
+      gptChatInput.disabled = true;
+      gptChatSubmit.disabled = true;
+      gptChatStatus.textContent = '메시지를 저장하는 중...';
+
+      try {
+        await postChatMessage({
+          role: 'user',
+          text,
+          project_id: data.project_id,
+          project_title: data.title || '',
+          sent_at: nowIso(),
+          date_key: koreaDateKey(),
+          source: 'yame-store'
+        });
+        gptChatInput.value = '';
+        gptChatStatus.textContent = '저장되었습니다. 1호 사원이 이 프로젝트의 요구사항으로 확인합니다.';
+        await loadWorkerChat();
+      } catch (err) {
+        gptChatStatus.textContent = err.message || '메시지 저장에 실패했습니다.';
+      } finally {
+        gptChatInput.disabled = false;
+        gptChatSubmit.disabled = false;
+        gptChatInput.focus();
+      }
+    });
+
+    const applyDialog = document.getElementById('applyDialog');
+    const applyForm = document.getElementById('applyForm');
+    const applyStatus = document.getElementById('applyStatus');
+    const submitApply = document.getElementById('submitApply');
+
+    function openApplyDialog() {
+      applyStatus.className = 'status';
+      applyStatus.textContent = '';
+      applyDialog.showModal();
+      requestAnimationFrame(() => document.getElementById('projectTitle').focus());
+    }
+
+    document.getElementById('openApply').addEventListener('click', openApplyDialog);
+    document.getElementById('openApplyHero').addEventListener('click', openApplyDialog);
+    document.getElementById('closeApply').addEventListener('click', () => applyDialog.close());
+    document.getElementById('cancelApply').addEventListener('click', () => applyDialog.close());
+    applyDialog.addEventListener('click', event => { if (event.target === applyDialog) applyDialog.close(); });
+
+    applyForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      applyStatus.className = 'status';
+      applyStatus.textContent = '';
+
+      const title = document.getElementById('projectTitle').value.trim();
+      const description = document.getElementById('projectDescription').value.trim();
+      const company = document.getElementById('company').value.trim();
+      if (company) return;
+      if (title.length < 2 || description.length < 10) {
+        applyStatus.className = 'status bad';
+        applyStatus.textContent = '제목과 상세 설명을 조금 더 작성해 주세요.';
+        return;
+      }
+
+      submitApply.disabled = true;
+      submitApply.textContent = '등록 중...';
+
+      try {
+        const projectId = randomId('proj');
+        const submittedAt = nowIso();
+        await requestJson(PROJECT_ITEMS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'project_application',
+            project_id: projectId,
+            title,
+            description,
+            status: 'lottery_waiting',
+            submitted_at: submittedAt,
+            created_at: submittedAt,
+            source: 'yame-store'
+          })
+        });
+
+        applyForm.reset();
+        applyStatus.className = 'status good';
+        applyStatus.textContent = '추첨 목록에 등록되었습니다. 공개 목록에는 제목만 표시됩니다.';
+        await loadLottery();
+        setTimeout(() => applyDialog.close(), 850);
+      } catch (err) {
+        applyStatus.className = 'status bad';
+        applyStatus.textContent = err.message || '프로젝트 등록에 실패했습니다.';
+      } finally {
+        submitApply.disabled = false;
+        submitApply.textContent = '추첨 목록에 등록';
+      }
+    });
+
+    document.getElementById('drawLottery').addEventListener('click', drawLottery);
+    document.getElementById('refreshLottery').addEventListener('click', loadLottery);
+    document.getElementById('scrollLottery').addEventListener('click', () => document.getElementById('lotterySection').scrollIntoView({ behavior: 'smooth' }));
+    document.getElementById('scrollWall').addEventListener('click', () => document.getElementById('projects').scrollIntoView({ behavior: 'smooth' }));
 
     function recordProjectClick(projectUrl, placement) {
       try {
         const project = new URL(projectUrl);
         if (!['https:', 'http:'].includes(project.protocol)) return;
-
         const eventUrl = new URL(PROJECT_CLICK_EVENT_URL);
         eventUrl.searchParams.set('event', 'project_click');
         eventUrl.searchParams.set('project_url', project.href);
         eventUrl.searchParams.set('placement', placement);
-        eventUrl.searchParams.set(
-          'event_id',
-          typeof crypto.randomUUID === 'function'
-            ? crypto.randomUUID()
-            : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2)
-        );
+        eventUrl.searchParams.set('event_id', randomId('click'));
+        fetch(eventUrl, { method: 'GET', cache: 'no-store', keepalive: true, credentials: 'omit' }).catch(() => {});
+      } catch {}
+    }
 
-        fetch(eventUrl, {
-          method: 'GET',
-          cache: 'no-store',
-          keepalive: true,
-          credentials: 'omit'
-        }).catch(() => {});
+    document.addEventListener('click', event => {
+      if (!(event.target instanceof Element)) return;
+      const link = event.target.closest('#projectGrid a.card');
+      if (!link || !link.href) return;
+      recordProjectClick(link.href, 'card');
+    });
+
+    function normalizeCommunityProjects(payload) {
+      const list = Array.isArray(payload) ? payload : (payload?.projects || payload?.items || payload?.data || []);
+      return Array.isArray(list) ? list.filter(Boolean).map(item => ({
+        url: item.url || item.project_url || '',
+        thumbnail: item.thumbnail || item.thumbnail_url || '',
+        title: item.title || ''
+      })).filter(item => item.url) : [];
+    }
+
+    async function loadCommunityProjects() {
+      try {
+        const payload = await requestJson(COMMUNITY_API);
+        return normalizeCommunityProjects(payload);
       } catch {
-        // Analytics must never prevent opening a project.
+        return [];
       }
     }
 
-    function handleProjectOpen(event) {
-      if (event.type === 'click' ? event.button !== 0 : event.button !== 1) return;
-      if (!(event.target instanceof Element)) return;
-      const link = event.target.closest('#projectGrid a.card, #featuredLink');
-      if (!link || !link.getAttribute('href') || link.getAttribute('href') === '#') return;
-      recordProjectClick(link.href, link.id === 'featuredLink' ? 'featured' : 'card');
-    }
-
-    document.addEventListener('click', handleProjectOpen);
-    document.addEventListener('auxclick', handleProjectOpen);
-
-    const grid = document.getElementById('projectGrid');
-    const counter = document.getElementById('counter');
-    const statProjects = document.getElementById('statProjects');
-    const dialog = document.getElementById('registerDialog');
-    const form = document.getElementById('registerForm');
-    const formStatus = document.getElementById('formStatus');
-    const submitBtn = document.getElementById('submitBtn');
-    const featuredVisual = document.getElementById('featuredVisual');
-    const featuredHost = document.getElementById('featuredHost');
-    const featuredUrl = document.getElementById('featuredUrl');
-    const featuredLink = document.getElementById('featuredLink');
-
-    function openDialog() {
-      dialog.showModal();
-      requestAnimationFrame(() => document.getElementById('pageUrl').focus());
-    }
-
-    document.getElementById('openForm').addEventListener('click', openDialog);
-    document.getElementById('openFormHero').addEventListener('click', openDialog);
-    document.getElementById('openFormSection').addEventListener('click', openDialog);
-    document.getElementById('closeDialog').addEventListener('click', () => dialog.close());
-    document.getElementById('cancelForm').addEventListener('click', () => dialog.close());
-    document.getElementById('scrollProjects').addEventListener('click', () => {
-      document.getElementById('projects').scrollIntoView({ behavior: 'smooth' });
-    });
-
-    dialog.addEventListener('click', (e) => {
-      if (e.target === dialog) dialog.close();
-    });
-
-    function getHost(rawUrl) {
+    async function loadStanceProjects() {
       try {
-        const host = new URL(rawUrl).hostname.replace(/^www\./, '');
-        return host || rawUrl;
+        const res = await fetch(STANCE_APPS_API, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const items = await res.json();
+        if (!Array.isArray(items)) return [];
+        return items
+          .filter(item => item?.type === 'dir' && item?.name)
+          .map(item => ({
+            url: `https://llsshh.com/apps/${encodeURIComponent(item.name)}/`,
+            thumbnail: `https://raw.githubusercontent.com/lee1431/stance/main/apps/${encodeURIComponent(item.name)}/thumbnail.png`,
+            title: item.name
+          }));
       } catch {
-        return rawUrl;
+        return [];
+      }
+    }
+
+    async function loadClickCounts() {
+      try {
+        const payload = await requestJson(PROJECT_CLICK_STATS_URL);
+        const list = unwrapItems(payload);
+        const map = new Map();
+        if (Array.isArray(payload?.data) && !payload?.data?.items) {
+          for (const row of payload.data) map.set(row.project_url || row.url, Number(row.count || row.clicks || 0));
+        }
+        for (const row of list) {
+          const data = itemData(row);
+          map.set(data.project_url || data.url, Number(data.count || data.clicks || 0));
+        }
+        return map;
+      } catch {
+        return new Map();
       }
     }
 
@@ -893,11 +1123,10 @@
 
       const thumb = document.createElement('div');
       thumb.className = 'thumb';
-
       if (project.thumbnail) {
         const img = document.createElement('img');
         img.src = project.thumbnail;
-        img.alt = getHost(project.url);
+        img.alt = project.title || project.url;
         img.loading = 'lazy';
         img.referrerPolicy = 'no-referrer';
         img.addEventListener('error', () => addNoImage(thumb), { once: true });
@@ -908,429 +1137,49 @@
 
       const info = document.createElement('div');
       info.className = 'info';
-
       const host = document.createElement('div');
       host.className = 'host';
-      host.textContent = getHost(project.url);
-
+      host.textContent = project.title || (() => { try { return new URL(project.url).hostname; } catch { return project.url; } })();
       const url = document.createElement('div');
       url.className = 'url';
       url.textContent = project.url;
-
       info.append(host, url);
       card.append(thumb, info);
       return card;
     }
 
-    function getWeeklyProject(projects) {
-      if (!projects.length) return null;
-      const now = new Date();
-      const start = new Date(now.getFullYear(), 0, 1);
-      const day = Math.floor((now - start) / 86400000);
-      const week = Math.floor((day + start.getDay()) / 7);
-      return projects[week % projects.length];
-    }
-
-    function renderFeatured(projects) {
-      const project = getWeeklyProject(projects);
-
-      if (!project) {
-        featuredHost.textContent = '첫 작품을 기다리고 있습니다.';
-        featuredUrl.textContent = '아직 등록된 페이지가 없습니다.';
-        featuredLink.removeAttribute('href');
-        return;
-      }
-
-      featuredHost.textContent = getHost(project.url);
-      featuredUrl.textContent = project.url;
-      featuredLink.href = project.url;
-      featuredLink.target = '_blank';
-      featuredLink.rel = 'ugc noopener noreferrer';
-
-      featuredVisual.replaceChildren();
-
-      const badge = document.createElement('span');
-      badge.className = 'featured-badge';
-      badge.textContent = '금주의 야매작품';
-      featuredVisual.appendChild(badge);
-
-      if (project.thumbnail) {
-        const img = document.createElement('img');
-        img.src = project.thumbnail;
-        img.alt = getHost(project.url);
-        img.referrerPolicy = 'no-referrer';
-        img.addEventListener('error', () => {
-          featuredVisual.replaceChildren(badge);
-          const placeholder = document.createElement('div');
-          placeholder.className = 'featured-placeholder';
-          placeholder.innerHTML = '<small>FEATURED PROJECT</small><strong>이번 주 야매작품.</strong>';
-          featuredVisual.appendChild(placeholder);
-        }, { once: true });
-        featuredVisual.appendChild(img);
-      } else {
-        const placeholder = document.createElement('div');
-        placeholder.className = 'featured-placeholder';
-        placeholder.innerHTML = '<small>FEATURED PROJECT</small><strong>이번 주 야매작품.</strong>';
-        featuredVisual.appendChild(placeholder);
-      }
-    }
-
-    function renderProjects(projects) {
-      grid.replaceChildren();
-      counter.textContent = `${projects.length} PROJECTS`;
-      statProjects.textContent = `${projects.length}개`;
-      renderFeatured(projects);
-
-      if (!projects.length) {
-        const empty = document.createElement('div');
-        empty.className = 'empty';
-        empty.textContent = '아직 등록된 페이지가 없습니다. 첫 페이지를 등록해보세요.';
-        grid.appendChild(empty);
-        return;
-      }
-
-      for (const project of projects) {
-        grid.appendChild(makeCard(project));
-      }
-    }
-
-    const GPT_CHAT_BASE = 'https://localflow.ddns.net/uvb';
-    const GPT_CHAT_APP = 'yame-chat';
-    const GPT_CHAT_ITEMS = GPT_CHAT_BASE + '/v1/apps/' + encodeURIComponent(GPT_CHAT_APP) + '/items';
-    const CHAT_RETENTION_DAYS = 30;
-
-    function getItemDate(item) {
-      const msg = item && item.data ? item.data : item;
-      if (msg && msg.sent_at) {
-        const d = new Date(msg.sent_at);
-        if (!Number.isNaN(d.getTime())) return d;
-      }
-      if (item && Number.isFinite(item.created_at)) {
-        return new Date(item.created_at * 1000);
-      }
-      return null;
-    }
-
-    function formatChatDay(date) {
-      return new Intl.DateTimeFormat('ko-KR', {
-        year:'numeric', month:'2-digit', day:'2-digit',
-        weekday:'short', timeZone:'Asia/Seoul'
-      }).format(date);
-    }
-
-    function formatChatTime(date) {
-      return new Intl.DateTimeFormat('ko-KR', {
-        hour:'2-digit', minute:'2-digit', second:'2-digit',
-        hour12:false, timeZone:'Asia/Seoul'
-      }).format(date);
-    }
-
-    function renderChat(messages) {
-      const log = document.getElementById('gptChatLog');
-      log.replaceChildren();
-      const list = Array.isArray(messages) ? messages : [];
-      if (!list.length) {
-        const empty = document.createElement('div');
-        empty.className = 'chat-row assistant';
-        empty.innerHTML = '<div class="chat-meta">🤖 1호 지피티 사원</div><div class="chat-bubble">최근 30일 채팅 로그가 없습니다. 첫 메시지를 남겨보세요. 👀</div>';
-        log.appendChild(empty);
-        return;
-      }
-
-      let lastDay = '';
-      for (const item of list) {
-        const msg = item && item.data ? item.data : item;
-        const role = msg.role === 'user' ? 'user' : 'assistant';
-        const date = getItemDate(item);
-        const dayKey = date ? new Intl.DateTimeFormat('en-CA', {
-          year:'numeric', month:'2-digit', day:'2-digit', timeZone:'Asia/Seoul'
-        }).format(date) : '';
-
-        if (dayKey && dayKey !== lastDay) {
-          const day = document.createElement('div');
-          day.className = 'chat-day';
-          day.textContent = formatChatDay(date);
-          log.appendChild(day);
-          lastDay = dayKey;
-        }
-
-        const row = document.createElement('div');
-        row.className = 'chat-row ' + role;
-
-        const meta = document.createElement('div');
-        meta.className = 'chat-meta';
-        const who = role === 'user' ? '👤 유저' : '🤖 1호 지피티 사원';
-        meta.textContent = who + (date ? ' · ' + formatChatTime(date) : '');
-
-        const bubble = document.createElement('div');
-        bubble.className = 'chat-bubble';
-        bubble.textContent = msg.text || '';
-
-        row.append(meta, bubble);
-        log.appendChild(row);
-      }
-      log.scrollTop = log.scrollHeight;
-    }
-
-    async function uvbChatRequest(path = '', options = {}) {
-      const res = await fetch(GPT_CHAT_ITEMS + path, {
-        cache: 'no-store',
-        ...options
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.ok === false) {
-        throw new Error(json.error || `HTTP ${res.status}`);
-      }
-      return json.data || json;
-    }
-
-    async function loadRecentChatItems() {
-      const cutoff = Date.now() - CHAT_RETENTION_DAYS * 86400000;
-      const collected = [];
-      const pageSize = 100;
-      const maxPages = 20;
-
-      for (let page = 1; page <= maxPages; page++) {
-        const data = await uvbChatRequest(`?page=${page}&page_size=${pageSize}&order=desc`);
-        const batch = Array.isArray(data.items) ? data.items : [];
-        if (!batch.length) break;
-
-        for (const item of batch) {
-          const date = getItemDate(item);
-          if (date && date.getTime() >= cutoff) collected.push(item);
-        }
-
-        const oldest = getItemDate(batch[batch.length - 1]);
-        if ((oldest && oldest.getTime() < cutoff) || !data.has_more) break;
-      }
-
-      collected.sort((a, b) => {
-        const da = getItemDate(a)?.getTime() || 0;
-        const db = getItemDate(b)?.getTime() || 0;
-        return da - db;
-      });
-      return collected;
-    }
-
-    async function loadWorkerChat() {
-      const status = document.getElementById('gptChatStatus');
-      try {
-        const items = await loadRecentChatItems();
-        renderChat(items);
-        status.textContent = `최근 ${CHAT_RETENTION_DAYS}일 로그 · 사원은 매시 30분에 대화를 확인합니다.`;
-      } catch (err) {
-        console.error(err);
-        status.textContent = 'UVB 채팅 연결을 확인하는 중입니다.';
-      }
-    }
-
-    document.getElementById('gptChatRole').addEventListener('change', (e) => {
-      document.getElementById('gptChatInput').placeholder = e.target.value === 'assistant'
-        ? '1호 사원으로 답변 남기기...' : '1호 사원에게 한마디 남기기...';
-    });
-
-    document.getElementById('gptChatForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const input = document.getElementById('gptChatInput');
-      const status = document.getElementById('gptChatStatus');
-      const text = input.value.trim();
-      const roleSelect = document.getElementById('gptChatRole');
-      const sendButton = e.currentTarget.querySelector('button[type="submit"]');
-      if (!text || sendButton.disabled) return;
-      const role = roleSelect.value === 'assistant' ? 'assistant' : 'user';
-      sendButton.disabled = true;
-      roleSelect.disabled = true;
-      input.disabled = true;
-      status.textContent = '메시지 남기는 중...';
-      try {
-        const now = new Date();
-        const seoulDate = new Intl.DateTimeFormat('en-CA', {
-          year:'numeric', month:'2-digit', day:'2-digit', timeZone:'Asia/Seoul'
-        }).format(now);
-        await uvbChatRequest('', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            role,
-            text,
-            sent_at: now.toISOString(),
-            date_key: seoulDate,
-            source: 'yame.store'
-          })
-        });
-        input.value = '';
-        status.textContent = role === 'assistant' ? '1호 사원 답변을 남겼습니다.' : '남겼습니다. 매시 30분에 1호 사원이 확인합니다. ⏰';
-        await loadWorkerChat();
-      } catch (err) {
-        console.error(err);
-        status.textContent = '메시지 저장을 확인하지 못했습니다. 새로고침으로 등록 여부를 확인한 후 다시 시도하세요.';
-      } finally {
-        sendButton.disabled = false;
-        roleSelect.disabled = false;
-        input.disabled = false;
-      }
-    });
-
     async function loadProjects() {
+      const grid = document.getElementById('projectGrid');
+      const statProjects = document.getElementById('statProjects');
       try {
-        const [stanceRes, apiRes, catalogRes, clicksRes] = await Promise.allSettled([
-          fetch(STANCE_APPS_API, {
-            cache: 'no-store',
-            headers: { 'Accept': 'application/vnd.github+json' }
-          }),
-          fetch(API_URL, { cache: 'no-store' }),
-          fetch('./data/stance-apps.json', { cache: 'no-store' }),
-          fetch(PROJECT_CLICK_STATS_URL, { cache: 'no-store', credentials: 'omit' })
+        const [community, stance, clickCounts] = await Promise.all([
+          loadCommunityProjects(), loadStanceProjects(), loadClickCounts()
         ]);
 
-        let stanceProjects = [];
-        let externalProjects = [];
-
-        if (stanceRes.status === 'fulfilled' && stanceRes.value.ok) {
-          const entries = await stanceRes.value.json();
-          stanceProjects = (Array.isArray(entries) ? entries : [])
-            .filter(entry => entry && entry.type === 'dir' && entry.name)
-            .map(entry => ({
-              slug: entry.name,
-              url: `https://llsshh.com/apps/${encodeURIComponent(entry.name)}/`,
-              thumbnail: `https://llsshh.com/apps/${encodeURIComponent(entry.name)}/thumbnail.svg`,
-              source: 'stance'
-            }));
-        } else {
-          console.warn('stance/apps load failed', stanceRes);
-        }
-
-        if (apiRes.status === 'fulfilled' && apiRes.value.ok) {
-          const data = await apiRes.value.json();
-          const list = Array.isArray(data) ? data : (data.projects || []);
-          externalProjects = list
-            .filter(p => p && p.url)
-            .map(p => ({
-              url: p.url,
-              thumbnail: p.thumbnail || '',
-              company: p.company || '',
-              source: 'external'
-            }));
-        } else {
-          console.warn('external project API load failed', apiRes);
-        }
-
         const byUrl = new Map();
-        if (catalogRes.status === 'fulfilled' && catalogRes.value.ok) {
-          try {
-            const catalog = await catalogRes.value.json();
-            for (const project of (Array.isArray(catalog) ? catalog : [])) {
-              if (project && project.url) byUrl.set(project.url, project);
-            }
-          } catch (err) { console.warn('static catalog load failed', err); }
+        for (const project of [...community, ...stance]) {
+          if (!project.url || byUrl.has(project.url)) continue;
+          byUrl.set(project.url, project);
         }
+        const projects = [...byUrl.values()].sort((a, b) => (clickCounts.get(b.url) || 0) - (clickCounts.get(a.url) || 0));
 
-        for (const project of stanceProjects) {
-          if (!byUrl.has(project.url)) byUrl.set(project.url, project);
+        grid.replaceChildren();
+        statProjects.textContent = `${projects.length}개`;
+        if (!projects.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty';
+          empty.textContent = '아직 표시할 완성 프로젝트가 없습니다.';
+          grid.appendChild(empty);
+          return;
         }
-
-        for (const project of externalProjects) {
-          if (!byUrl.has(project.url)) {
-            byUrl.set(project.url, project);
-          }
-        }
-
-        const clickCounts = new Map();
-
-        if (clicksRes.status === 'fulfilled' && clicksRes.value.ok) {
-          try {
-            const json = await clicksRes.value.json();
-            const data = json && json.data !== undefined ? json.data : json;
-            const source = Array.isArray(data?.projects)
-              ? data.projects
-              : (data && data.clicks !== undefined ? data.clicks : data);
-
-            if (Array.isArray(source)) {
-              for (const row of source) {
-                if (!row || !row.project_url) continue;
-                clickCounts.set(row.project_url, Number(row.clicks ?? row.count ?? 0) || 0);
-              }
-            } else if (source && typeof source === 'object') {
-              for (const [url, value] of Object.entries(source)) {
-                const count = value && typeof value === 'object'
-                  ? Number(value.clicks ?? value.count ?? 0)
-                  : Number(value);
-                clickCounts.set(url, Number.isFinite(count) ? count : 0);
-              }
-            }
-          } catch (err) {
-            console.warn('project click stats parse failed', err);
-          }
-        } else {
-          console.warn('project click stats load failed', clicksRes);
-        }
-
-        const getClickCount = (url) => {
-          if (clickCounts.has(url)) return clickCounts.get(url) || 0;
-          try {
-            const normalized = new URL(url).href;
-            return clickCounts.get(normalized) || 0;
-          } catch {
-            return 0;
-          }
-        };
-
-        const projects = [...byUrl.values()].sort((a, b) => {
-          const clickDiff = getClickCount(b.url) - getClickCount(a.url);
-          return clickDiff || a.url.localeCompare(b.url);
-        });
-
-        if (!projects.length && stanceProjects.length === 0 && externalProjects.length === 0) {
-          throw new Error('No project sources available');
-        }
-
-        renderProjects(projects);
+        projects.forEach(project => grid.appendChild(makeCard(project)));
       } catch (err) {
-        console.error(err);
-        grid.innerHTML = '<div class="error-box">프로젝트 목록을 불러오지 못했습니다.<br>stance/apps 또는 외부 프로젝트 API 상태를 확인하세요.</div>';
-        counter.textContent = 'LOAD FAILED';
+        grid.innerHTML = '<div class="error-box">프로젝트 목록을 불러오지 못했습니다.</div>';
         statProjects.textContent = '-';
       }
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      formStatus.className = 'status';
-      formStatus.textContent = '';
-
-      const payload = {
-        url: document.getElementById('pageUrl').value.trim(),
-        thumbnail: document.getElementById('thumbUrl').value.trim(),
-        company: document.getElementById('company').value
-      };
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = '등록 중...';
-
-      try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-
-        form.reset();
-        formStatus.className = 'status good';
-        formStatus.textContent = '등록되었습니다.';
-        await loadProjects();
-        setTimeout(() => dialog.close(), 500);
-      } catch (err) {
-        formStatus.className = 'status bad';
-        formStatus.textContent = err.message || '등록에 실패했습니다.';
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '등록';
-      }
-    });
-
-    loadWorkerChat();
+    loadLottery();
     loadProjects();
   </script>
 </body>
