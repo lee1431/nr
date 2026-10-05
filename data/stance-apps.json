@@ -124,5 +124,12 @@
     "url": "https://llsshh.com/apps/seller-margin/",
     "thumbnail": "https://llsshh.com/apps/seller-margin/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "office-admin-accounting",
+    "name": "일손장부 · 사무·총무·경리",
+    "url": "https://llsshh.com/apps/office-admin-accounting/",
+    "thumbnail": "https://llsshh.com/apps/office-admin-accounting/thumbnail.svg",
+    "source": "stance"
   }
 ]
