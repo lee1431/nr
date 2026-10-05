@@ -795,8 +795,6 @@
 
   <script>
     const API_URL = 'https://mrdindoin.ddns.net/yame/api/community/projects';
-    const STANCE_APPS_API = 'https://api.github.com/repos/lee1431/stance/contents/apps';
-
     const PROJECT_CLICK_EVENT_URL = 'https://localflow.ddns.net/uvb/v1/apps/yame-stats/event';
     const PROJECT_CLICK_STATS_URL = 'https://localflow.ddns.net/uvb/v1/apps/yame-stats/clicks';
 
@@ -1173,32 +1171,13 @@
 
     async function loadProjects() {
       try {
-        const [stanceRes, apiRes, catalogRes, clicksRes] = await Promise.allSettled([
-          fetch(STANCE_APPS_API, {
-            cache: 'no-store',
-            headers: { 'Accept': 'application/vnd.github+json' }
-          }),
+        const [apiRes, catalogRes, clicksRes] = await Promise.allSettled([
           fetch(API_URL, { cache: 'no-store' }),
           fetch('./data/stance-apps.json', { cache: 'no-store' }),
           fetch(PROJECT_CLICK_STATS_URL, { cache: 'no-store', credentials: 'omit' })
         ]);
 
-        let stanceProjects = [];
         let externalProjects = [];
-
-        if (stanceRes.status === 'fulfilled' && stanceRes.value.ok) {
-          const entries = await stanceRes.value.json();
-          stanceProjects = (Array.isArray(entries) ? entries : [])
-            .filter(entry => entry && entry.type === 'dir' && entry.name)
-            .map(entry => ({
-              slug: entry.name,
-              url: `https://llsshh.com/apps/${encodeURIComponent(entry.name)}/`,
-              thumbnail: `https://llsshh.com/apps/${encodeURIComponent(entry.name)}/thumbnail.svg`,
-              source: 'stance'
-            }));
-        } else {
-          console.warn('stance/apps load failed', stanceRes);
-        }
 
         if (apiRes.status === 'fulfilled' && apiRes.value.ok) {
           const data = await apiRes.value.json();
@@ -1223,10 +1202,6 @@
               if (project && project.url) byUrl.set(project.url, project);
             }
           } catch (err) { console.warn('static catalog load failed', err); }
-        }
-
-        for (const project of stanceProjects) {
-          if (!byUrl.has(project.url)) byUrl.set(project.url, project);
         }
 
         for (const project of externalProjects) {
@@ -1280,14 +1255,14 @@
           return clickDiff || a.url.localeCompare(b.url);
         });
 
-        if (!projects.length && stanceProjects.length === 0 && externalProjects.length === 0) {
+        if (!projects.length && externalProjects.length === 0) {
           throw new Error('No project sources available');
         }
 
         renderProjects(projects);
       } catch (err) {
         console.error(err);
-        grid.innerHTML = '<div class="error-box">프로젝트 목록을 불러오지 못했습니다.<br>stance/apps 또는 외부 프로젝트 API 상태를 확인하세요.</div>';
+        grid.innerHTML = '<div class="error-box">프로젝트 목록을 불러오지 못했습니다.<br>stance-apps.json 또는 외부 프로젝트 API 상태를 확인하세요.</div>';
         counter.textContent = 'LOAD FAILED';
         statProjects.textContent = '-';
       }
