@@ -474,6 +474,8 @@
       white-space: nowrap;
     }
 
+    .card-clicks { margin-top: 9px; color: var(--navy); font-size: 11px; font-weight: 800; }
+
     .url {
       margin-top: 5px;
       color: var(--muted);
@@ -917,7 +919,11 @@
       url.className = 'url';
       url.textContent = project.url;
 
-      info.append(host, url);
+      const clicks = document.createElement('div');
+      clicks.className = 'card-clicks';
+      clicks.textContent = project.clicks == null ? '클릭 수 확인 불가' : `클릭 ${project.clicks.toLocaleString('ko-KR')}회`;
+
+      info.append(host, url, clicks);
       card.append(thumb, info);
       return card;
     }
@@ -1253,8 +1259,12 @@
           }
         };
 
-        const projects = [...byUrl.values()].sort((a, b) => {
-          const clickDiff = getClickCount(b.url) - getClickCount(a.url);
+        const hasClickStats = clicksRes.status === 'fulfilled' && clicksRes.value.ok;
+        const projects = [...byUrl.values()].map(project => ({
+          ...project,
+          clicks: hasClickStats ? getClickCount(project.url) : null
+        })).sort((a, b) => {
+          const clickDiff = (b.clicks ?? 0) - (a.clicks ?? 0);
           return clickDiff || a.url.localeCompare(b.url);
         });
 
