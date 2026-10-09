@@ -378,6 +378,8 @@
       letter-spacing: -.05em;
     }
 
+    .project-wall-count { display: inline-block; vertical-align: middle; margin-left: 8px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--navy); background: var(--accent-soft); font: 800 12px Pretendard, system-ui, sans-serif; letter-spacing: 0; }
+
     .section-head h3 em {
       font-family: Georgia, 'Times New Roman', serif;
       font-style: italic;
@@ -744,7 +746,7 @@
     <section id="projects">
       <div class="section-head">
         <div>
-          <h3>PROJECT <em>Wall</em></h3>
+          <h3>PROJECT <em>Wall</em> <span id="projectWallCount" class="project-wall-count" aria-label="등록된 페이지 수">0개</span></h3>
           <p>커뮤니티 구성원이 직접 만든 페이지입니다. 카드를 누르면 새 창에서 열립니다.</p>
         </div>
         <button class="secondary" id="openFormSection" type="button">페이지 등록</button>
@@ -977,6 +979,7 @@
       grid.replaceChildren();
       counter.textContent = `${projects.length} PROJECTS`;
       statProjects.textContent = `${projects.length}개`;
+      document.getElementById("projectWallCount").textContent = `${projects.length}개`;
       renderFeatured(projects);
 
       if (!projects.length) {
