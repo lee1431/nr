@@ -5,5 +5,12 @@
     "url": "https://llsshh.com/apps/office-admin-accounting/",
     "thumbnail": "https://llsshh.com/apps/office-admin-accounting/thumbnail.svg",
     "source": "stance"
+  },
+  {
+    "slug": "small-business-groupware",
+    "name": "작은회사 · 10인 미만 그룹웨어",
+    "url": "https://llsshh.com/apps/small-business-groupware/",
+    "thumbnail": "https://llsshh.com/apps/small-business-groupware/thumbnail.svg",
+    "source": "stance"
   }
 ]
