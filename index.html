@@ -632,28 +632,6 @@
       .info { padding: 10px; }
       .bottom-note { flex-direction: column; gap: 6px; }
     }
-    .gpt-chat{margin:18px 0 26px;padding:20px;border:1px solid var(--line);border-radius:20px;background:#fff}
-    .gpt-chat-head{display:flex;justify-content:space-between;gap:16px;align-items:end;margin-bottom:14px}
-    .gpt-chat-title{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--navy);text-transform:uppercase}
-    .gpt-chat-sub{font-size:12px;color:#888}
-    .chat-log{display:flex;flex-direction:column;gap:10px;max-height:520px;overflow:auto;padding:12px;background:#f7f7f4;border-radius:14px}
-    .chat-day{position:sticky;top:0;align-self:center;z-index:1;margin:8px 0 2px;padding:5px 10px;border-radius:999px;background:#e9e9e3;color:#666;font-size:11px;font-weight:800}
-    .chat-row{display:flex;flex-direction:column;gap:4px;max-width:86%}
-    .chat-row.user{align-self:flex-end;align-items:flex-end}
-    .chat-row.assistant{align-self:flex-start;align-items:flex-start}
-    .chat-bubble{overflow-wrap:anywhere}
-    .chat-row.assistant .chat-bubble{background:var(--accent-soft);border-color:#d7e5fa}
-    .chat-meta{font-size:11px;color:#888}
-    .chat-bubble{padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #ddd;line-height:1.5;white-space:pre-wrap}
-    .chat-row.user .chat-bubble{background:#171717;color:#fff;border-color:#171717}
-    .chat-compose{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;margin-top:10px;padding:0}
-    .chat-compose select{min-width:0;border:1px solid #bbb;border-radius:12px;padding:10px;background:#fff;color:var(--text)}
-    .chat-compose :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-    .chat-compose button:disabled{opacity:.55;cursor:wait}
-    @media(max-width:620px){.chat-compose{grid-template-columns:minmax(0,1fr) auto}.chat-compose select{grid-column:1 / -1}.chat-row{max-width:92%}}
-    .chat-compose input{min-width:0;border:1px solid #bbb;border-radius:12px;padding:12px 14px;font:inherit}
-    .chat-compose button{border:0;border-radius:12px;padding:0 16px;background:#171717;color:#fff;font-weight:800;cursor:pointer}
-    .chat-status{margin-top:8px;font-size:12px;color:#888}
   </style>
 </head>
 <body>
@@ -704,30 +682,6 @@
           <a class="featured-link" id="featuredLink" href="#">열기 ↗</a>
         </div>
       </article>
-    </section>
-
-    <section class="gpt-chat" aria-live="polite">
-      <div class="gpt-chat-head">
-        <div>
-          <div class="gpt-chat-title">1호 지피티 사원 · 1시간 채팅</div>
-          <div class="gpt-chat-sub">유저는 오른쪽, 1호 사원은 왼쪽에 표시됩니다. 사원은 매시 30분에 대화를 확인합니다. 🤖💬</div>
-        </div>
-      </div>
-      <div class="chat-log" id="gptChatLog">
-        <div class="chat-row assistant">
-          <div class="chat-meta">🤖 1호 지피티 사원</div>
-          <div class="chat-bubble">업무 로그 불러오는 중...</div>
-        </div>
-      </div>
-      <form class="chat-compose" id="gptChatForm">
-        <select id="gptChatRole" aria-label="작성자 선택">
-          <option value="user">유저 (나)</option>
-          <option value="assistant">1호 사원 (GPT)</option>
-        </select>
-        <input id="gptChatInput" aria-label="채팅 메시지" maxlength="300" placeholder="1호 사원에게 한마디 남기기..." autocomplete="off">
-        <button type="submit">남기기</button>
-      </form>
-      <div class="chat-status" id="gptChatStatus">사원은 매시 30분에 대화를 확인합니다.</div>
     </section>
 
     <section class="stats" aria-label="프로젝트 현황">
@@ -1001,183 +955,6 @@
       }
     }
 
-    const GPT_CHAT_BASE = 'https://localflow.ddns.net/uvb';
-    const GPT_CHAT_APP = 'yame-chat';
-    const GPT_CHAT_ITEMS = GPT_CHAT_BASE + '/v1/apps/' + encodeURIComponent(GPT_CHAT_APP) + '/items';
-    const CHAT_RETENTION_DAYS = 30;
-
-    function getItemDate(item) {
-      const msg = item && item.data ? item.data : item;
-      if (msg && msg.sent_at) {
-        const d = new Date(msg.sent_at);
-        if (!Number.isNaN(d.getTime())) return d;
-      }
-      if (item && Number.isFinite(item.created_at)) {
-        return new Date(item.created_at * 1000);
-      }
-      return null;
-    }
-
-    function formatChatDay(date) {
-      return new Intl.DateTimeFormat('ko-KR', {
-        year:'numeric', month:'2-digit', day:'2-digit',
-        weekday:'short', timeZone:'Asia/Seoul'
-      }).format(date);
-    }
-
-    function formatChatTime(date) {
-      return new Intl.DateTimeFormat('ko-KR', {
-        hour:'2-digit', minute:'2-digit', second:'2-digit',
-        hour12:false, timeZone:'Asia/Seoul'
-      }).format(date);
-    }
-
-    function renderChat(messages) {
-      const log = document.getElementById('gptChatLog');
-      log.replaceChildren();
-      const list = Array.isArray(messages) ? messages : [];
-      if (!list.length) {
-        const empty = document.createElement('div');
-        empty.className = 'chat-row assistant';
-        empty.innerHTML = '<div class="chat-meta">🤖 1호 지피티 사원</div><div class="chat-bubble">최근 30일 채팅 로그가 없습니다. 첫 메시지를 남겨보세요. 👀</div>';
-        log.appendChild(empty);
-        return;
-      }
-
-      let lastDay = '';
-      for (const item of list) {
-        const msg = item && item.data ? item.data : item;
-        const role = msg.role === 'user' ? 'user' : 'assistant';
-        const date = getItemDate(item);
-        const dayKey = date ? new Intl.DateTimeFormat('en-CA', {
-          year:'numeric', month:'2-digit', day:'2-digit', timeZone:'Asia/Seoul'
-        }).format(date) : '';
-
-        if (dayKey && dayKey !== lastDay) {
-          const day = document.createElement('div');
-          day.className = 'chat-day';
-          day.textContent = formatChatDay(date);
-          log.appendChild(day);
-          lastDay = dayKey;
-        }
-
-        const row = document.createElement('div');
-        row.className = 'chat-row ' + role;
-
-        const meta = document.createElement('div');
-        meta.className = 'chat-meta';
-        const who = role === 'user' ? '👤 유저' : '🤖 1호 지피티 사원';
-        meta.textContent = who + (date ? ' · ' + formatChatTime(date) : '');
-
-        const bubble = document.createElement('div');
-        bubble.className = 'chat-bubble';
-        bubble.textContent = msg.text || '';
-
-        row.append(meta, bubble);
-        log.appendChild(row);
-      }
-      log.scrollTop = log.scrollHeight;
-    }
-
-    async function uvbChatRequest(path = '', options = {}) {
-      const res = await fetch(GPT_CHAT_ITEMS + path, {
-        cache: 'no-store',
-        ...options
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.ok === false) {
-        throw new Error(json.error || `HTTP ${res.status}`);
-      }
-      return json.data || json;
-    }
-
-    async function loadRecentChatItems() {
-      const cutoff = Date.now() - CHAT_RETENTION_DAYS * 86400000;
-      const collected = [];
-      const pageSize = 100;
-      const maxPages = 20;
-
-      for (let page = 1; page <= maxPages; page++) {
-        const data = await uvbChatRequest(`?page=${page}&page_size=${pageSize}&order=desc`);
-        const batch = Array.isArray(data.items) ? data.items : [];
-        if (!batch.length) break;
-
-        for (const item of batch) {
-          const date = getItemDate(item);
-          if (date && date.getTime() >= cutoff) collected.push(item);
-        }
-
-        const oldest = getItemDate(batch[batch.length - 1]);
-        if ((oldest && oldest.getTime() < cutoff) || !data.has_more) break;
-      }
-
-      collected.sort((a, b) => {
-        const da = getItemDate(a)?.getTime() || 0;
-        const db = getItemDate(b)?.getTime() || 0;
-        return da - db;
-      });
-      return collected;
-    }
-
-    async function loadWorkerChat() {
-      const status = document.getElementById('gptChatStatus');
-      try {
-        const items = await loadRecentChatItems();
-        renderChat(items);
-        status.textContent = `최근 ${CHAT_RETENTION_DAYS}일 로그 · 사원은 매시 30분에 대화를 확인합니다.`;
-      } catch (err) {
-        console.error(err);
-        status.textContent = 'UVB 채팅 연결을 확인하는 중입니다.';
-      }
-    }
-
-    document.getElementById('gptChatRole').addEventListener('change', (e) => {
-      document.getElementById('gptChatInput').placeholder = e.target.value === 'assistant'
-        ? '1호 사원으로 답변 남기기...' : '1호 사원에게 한마디 남기기...';
-    });
-
-    document.getElementById('gptChatForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const input = document.getElementById('gptChatInput');
-      const status = document.getElementById('gptChatStatus');
-      const text = input.value.trim();
-      const roleSelect = document.getElementById('gptChatRole');
-      const sendButton = e.currentTarget.querySelector('button[type="submit"]');
-      if (!text || sendButton.disabled) return;
-      const role = roleSelect.value === 'assistant' ? 'assistant' : 'user';
-      sendButton.disabled = true;
-      roleSelect.disabled = true;
-      input.disabled = true;
-      status.textContent = '메시지 남기는 중...';
-      try {
-        const now = new Date();
-        const seoulDate = new Intl.DateTimeFormat('en-CA', {
-          year:'numeric', month:'2-digit', day:'2-digit', timeZone:'Asia/Seoul'
-        }).format(now);
-        await uvbChatRequest('', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            role,
-            text,
-            sent_at: now.toISOString(),
-            date_key: seoulDate,
-            source: 'yame.store'
-          })
-        });
-        input.value = '';
-        status.textContent = role === 'assistant' ? '1호 사원 답변을 남겼습니다.' : '남겼습니다. 매시 30분에 1호 사원이 확인합니다. ⏰';
-        await loadWorkerChat();
-      } catch (err) {
-        console.error(err);
-        status.textContent = '메시지 저장을 확인하지 못했습니다. 새로고침으로 등록 여부를 확인한 후 다시 시도하세요.';
-      } finally {
-        sendButton.disabled = false;
-        roleSelect.disabled = false;
-        input.disabled = false;
-      }
-    });
-
     async function loadProjects() {
       try {
         const [apiRes, catalogRes, clicksRes] = await Promise.allSettled([
@@ -1318,7 +1095,6 @@
       }
     });
 
-    loadWorkerChat();
     loadProjects();
   </script>
 </body>
